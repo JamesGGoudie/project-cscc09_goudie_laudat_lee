@@ -2,6 +2,7 @@
   "name": "graphql-test",
   "version": "0.0.1",
   "description": "A testing environment to get familiar with GraphQl",
+  "main": "dist/app.js",
   "author": "James Gabriel Goudie",
   "license": "ISC",
   "scripts": {

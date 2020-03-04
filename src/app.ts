@@ -8,6 +8,8 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+app.use(express.static('frontend'));
+
 app.use((req, res, next) => {
   console.log('HTTP request', req.method, req.url, req.body);
   next();
@@ -15,13 +17,20 @@ app.use((req, res, next) => {
 
 const gqlSchema = buildSchema(`
   type Query {
-    favColour: String
+    favColour(user: String): String
   }
 `);
 
 const root = {
-  favColour: () => {
-    return 'My favourit colour is orange'
+  favColour: (data: {user: string}) => {
+    switch (data.user) {
+      case 'James': {
+        return 'Orange'
+      }
+      default: {
+        return 'Blue'
+      }
+    }
   }
 }
 
@@ -33,7 +42,7 @@ const graphQlOptions: graphqlHTTP.Options = {
 
 app.use('/graphql', graphqlHTTP(graphQlOptions));
 
-const PORT = 3000;
+const PORT = 3164;
 
 app.listen(PORT, (err) => {
   if (err) {
