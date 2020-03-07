@@ -1,7 +1,13 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 
-import { CreateWorkspaceForm, JoinWorkspaceForm } from 'src/app/interfaces';
+import {
+  CreateWorkspaceForm,
+  CreateWorkspaceResponse,
+  JoinWorkspaceForm,
+  JoinWorkspaceResponse
+} from 'src/app/interfaces';
+
 import { WorkspaceControlService } from 'src/app/services';
 
 @Component({
@@ -30,11 +36,17 @@ export class WorkspaceControlComponent {
   }
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
-    console.log(form);
+    this.workspaceControlService.createWorkspace(form).subscribe(
+        (res: CreateWorkspaceResponse) => {
+      console.log(res);
+    });
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
-    console.log(form);
+    this.workspaceControlService.joinWorkspace(form).subscribe(
+        (res: JoinWorkspaceResponse) => {
+      console.log(res);
+    });
   }
 
 }

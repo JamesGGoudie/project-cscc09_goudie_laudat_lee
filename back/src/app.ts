@@ -1,14 +1,19 @@
 import bodyParser from 'body-parser';
+import cors from 'cors';
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import { buildSchema } from 'graphql';
+
+import { CreateWorkspaceForm, JoinWorkspaceForm } from './interfaces';
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.use(express.static('dist/front'));
+app.use(cors({origin: 'http://localhost:4200'}));
+
+// app.use(express.static('dist/front'));
 
 app.use((req, res, next) => {
   console.log('HTTP request', req.method, req.url, req.body);
@@ -17,20 +22,27 @@ app.use((req, res, next) => {
 
 const gqlSchema = buildSchema(`
   type Query {
-    favColour(user: String): String
+    createWorkspace(
+        workspaceId: String!,
+        workspacePassword: String!,
+        username: String!): Boolean
+    joinWorkspace(
+        workspaceId: String!,
+        workspacePassword: String!,
+        username: String!): Boolean
   }
 `);
 
 const root = {
-  favColour: (data: {user: string}) => {
-    switch (data.user) {
-      case 'James': {
-        return 'Orange'
-      }
-      default: {
-        return 'Blue'
-      }
-    }
+  createWorkspace: (form: CreateWorkspaceForm) => {
+    console.log(form);
+
+    return true;
+  },
+  joinWorkspace: (form: JoinWorkspaceForm) => {
+    console.log(form);
+
+    return true;
   }
 }
 
@@ -42,7 +54,7 @@ const graphQlOptions: graphqlHTTP.Options = {
 
 app.use('/graphql', graphqlHTTP(graphQlOptions));
 
-const PORT = 3164;
+const PORT = 3000;
 
 app.listen(PORT, (err) => {
   if (err) {

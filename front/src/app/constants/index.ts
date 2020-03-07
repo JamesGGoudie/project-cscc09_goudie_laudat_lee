@@ -1,1 +1,2 @@
-export * from './fixed-routes';
+export * from './back-routes';
+export * from './front-routes';
