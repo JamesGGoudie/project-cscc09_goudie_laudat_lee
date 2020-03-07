@@ -8,7 +8,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.use(express.static('frontend'));
+app.use(express.static('dist/front'));
 
 app.use((req, res, next) => {
   console.log('HTTP request', req.method, req.url, req.body);

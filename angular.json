@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1, 
+  "version": 1,
   "newProjectRoot": "projects",
   "projects": {
     "sync-test": {
@@ -11,24 +11,24 @@
         }
       },
       "root": "",
-      "sourceRoot": "src",
+      "sourceRoot": "front/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/sync-test",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.app.json",
+            "outputPath": "dist/front",
+            "index": "front/src/index.html",
+            "main": "front/src/main.ts",
+            "polyfills": "front/src/polyfills.ts",
+            "tsConfig": "front/tsconfig.app.json",
             "aot": true,
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "front/src/favicon.ico",
+              "front/src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "front/src/styles.scss"
             ],
             "scripts": []
           },
@@ -36,8 +36,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "replace": "front/src/environments/environment.ts",
+                  "with": "front/src/environments/environment.prod.ts"
                 }
               ],
               "optimization": true,
@@ -83,16 +83,16 @@
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
-            "polyfills": "src/polyfills.ts",
-            "tsConfig": "tsconfig.spec.json",
-            "karmaConfig": "karma.conf.js",
+            "main": "front/src/test.ts",
+            "polyfills": "front/src/polyfills.ts",
+            "tsConfig": "front/tsconfig.spec.json",
+            "karmaConfig": "front/karma.conf.js",
             "assets": [
-              "src/favicon.ico",
-              "src/assets"
+              "front/src/favicon.ico",
+              "front/src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "front/src/styles.scss"
             ],
             "scripts": []
           }
@@ -101,9 +101,9 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "tsconfig.app.json",
-              "tsconfig.spec.json",
-              "e2e/tsconfig.json"
+              "front/tsconfig.app.json",
+              "front/tsconfig.spec.json",
+              "front/e2e/tsconfig.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -113,7 +113,7 @@
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
-            "protractorConfig": "e2e/protractor.conf.js",
+            "protractorConfig": "front/e2e/protractor.conf.js",
             "devServerTarget": "sync-test:serve"
           },
           "configurations": {
@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "sync-test"
+    }
+  },
+  "defaultProject": "sync-test",
+  "cli": {
+    "analytics": "59cb8f0c-4784-46fc-89c3-e3706274b49f"
+  }
 }

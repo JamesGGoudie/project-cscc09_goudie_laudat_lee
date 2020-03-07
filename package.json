@@ -6,10 +6,10 @@
   "author": "James Gabriel Goudie",
   "license": "ISC",
   "scripts": {
-    "start-back": "npm run serve",
+    "start-back": "npm run serve-back",
     "build-back": "npm run build-ts",
     "serve-back": "node dist/app.js",
-    "build-ts": "tsc --project tsconfig.backend.json",
+    "build-ts": "tsc --project ./back/",
     "ng": "ng",
     "start-front": "ng serve",
     "build-front": "ng build",
@@ -53,8 +53,8 @@
     "karma-jasmine": "~2.0.1",
     "karma-jasmine-html-reporter": "^1.4.2",
     "protractor": "~5.4.3",
-    "ts-node": "^8.6.2",
+    "ts-node": "~8.3.0",
     "tslint": "~5.18.0",
-    "typescript": "^3.8.3"
+    "typescript": "~3.7.5"
   }
 }
