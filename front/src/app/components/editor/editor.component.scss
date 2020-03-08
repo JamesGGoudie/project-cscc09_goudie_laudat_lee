@@ -8,3 +8,21 @@ canvas {
   height: 100%;
   width: 100%;
 }
+
+#editor {
+  height: 100vh;
+
+  display: grid;
+
+  grid-template-areas: "renderer-container box-form";
+
+  grid-template-columns: 4fr 1fr;
+}
+
+#renderer-container {
+  grid-area: renderer-container;
+}
+
+#box-form {
+  grid-area: box-form;
+}

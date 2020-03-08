@@ -20,24 +20,21 @@ import { WorkspaceControlService } from 'src/app/services';
 })
 export class WorkspaceControlComponent {
 
-  public readonly createForm: FormGroup;
-  public readonly joinForm: FormGroup;
+  public readonly createForm: FormGroup = new FormGroup({
+    workspaceId: new FormControl(),
+    workspacePassword: new FormControl(),
+    username: new FormControl()
+  });
+  public readonly joinForm: FormGroup = new FormGroup({
+    workspaceId: new FormControl(),
+    workspacePassword: new FormControl(),
+    username: new FormControl()
+  });
 
   public constructor(
     private readonly router: Router,
     private readonly workspaceControlService: WorkspaceControlService
-  ) {
-    this.createForm = new FormGroup({
-      workspaceId: new FormControl(),
-      workspacePassword: new FormControl(),
-      username: new FormControl()
-    });
-    this.joinForm = new FormGroup({
-      workspaceId: new FormControl(),
-      workspacePassword: new FormControl(),
-      username: new FormControl()
-    });
-  }
+  ) {}
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(

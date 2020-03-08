@@ -1,1 +1,23 @@
-<div #rendererContainer></div>
+<div id="editor">
+  <div #rendererContainer id="rendererContainer"></div>
+  <div id="boxForm">
+    <form
+        [formGroup]="boxForm"
+        (ngSubmit)="onBoxSubmit(boxForm.value)">
+      <mat-form-field>
+        <mat-label>X</mat-label>
+        <input matInput formControlName="x">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Y</mat-label>
+        <input matInput formControlName="y">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Z</mat-label>
+        <input matInput formControlName="z">
+      </mat-form-field>
+
+      <button mat-button type="submit">Create Box</button>
+    </form>
+  </div>
+</div>
