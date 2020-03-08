@@ -75,7 +75,6 @@ export class EditorComponent implements AfterViewInit {
     this.addCube(2.5, 0, 0);
     this.addCube(0, 2.5, 0);
     this.addCube(0, 0, 2.5);
-    this.addCube(0, 0, 0);
   }
 
   public ngAfterViewInit(): void {
@@ -105,7 +104,7 @@ export class EditorComponent implements AfterViewInit {
   }
 
   private addGrid(): void {
-    const axesHelper = new AxesHelper(2);
+    const axesHelper = new AxesHelper(1);
     this.scene.add(axesHelper);
 
     const gridHelper = new GridHelper(20, 10);
