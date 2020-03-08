@@ -9,9 +9,12 @@ import {
 import { FormControl, FormGroup } from '@angular/forms';
 
 import {
+  AxesHelper,
   BoxGeometry,
+  DirectionalLight,
+  GridHelper,
   Mesh,
-  MeshBasicMaterial,
+  MeshStandardMaterial,
   PerspectiveCamera,
   Scene,
   WebGLRenderer
@@ -36,10 +39,12 @@ export class EditorComponent implements AfterViewInit {
   private readonly animate: () => void = () => {
     requestAnimationFrame(this.animate);
 
+    /*
     this.cubes.forEach((cube: Mesh): void => {
       cube.rotation.x += 0.01;
       cube.rotation.y += 0.01;
-    })
+    });
+    */
 
     this.renderer.render(this.scene, this.camera);
   };
@@ -59,7 +64,18 @@ export class EditorComponent implements AfterViewInit {
         1000);
     this.renderer = new WebGLRenderer();
 
-    this.camera.position.z = 5;
+    this.camera.position.x = -5;
+    this.camera.position.y = 5;
+    this.camera.position.z = -5;
+
+    this.camera.lookAt(0, 0, 0);
+
+    this.addGrid();
+    this.addSun();
+    this.addCube(2.5, 0, 0);
+    this.addCube(0, 2.5, 0);
+    this.addCube(0, 0, 2.5);
+    this.addCube(0, 0, 0);
   }
 
   public ngAfterViewInit(): void {
@@ -81,9 +97,24 @@ export class EditorComponent implements AfterViewInit {
         Number.parseFloat(form.z));
   }
 
+  private addSun(): void {
+    const sun = new DirectionalLight(0xffffff, 0.9);
+    sun.position.set(-5, 10, -3);
+
+    this.scene.add(sun);
+  }
+
+  private addGrid(): void {
+    const axesHelper = new AxesHelper(2);
+    this.scene.add(axesHelper);
+
+    const gridHelper = new GridHelper(20, 10);
+    this.scene.add(gridHelper);
+  }
+
   private addCube(x: number, y: number, z: number): void {
     const geometry = new BoxGeometry();
-    const material = new MeshBasicMaterial({color: 0xff7f00});
+    const material = new MeshStandardMaterial({color: 0xff7f00});
     const cube = new Mesh(geometry, material);
 
     cube.position.x = x;
