@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
+
+import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   CreateWorkspaceForm,
@@ -21,6 +24,7 @@ export class WorkspaceControlComponent {
   public readonly joinForm: FormGroup;
 
   public constructor(
+    private readonly router: Router,
     private readonly workspaceControlService: WorkspaceControlService
   ) {
     this.createForm = new FormGroup({
@@ -38,14 +42,14 @@ export class WorkspaceControlComponent {
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceResponse) => {
-      console.log(res);
+      this.router.navigate([FRONT_ROUTES.EDITOR]);
     });
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceResponse) => {
-      console.log(res);
+      this.router.navigate([FRONT_ROUTES.EDITOR]);
     });
   }
 

@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { SharedModule, WorkspaceControlModule } from './components';
+import { SharedModule } from './components';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -20,9 +20,7 @@ import { AppComponent } from './app.component';
 
     HttpClientModule,
 
-    SharedModule,
-
-    WorkspaceControlModule
+    SharedModule
   ],
   providers: [],
   bootstrap: [AppComponent]
