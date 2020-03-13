@@ -4,25 +4,57 @@ body {
 
 canvas {
   display: block;
-
   height: 100%;
   width: 100%;
 }
 
-#editor {
-  height: 100vh;
+.panel {
+  position: absolute;
+  // background: #fff;
+  padding: 10px;
 
-  display: grid;
+  mat-expansion-panel {
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 4px;
+      
+      li {
 
-  grid-template-areas: "renderer-container box-form";
+        button {
+          text-align: left;
+          width:100%;
+        }
 
-  grid-template-columns: 4fr 1fr;
+        button:hover {
+          background: #eeeeee;  
+        }
+      }
+    }
+  }
 }
 
-#renderer-container {
-  grid-area: renderer-container;
+#tool-menu {
+  bottom:0;
 }
 
-#box-form {
-  grid-area: box-form;
+#side-menu {
+  width: 260px;
+  max-height: 96%;
+  right: 0;
+  top:0;
+  overflow: scroll;
+
+  mat-form-field {
+    width:100%
+  }
+}
+
+.delete-button {
+  margin-top: 20px;
+}
+
+button {
+  margin-right: 10px;;
 }

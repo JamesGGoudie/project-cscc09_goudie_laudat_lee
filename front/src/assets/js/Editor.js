@@ -3,24 +3,25 @@
 
 // Shortcuts:
 /*
-    G                       = Translate (Grab)
-    S                       = Scale
-    R                       = Rotate
-    +                       = Increase size of control
-    -                       = Decrease size of control
-    Shift                   = turn on snap to grid
-    Ctrl                    = turn off snap to grid
+    shift+ G                 = Translate (Grab)
+    shift+ S                 = Scale
+    shift+ R                 = Rotate
+    shift+ +                 = Increase size of control
+    shift+ -                 = Decrease size of control
+    hold Shift              = turn on snap to grid
     Left-click and drag     = orbit
     Right-click and drag    = pan
     Scroll                  = zoom in/out
-    Esc                     = deselect current object
-    Backspace               = delete current object
-    C                       = reset camera
+    shift+D                 = deselect current object
+    shift+Backspace          = delete current object
+    shift+Z                  = reset camera
 */
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
+// import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
 
 let Editor = function(){
     const HIGHLIGHT_OUTLINE = {color:0xff9100, linewidth:3};
@@ -29,6 +30,7 @@ let Editor = function(){
 
     let camera, scene, renderer, control, orbit;
     let currentSelection;
+    let objectChangeCallback;
 
     init();
     render();
@@ -38,7 +40,8 @@ let Editor = function(){
         renderer = new THREE.WebGLRenderer();
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.setClearColor (0x222222, 1);
+        renderer.setClearColor (0xcccccc, 1);
+        // renderer.setClearColor (0x222222, 1);
         document.body.appendChild( renderer.domElement );
 
         // Camera
@@ -73,51 +76,51 @@ let Editor = function(){
 
         // Keyboard shortcuts
         window.addEventListener( 'keydown', function ( event ) {
-            switch ( event.keyCode ) {
-                case 16: // Shift
-                    control.setTranslationSnap( 100 );
-                    control.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
-                    control.setScaleSnap( 0.25 );
-                    break;
-                case 71: // G
-                    control.setMode( "translate" );
-                    break;
-                case 82: // R
-                    control.setMode( "rotate" );
-                    break;
-                case 83: // S
-                    control.setMode( "scale" );
-                    break;
-                case 187:
-                case 107: // +, =, num+
-                    control.setSize( control.size + 0.1 );
-                    break;
-                case 189:
-                case 109: // -, _, num-
-                    control.setSize( Math.max( control.size - 0.1, 0.1 ) );
-                    break;
-                case 27: // Esc
-                    deselectObject();
-                    break;
-                case 8: // Backspace
-                    deleteObject(currentSelection);
-                    break;
-                case 67: // C 
-                    resetCamera();
-                    break;
+            if (event.shiftKey) {
+                switch ( event.keyCode ) {
+                    case 71: // G
+                        control.setMode( "translate" );
+                        break;
+                    case 82: // R
+                        control.setMode( "rotate" );
+                        break;
+                    case 83: // S
+                        control.setMode( "scale" );
+                        break;
+                    case 187:
+                    case 107: // +, =, num+
+                        control.setSize( control.size + 0.1 );
+                        break;
+                    case 189:
+                    case 109: // -, _, num-
+                        control.setSize( Math.max( control.size - 0.1, 0.1 ) );
+                        break;
+                    case 68: // D
+                        deselectObject();
+                        break;
+                    case 8: // Backspace
+                        deleteObject(currentSelection);
+                        break;
+                    case 90: // Z 
+                        resetCamera();
+                        break;
+                }
+            }
+
+            if (event.keyCode == 16) { // Shift
+                control.setTranslationSnap( 100 );
+                control.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
+                control.setScaleSnap( 0.25 );  
             }
         } );
 
         window.addEventListener( 'keyup', function ( event ) {
-            switch ( event.keyCode ) {
-                case 17: // Ctrl
-                    control.setTranslationSnap( null );
-                    control.setRotationSnap( null );
-                    control.setScaleSnap( null );
-                    break;
-            }
+            if (event.keyCode == 16) { // Shift
+                control.setTranslationSnap( null );
+                control.setRotationSnap( null );
+                control.setScaleSnap( null );
+            }         
         } );
-        control.addEventListener('objectChange', onObjectChange);
     }
 
     function onWindowResize() {
@@ -127,10 +130,11 @@ let Editor = function(){
         render();
     }
 
-    function onObjectChange(e) {
-        // console.log('object changed');
-        // console.log(e); // TODO 
-    }
+    // function onObjectChange(e) {
+    //     // console.log('object changed');
+    //     // console.log(e); // TODO 
+    //     if (objectChangeFunc) objectChangeFunc();
+    // }
 
     function render() {
         renderer.render( scene, camera );
@@ -150,6 +154,58 @@ let Editor = function(){
         // TODO
     }
 
+    function saveScene() {
+        // save only the objects in the scene
+        let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
+        let exportedObjects = [];
+        allObjects.forEach(function(obj){
+            let data = {
+                name: obj.name,
+                position: obj.position.toArray(),
+                scale: obj.scale.toArray(),
+                rotation: obj.rotation.toArray(),
+                geometryType: obj.geometry.type,
+                materialColorHex: obj.material.color.getHexString()
+            };
+            exportedObjects.push(data);
+        });
+        console.log(exportedObjects);
+        console.log(JSON.stringify(exportedObjects));
+    }
+
+    function loadScene(data) {
+        // clear all existing objects
+        clearScene();
+        if (data){
+            let parsed = JSON.parse(data);
+            parsed.forEach(function(objData){
+                let geometry, material, mesh;
+                switch(objData.geometryType){
+                    case 'BoxBufferGeometry':
+                        geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
+                        break;
+                    case 'ConeBufferGeometry':
+                        geometry = new THREE.ConeBufferGeometry( 100, 200, 32 ); 
+                        break;
+                }
+                // set name and material
+                material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
+                mesh = new THREE.Mesh(geometry, material);
+                mesh.name = objData.name;
+    
+                // set position, scale and rotation
+                mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
+                mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
+                mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
+    
+                // add to scene
+                scene.add( mesh );
+                outlineObject(mesh, DEFAULT_OUTLINE);
+            });
+            render();
+        }
+    }
+
     function selectObject(obj) {
         console.log('selected: ', obj);
         deselectObject();
@@ -164,6 +220,7 @@ let Editor = function(){
             scene.add( control );
             render();
         }
+        if (objectChangeCallback) objectChangeCallback();
     }
 
     // deselects current object
@@ -224,13 +281,27 @@ let Editor = function(){
 
     function deleteObject(obj) {
         if (obj) {
-            deselectObject();
+            if (obj==currentSelection) deselectObject();
             obj.geometry.dispose();
             obj.material.dispose();
             scene.remove(obj);
             render();
         }
     };
+
+    function clearScene(){
+        let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
+        allObjects.forEach(function(obj){
+            deleteObject(obj);
+        });
+    }
+
+    this.setObjectChangeCallback = function(callback) {
+        if (callback) {
+            objectChangeCallback = callback;
+            control.addEventListener('objectChange', callback);
+        }
+    }
 
     this.getCurrentSelection = function() {
         return currentSelection;
@@ -240,26 +311,66 @@ let Editor = function(){
         return scene.children.filter(obj => obj instanceof THREE.Mesh);
     };
 
+    this.changeTool = function(tool) {
+        switch(tool) {
+            case "translate":
+            case "scale":
+            case "rotate":
+                control.setMode( tool );
+                break;
+        }
+    }
+
+    this.updateObjectPosition = function(obj, x, y, z){
+        if (obj && x!=null && y!=null && z!=null) {
+            obj.position.set(x, y, z);
+            render();
+        }
+    };
+
+    this.updateObjectScale = function(obj, x, y, z){
+        if (obj && x!=null && y!=null && z!=null) {
+            obj.scale.set(x, y, z);
+            render();
+        }
+    };
+
+    this.updateObjectRotation = function(obj, x, y, z){
+        if (obj && x!=null && y!=null && z!=null) {
+            obj.rotation.set(x, y, z);
+            render();
+        }
+    };
+
+    this.updateObjectMaterial = function(obj, color){
+        if (obj && color) {
+            obj.material.color.set(color);
+            render();
+        }
+    };
+
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
+    this.saveScene = saveScene;
+    this.loadScene = loadScene;
 
     // when selecting an object by clicking on it
     document.addEventListener('click', function(e) {
         e.preventDefault();
         // Only select if nothing is currently selected
-        if (!currentSelection) {
-            var raycaster = new THREE.Raycaster();
-            var mouse = new THREE.Vector2();
-            mouse.x = ( e.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-            mouse.y = - ( e.clientY / renderer.domElement.clientHeight ) * 2 + 1;
-            raycaster.setFromCamera( mouse, camera );
+        // if (!currentSelection) {
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+        mouse.x = ( e.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+        mouse.y = - ( e.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+        raycaster.setFromCamera( mouse, camera );
 
-            var intersects = raycaster.intersectObjects( scene.children ); 
-            if ( intersects.length > 0) {
-                selectObject(intersects[0].object);
-            }
-        } 
+        var intersects = raycaster.intersectObjects( scene.children ); 
+        if ( intersects.length > 0) {
+            selectObject(intersects[0].object);
+        }
+        // } 
     });
 
 };

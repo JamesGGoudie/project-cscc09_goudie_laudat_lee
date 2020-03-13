@@ -4,6 +4,8 @@ import { SharedModule } from 'src/app/components/shared.module';
 
 import { EditorComponent } from './editor.component';
 
+import { ColorSketchModule } from 'ngx-color/sketch';
+
 @NgModule({
   declarations: [
     EditorComponent
@@ -12,7 +14,8 @@ import { EditorComponent } from './editor.component';
     EditorComponent
   ],
   imports: [
-    SharedModule
+    SharedModule,
+    ColorSketchModule
   ]
 })
 export class EditorModule { }
