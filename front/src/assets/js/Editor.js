@@ -1,4 +1,4 @@
-// References: 
+// References:
 // https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_transform.html
 
 // Shortcuts:
@@ -101,7 +101,7 @@ let Editor = function(){
                     case 8: // Backspace
                         deleteObject(currentSelection);
                         break;
-                    case 90: // Z 
+                    case 90: // Z
                         resetCamera();
                         break;
                 }
@@ -110,7 +110,7 @@ let Editor = function(){
             if (event.keyCode == 16) { // Shift
                 control.setTranslationSnap( 100 );
                 control.setRotationSnap( THREE.MathUtils.degToRad( 15 ) );
-                control.setScaleSnap( 0.25 );  
+                control.setScaleSnap( 0.25 );
             }
         } );
 
@@ -119,7 +119,7 @@ let Editor = function(){
                 control.setTranslationSnap( null );
                 control.setRotationSnap( null );
                 control.setScaleSnap( null );
-            }         
+            }
         } );
     }
 
@@ -132,7 +132,7 @@ let Editor = function(){
 
     // function onObjectChange(e) {
     //     // console.log('object changed');
-    //     // console.log(e); // TODO 
+    //     // console.log(e); // TODO
     //     if (objectChangeFunc) objectChangeFunc();
     // }
 
@@ -185,19 +185,19 @@ let Editor = function(){
                         geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
                         break;
                     case 'ConeBufferGeometry':
-                        geometry = new THREE.ConeBufferGeometry( 100, 200, 32 ); 
+                        geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
                         break;
                 }
                 // set name and material
                 material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
                 mesh = new THREE.Mesh(geometry, material);
                 mesh.name = objData.name;
-    
+
                 // set position, scale and rotation
                 mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
                 mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
                 mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
-    
+
                 // add to scene
                 scene.add( mesh );
                 outlineObject(mesh, DEFAULT_OUTLINE);
@@ -213,7 +213,7 @@ let Editor = function(){
         if (!(obj instanceof THREE.GridHelper)) {
             // outline object
             outlineObject(obj, HIGHLIGHT_OUTLINE);
-        
+
             // show transform controls on object
             currentSelection = obj;
             control.attach( obj );
@@ -259,7 +259,7 @@ let Editor = function(){
         let geometry, prop, name;
         let material = new THREE.MeshBasicMaterial( DEFAULT_MATERIAL ); // this one has no shading
         // let material = new THREE.MeshStandardMaterial( DEFAULT_MATERIAL ); // this one has shading
-        
+
         if (type == 'box') {
           prop = {width:200, height:200, depth:200};
           geometry = new THREE.BoxBufferGeometry( prop.width, prop.height, prop.depth );
@@ -355,23 +355,9 @@ let Editor = function(){
     this.saveScene = saveScene;
     this.loadScene = loadScene;
 
-    // when selecting an object by clicking on it
-    document.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Only select if nothing is currently selected
-        // if (!currentSelection) {
-        var raycaster = new THREE.Raycaster();
-        var mouse = new THREE.Vector2();
-        mouse.x = ( e.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-        mouse.y = - ( e.clientY / renderer.domElement.clientHeight ) * 2 + 1;
-        raycaster.setFromCamera( mouse, camera );
-
-        var intersects = raycaster.intersectObjects( scene.children ); 
-        if ( intersects.length > 0) {
-            selectObject(intersects[0].object);
-        }
-        // } 
-    });
+    this.renderer = renderer;
+    this.camera = camera;
+    this.scene = scene;
 
 };
 

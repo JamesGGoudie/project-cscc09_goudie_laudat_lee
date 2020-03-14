@@ -32,6 +32,8 @@ export class EditorComponent implements AfterViewInit {
   public constructor() {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
+
+    this.setUpClickObjectEvent();
   }
 
   public ngAfterViewInit(): void {
@@ -115,6 +117,27 @@ export class EditorComponent implements AfterViewInit {
   }
 
   public getObjectList() {
-    return this.editor.getObjectList();    
+    return this.editor.getObjectList();
   }
+
+  private setUpClickObjectEvent() {
+    // when selecting an object by clicking on it
+    document.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Only select if nothing is currently selected
+      // if (!currentSelection) {
+      var raycaster = new THREE.Raycaster();
+      var mouse = new THREE.Vector2();
+      mouse.x = ( e.clientX / this.editor.renderer.domElement.clientWidth ) * 2 - 1;
+      mouse.y = - ( e.clientY / this.editor.renderer.domElement.clientHeight ) * 2 + 1;
+      raycaster.setFromCamera( mouse, this.editor.camera );
+
+      var intersects = raycaster.intersectObjects( this.editor.scene.children );
+      if ( intersects.length > 0) {
+          this.editor.selectObject(intersects[0].object);
+      }
+      // }
+  });
+  }
+
 }
