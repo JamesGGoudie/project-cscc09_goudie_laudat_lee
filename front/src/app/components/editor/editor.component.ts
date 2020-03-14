@@ -8,6 +8,9 @@ import * as THREE from 'three';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
+import { WorkspaceStateService, WorkspaceSyncService } from 'src/app/services';
+import { PinObjectResponse } from 'src/app/interfaces';
+
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
@@ -29,7 +32,10 @@ export class EditorComponent implements AfterViewInit {
     rotZ: new FormControl('', Validators.required),
   });
 
-  public constructor() {
+  public constructor(
+    private readonly workspaceStateService: WorkspaceStateService,
+    private readonly workspaceSyncService: WorkspaceSyncService
+  ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
 
@@ -107,9 +113,15 @@ export class EditorComponent implements AfterViewInit {
     }
   }
 
-  public selectObject(obj:THREE.Mesh) {
-    this.editor.selectObject(obj);
-    this.updateEditControls();
+  public selectObject(obj:THREE.Mesh | THREE.Object3D) {
+    this.workspaceSyncService.pinObject(
+        this.workspaceStateService.workspaceId, obj.uuid).subscribe(
+        (res: PinObjectResponse) => {
+      if (res.data.pinObject) {
+        this.editor.selectObject(obj);
+        this.updateEditControls();
+      }
+    });
   }
 
   public getCurrentObject() {
@@ -134,7 +146,7 @@ export class EditorComponent implements AfterViewInit {
 
       var intersects = raycaster.intersectObjects( this.editor.scene.children );
       if ( intersects.length > 0) {
-          this.editor.selectObject(intersects[0].object);
+        this.selectObject(intersects[0].object);
       }
       // }
   });

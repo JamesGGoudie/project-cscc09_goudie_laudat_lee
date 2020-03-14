@@ -11,7 +11,10 @@ import {
   JoinWorkspaceResponse
 } from 'src/app/interfaces';
 
-import { WorkspaceControlService } from 'src/app/services';
+import {
+  WorkspaceControlService,
+  WorkspaceStateService
+} from 'src/app/services';
 
 @Component({
   selector: 'app-workspace-control',
@@ -33,20 +36,29 @@ export class WorkspaceControlComponent {
 
   public constructor(
     private readonly router: Router,
-    private readonly workspaceControlService: WorkspaceControlService
+    private readonly workspaceControlService: WorkspaceControlService,
+    private readonly workspaceStateService: WorkspaceStateService
   ) {}
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceResponse) => {
-      this.router.navigate([FRONT_ROUTES.EDITOR]);
+      if (res.data.createWorkspace) {
+        this.workspaceStateService.workspaceId = form.workspaceId;
+
+        this.router.navigate([FRONT_ROUTES.EDITOR]);
+      }
     });
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceResponse) => {
-      this.router.navigate([FRONT_ROUTES.EDITOR]);
+      if (res.data.joinWorkspace) {
+        this.workspaceStateService.workspaceId = form.workspaceId;
+
+        this.router.navigate([FRONT_ROUTES.EDITOR]);
+      }
     });
   }
 
