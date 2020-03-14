@@ -44,9 +44,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceResponse) => {
       if (res.data.createWorkspace) {
-        this.workspaceStateService.setWorkspaceId(form.workspaceId);
-
-        this.router.navigate([FRONT_ROUTES.EDITOR]);
+        this.setupWorkspace(form.workspaceId, form.username);
       }
     });
   }
@@ -55,11 +53,16 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceResponse) => {
       if (res.data.joinWorkspace) {
-        this.workspaceStateService.setWorkspaceId(form.workspaceId);
-
-        this.router.navigate([FRONT_ROUTES.EDITOR]);
+        this.setupWorkspace(form.workspaceId, form.username);
       }
     });
+  }
+
+  private setupWorkspace(workspaceId: string, userId: string) {
+    this.workspaceStateService.setWorkspaceId(workspaceId);
+    this.workspaceStateService.setUserId(userId);
+
+    this.router.navigate([FRONT_ROUTES.EDITOR]);
   }
 
 }

@@ -34,12 +34,18 @@ export class EditorComponent implements AfterViewInit {
 
   private updateTimer: number = -1;
 
+  private workspaceId: string;
+  private userId: string;
+
   public constructor(
     private readonly workspaceStateService: WorkspaceStateService,
     private readonly workspaceSyncService: WorkspaceSyncService
   ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
+
+    this.workspaceId = workspaceStateService.getWorkspaceId();
+    this.userId = workspaceStateService.getUserId();
 
     this.setUpClickObjectEvent();
   }
@@ -123,8 +129,8 @@ export class EditorComponent implements AfterViewInit {
 
   public selectObject(obj:THREE.Mesh | THREE.Object3D) {
     this.workspaceSyncService.pinObject(
-        this.workspaceStateService.getWorkspaceId(), obj.uuid).subscribe(
-        (res: PinObjectResponse) => {
+      this.workspaceId, obj.uuid, this.userId
+    ).subscribe((res: PinObjectResponse) => {
       if (res.data.pinObject) {
         this.editor.selectObject(obj);
         this.updateEditControls();

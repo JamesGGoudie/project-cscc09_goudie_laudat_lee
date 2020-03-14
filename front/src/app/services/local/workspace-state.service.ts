@@ -7,6 +7,22 @@ import { LS_KEYS } from 'src/app/constants';
 })
 export class WorkspaceStateService {
 
+  public getPinnedObject(): string {
+    return localStorage.getItem(LS_KEYS.PINNED_OBJ);
+  }
+
+  public setPinnedObject(id: string) {
+    localStorage.setItem(LS_KEYS.PINNED_OBJ, id);
+  }
+
+  public getUserId(): string {
+    return localStorage.getItem(LS_KEYS.USER_ID);
+  }
+
+  public setUserId(id: string) {
+    localStorage.setItem(LS_KEYS.USER_ID, id);
+  }
+
   public getWorkspaceId(): string {
     return localStorage.getItem(LS_KEYS.WORKSPACE_ID);
   }
