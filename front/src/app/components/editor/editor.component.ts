@@ -32,6 +32,8 @@ export class EditorComponent implements AfterViewInit {
     rotZ: new FormControl('', Validators.required),
   });
 
+  private updateTimer: number = -1;
+
   public constructor(
     private readonly workspaceStateService: WorkspaceStateService,
     private readonly workspaceSyncService: WorkspaceSyncService
@@ -95,6 +97,12 @@ export class EditorComponent implements AfterViewInit {
       this.objForm.get('rotY').setValue(obj.rotation.y);
       this.objForm.get('rotZ').setValue(obj.rotation.z);
     }
+
+    if (this.updateTimer < 0) {
+      this.updateTimer = window.setTimeout(() => {
+        this.updateTimer = -1;
+      }, 1000);
+    }
   }
 
   // Editor specific functions
@@ -115,7 +123,7 @@ export class EditorComponent implements AfterViewInit {
 
   public selectObject(obj:THREE.Mesh | THREE.Object3D) {
     this.workspaceSyncService.pinObject(
-        this.workspaceStateService.workspaceId, obj.uuid).subscribe(
+        this.workspaceStateService.getWorkspaceId(), obj.uuid).subscribe(
         (res: PinObjectResponse) => {
       if (res.data.pinObject) {
         this.editor.selectObject(obj);

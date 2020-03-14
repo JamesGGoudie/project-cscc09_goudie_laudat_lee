@@ -44,7 +44,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceResponse) => {
       if (res.data.createWorkspace) {
-        this.workspaceStateService.workspaceId = form.workspaceId;
+        this.workspaceStateService.setWorkspaceId(form.workspaceId);
 
         this.router.navigate([FRONT_ROUTES.EDITOR]);
       }
@@ -55,7 +55,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceResponse) => {
       if (res.data.joinWorkspace) {
-        this.workspaceStateService.workspaceId = form.workspaceId;
+        this.workspaceStateService.setWorkspaceId(form.workspaceId);
 
         this.router.navigate([FRONT_ROUTES.EDITOR]);
       }
