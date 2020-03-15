@@ -5,10 +5,13 @@ import graphqlHTTP from 'express-graphql';
 import { buildSchema } from 'graphql';
 
 import {
-  CreateWorkspaceForm,
-  JoinWorkspaceForm,
-  PinObjectForm,
-  UnpinObjectForm,
+  CreateWorkspaceReq,
+  GetWorkspaceReq,
+  JoinWorkspaceReq,
+  ObjectInfo,
+  PinObjectReq,
+  ReportChangesReq,
+  UnpinObjectReq,
   Workspace
 } from './interfaces';
 
@@ -27,23 +30,62 @@ app.use((req, res, next) => {
 });
 
 const gqlSchema = buildSchema(`
+  type ObjectInfo {
+    objectId: String!,
+    version: Int!,
+    name: String!,
+    geometryType: String!
+    position: [Float!]!,
+    rotation: [Float!]!
+    scale: [Float!]!,
+    materialColorHex: String!,
+  }
+
   type Query {
+    getWorkspace(
+      workspaceId: String!
+    ): [ObjectInfo]
     createWorkspace(
-        workspaceId: String!,
-        workspacePassword: String!,
-        username: String!): Boolean
+      workspaceId: String!,
+      workspacePassword: String!,
+      username: String!
+    ): String
     joinWorkspace(
-        workspaceId: String!,
-        workspacePassword: String!,
-        username: String!): Boolean
+      workspaceId: String!,
+      workspacePassword: String!,
+      username: String!
+    ): String
     pinObject(
-        objectId: String!,
-        userId: String!,
-        workspaceId: String!,): Boolean
+      objectId: String!,
+      userId: String!,
+      workspaceId: String!
+    ): String
     unpinObject(
-        objectId: String!,
-        userId: String!,
-        workspaceId: String!,): Boolean
+      objectId: String!,
+      userId: String!,
+      workspaceId: String!
+    ): String
+  }
+
+  type Mutation {
+    reportChanges(
+      objectId: String!,
+      userId: String!,
+      workspaceId: String!,
+      version: Int!,
+      name: String!,
+      type: String!,
+      posX: Float!,
+      posY: Float!,
+      posZ: Float!,
+      rotX: Float!,
+      rotY: Float!,
+      rotZ: Float!,
+      scaX: Float!,
+      scaY: Float!,
+      scaZ: Float!,
+      col: String!
+    ): String
   }
 `);
 
@@ -61,6 +103,7 @@ function getWorkspace(id: string) {
 
 function createWorkspace(id: string, pass: string, creator: string) {
   fakeDatabase[id] = {
+    objects: [],
     password: pass,
     pinnedObjects: [],
     users: [creator]
@@ -75,13 +118,44 @@ function passwordMatches(workspacePass: string, suppliedPass: string) {
   return workspacePass === suppliedPass;
 }
 
-function objectIsPinned(workspace: Workspace, objectId: string): boolean {
-  return workspace.pinnedObjects.findIndex((value) => {
+function getObject(workspaceId: string, objectId: string): ObjectInfo {
+  return getWorkspace(workspaceId).objects.find((obj) => {
+    return obj.objectId === objectId;
+  });
+}
+
+function objectExists(workspaceId: string, objectId: string): boolean {
+  return !!(getWorkspace(workspaceId).objects.find((obj) => {
+    return obj.objectId === objectId;
+  }));
+}
+
+function objectIsPinned(workspaceId: string, objectId: string): boolean {
+  return getWorkspace(workspaceId).pinnedObjects.findIndex((value) => {
     return value.objectId === objectId;
   }) > -1;
 }
 
-function pinObject(workspace: Workspace, objectId: string, userId: string) {
+function objectIsPinnedByUser(
+  workspaceId: string,
+  objectId: string,
+  userId: string
+): boolean {
+  const obj = getWorkspace(workspaceId).pinnedObjects.find((value) => {
+    return value.objectId === objectId;
+  });
+
+  if (!obj) {
+    // Object does not exist.
+    return false;
+  }
+
+  return obj.userId === userId;
+}
+
+function pinObject(workspaceId: string, objectId: string, userId: string) {
+  const workspace = getWorkspace(workspaceId);
+
   const prevPinnedIndex = workspace.pinnedObjects.findIndex((value) => {
     return value.userId === userId;
   });
@@ -93,7 +167,9 @@ function pinObject(workspace: Workspace, objectId: string, userId: string) {
   workspace.pinnedObjects.push({objectId: objectId, userId: userId});
 }
 
-function unpinObject(workspace: Workspace, objectId: string) {
+function unpinObject(workspaceId: string, objectId: string) {
+  const workspace = getWorkspace(workspaceId);
+
   const prevPinnedIndex = workspace.pinnedObjects.findIndex((value) => {
     value.objectId === objectId;
   });
@@ -103,73 +179,147 @@ function unpinObject(workspace: Workspace, objectId: string) {
   }
 }
 
+function addObjectToWorkspace(workspaceId: string, obj: ObjectInfo) {
+  getWorkspace(workspaceId).objects.push(obj);
+}
+
+function updateObjectInWorkspace(workspaceId: string, newObj: ObjectInfo) {
+  const workspace = getWorkspace(workspaceId);
+
+  const objIndex = workspace.objects.findIndex((oldObj) => {
+    console.log(oldObj.objectId)
+    return oldObj.objectId === newObj.objectId;
+  });
+
+  if (objIndex < 0) {
+    return false;
+  }
+
+  workspace.objects.splice(objIndex, 1);
+  workspace.objects.push(newObj);
+}
+
+function getWorkspaceObjects(workspaceId: string) {
+  return getWorkspace(workspaceId).objects;
+}
+
+function getObjectVersion(workspaceId: string, objectId: string) {
+  return getObject(workspaceId, objectId).version;
+}
+
 const root = {
-  createWorkspace: (form: CreateWorkspaceForm) => {
-    console.log(form);
+  getWorkspace: (req: GetWorkspaceReq): ObjectInfo[] => {
+    console.log(req);
 
-    if (workspaceExists(form.workspaceId)) {
+    if (!workspaceExists(req.workspaceId)) {
+      // Workspace does not exist.
+      return null;
+    }
+
+    return getWorkspaceObjects(req.workspaceId);
+  },
+  createWorkspace: (req: CreateWorkspaceReq) => {
+    console.log(req);
+
+    if (workspaceExists(req.workspaceId)) {
       // Workspace already exists in the database.
-      return false;
+      return 'Workspace already exists';
     }
 
-    createWorkspace(form.workspaceId, form.workspacePassword, form.username);
+    createWorkspace(req.workspaceId, req.workspacePassword, req.username);
 
-    return true;
+    return 'Success';
   },
-  joinWorkspace: (form: JoinWorkspaceForm) => {
-    console.log(form);
+  joinWorkspace: (req: JoinWorkspaceReq) => {
+    console.log(req);
 
-    if (!workspaceExists(form.workspaceId)) {
+    if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return false;
+      return 'Workspace does not exist';
     }
 
-    const workspace = getWorkspace(form.workspaceId);
+    const workspace = getWorkspace(req.workspaceId);
 
-    if (userExists(form.workspaceId, form.username)) {
+    if (userExists(req.workspaceId, req.username)) {
       // Username already in use.
-      return false;
+      return 'UserId in use';
     }
 
-    if (!passwordMatches(workspace.password, form.workspacePassword)) {
+    if (!passwordMatches(workspace.password, req.workspacePassword)) {
       // Wrong password.
-      return false;
+      return 'Bad pass';
     }
 
-    return true;
+    return 'Success';
   },
-  pinObject: (form: PinObjectForm) => {
-    console.log(form);
+  pinObject: (req: PinObjectReq) => {
+    console.log(req);
 
-    if (!workspaceExists(form.workspaceId)) {
+    if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return false;
+      return 'Workspace does not exist';
     }
 
-    const workspace = getWorkspace(form.workspaceId);
-
-    if (objectIsPinned(workspace, form.objectId)) {
+    if (objectIsPinned(req.workspaceId, req.objectId)) {
       // Object is pinned.
-      return false;
+      return 'Object in use';
     }
 
-    pinObject(workspace, form.objectId, form.userId);
+    pinObject(req.workspaceId, req.objectId, req.userId);
 
-    return true;
+    return 'Object pinned';
   },
-  unpinObject: (form: UnpinObjectForm) => {
-    console.log(form);
+  unpinObject: (req: UnpinObjectReq) => {
+    console.log(req);
 
-    if (!workspaceExists(form.workspaceId)) {
+    if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return false;
+      return 'Workspace does not exist';
     }
 
-    const workspace = getWorkspace(form.workspaceId);
+    unpinObject(req.workspaceId, req.objectId);
 
-    unpinObject(workspace, form.objectId);
+    return 'Unpinned object';
+  },
+  reportChanges: (req: ReportChangesReq) => {
+    console.log(req);
 
-    return true;
+    if (!workspaceExists(req.workspaceId)) {
+      // Workspace does not exist in the database.
+      return 'Workspace does not exist';
+    }
+
+    const newObj: ObjectInfo = {
+      objectId: req.objectId,
+
+      version: req.version,
+
+      name: req.name,
+      geometryType: req.type,
+
+      position: [req.posX, req.posY, req.posZ],
+      rotation: [req.rotX, req.rotY, req.rotZ],
+      scale: [req.scaX, req.scaY, req.scaZ],
+
+      materialColorHex: req.col
+    };
+
+    if (!objectExists(req.workspaceId, req.objectId)) {
+      addObjectToWorkspace(req.workspaceId, newObj);
+    } else {
+      if (!objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
+        // User does not own the object.
+        return 'Not owned';
+      }
+
+      if (getObjectVersion(req.workspaceId, req.objectId) > req.version) {
+        return 'Bad Version';
+      }
+
+      updateObjectInWorkspace(req.workspaceId, newObj);
+    }
+
+    return 'All good';
   }
 }
 

@@ -6,9 +6,9 @@ import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   CreateWorkspaceForm,
-  CreateWorkspaceResponse,
+  CreateWorkspaceRes,
   JoinWorkspaceForm,
-  JoinWorkspaceResponse
+  JoinWorkspaceRes
 } from 'src/app/interfaces';
 
 import {
@@ -42,7 +42,7 @@ export class WorkspaceControlComponent {
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
-        (res: CreateWorkspaceResponse) => {
+        (res: CreateWorkspaceRes) => {
       if (res.data.createWorkspace) {
         this.setupWorkspace(form.workspaceId, form.username);
       }
@@ -51,7 +51,7 @@ export class WorkspaceControlComponent {
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
     this.workspaceControlService.joinWorkspace(form).subscribe(
-        (res: JoinWorkspaceResponse) => {
+        (res: JoinWorkspaceRes) => {
       if (res.data.joinWorkspace) {
         this.setupWorkspace(form.workspaceId, form.username);
       }

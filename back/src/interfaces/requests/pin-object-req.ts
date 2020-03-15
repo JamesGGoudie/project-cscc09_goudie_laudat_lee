@@ -1,4 +1,4 @@
-export interface PinObjectForm {
+export interface PinObjectReq {
 
   readonly objectId: string;
   readonly userId: string;

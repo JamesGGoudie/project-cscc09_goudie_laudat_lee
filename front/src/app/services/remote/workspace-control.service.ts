@@ -6,9 +6,9 @@ import { BACK_ROUTES } from 'src/app/constants';
 
 import {
   CreateWorkspaceForm,
-  CreateWorkspaceResponse,
+  CreateWorkspaceRes,
   JoinWorkspaceForm,
-  JoinWorkspaceResponse,
+  JoinWorkspaceRes,
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -20,7 +20,7 @@ export class WorkspaceControlService {
 
   public createWorkspace(
     form: CreateWorkspaceForm
-  ): Observable<CreateWorkspaceResponse> {
+  ): Observable<CreateWorkspaceRes> {
     const query = `query Create(
         $id: String!,
         $pass: String!,
@@ -43,7 +43,7 @@ export class WorkspaceControlService {
       })
     };
 
-    return this.http.post<CreateWorkspaceResponse>(
+    return this.http.post<CreateWorkspaceRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
@@ -51,7 +51,7 @@ export class WorkspaceControlService {
 
   public joinWorkspace(
     form: JoinWorkspaceForm
-  ): Observable<JoinWorkspaceResponse> {
+  ): Observable<JoinWorkspaceRes> {
     const query = `query Join(
         $id: String!,
         $pass: String!,
@@ -74,7 +74,7 @@ export class WorkspaceControlService {
       })
     };
 
-    return this.http.post<JoinWorkspaceResponse>(
+    return this.http.post<JoinWorkspaceRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);

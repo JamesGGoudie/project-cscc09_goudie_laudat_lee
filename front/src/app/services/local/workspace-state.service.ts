@@ -7,6 +7,18 @@ import { LS_KEYS } from 'src/app/constants';
 })
 export class WorkspaceStateService {
 
+  private versionHistory: {[objId: string]: number} = {};
+
+  public saveVersionHistory(objId: string, version: number): void {
+    this.versionHistory[objId] = version;
+  }
+
+  public getVersionHistory(objId: string): number {
+    const version = this.versionHistory[objId];
+
+    return version != undefined ? version : -1;
+  }
+
   public getPinnedObject(): string {
     return localStorage.getItem(LS_KEYS.PINNED_OBJ);
   }

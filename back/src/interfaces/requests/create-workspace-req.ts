@@ -1,4 +1,4 @@
-export interface CreateWorkspaceForm {
+export interface CreateWorkspaceReq {
 
   readonly workspaceId: string;
   readonly workspacePassword: string;

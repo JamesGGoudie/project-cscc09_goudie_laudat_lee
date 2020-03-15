@@ -177,7 +177,14 @@ let Editor = function(){
         // clear all existing objects
         clearScene();
         if (data){
-            let parsed = JSON.parse(data);
+            let parsed;
+
+            if (typeof data === 'string') {
+                parsed = JSON.parse(data);
+            } else {
+                parsed = data;
+            }
+
             parsed.forEach(function(objData){
                 let geometry, material, mesh;
                 switch(objData.geometryType){
@@ -200,6 +207,7 @@ let Editor = function(){
 
                 // add to scene
                 scene.add( mesh );
+                mesh.uuid = String(objData.objectId);
                 outlineObject(mesh, DEFAULT_OUTLINE);
             });
             render();

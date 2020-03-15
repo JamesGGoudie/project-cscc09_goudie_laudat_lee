@@ -1,4 +1,4 @@
-export interface CreateWorkspaceResponse {
+export interface CreateWorkspaceRes {
   readonly data: {
     readonly createWorkspace: boolean
   }

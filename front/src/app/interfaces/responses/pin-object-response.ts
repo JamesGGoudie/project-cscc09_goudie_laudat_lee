@@ -1,4 +1,4 @@
-export interface PinObjectResponse {
+export interface PinObjectRes {
   readonly data: {
     readonly pinObject: boolean
   }
