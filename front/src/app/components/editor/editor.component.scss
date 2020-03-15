@@ -35,6 +35,16 @@ canvas {
   }
 }
 
+#file-upload {
+  display: none;
+}
+
+#top-menu {
+  top: 0;
+  left:0;
+  // padding: 0;
+}
+
 #tool-menu {
   bottom:0;
 }

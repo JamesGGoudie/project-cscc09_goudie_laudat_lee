@@ -6,6 +6,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
  imports: [
@@ -19,7 +21,9 @@ import { MatInputModule } from '@angular/material/input';
    MatButtonModule,
    MatExpansionModule,
    MatFormFieldModule,
-   MatInputModule
+   MatInputModule,
+   MatButtonToggleModule,
+   MatMenuModule
   ]
 })
 export class SharedModule { }

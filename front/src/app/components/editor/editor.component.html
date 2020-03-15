@@ -1,4 +1,4 @@
-<div style="position:absolute; top: 10px; left: 10px; color:white;">
+<!-- <div style="position:absolute; top: 70px; left: 0; padding: 10px; color:white; background: rgba(0,0,0,0.2);">
   <h3>Controls</h3>
   <p>shift+ G                 = Translate (Grab)</p>
   <p>shift+ S                 = Scale</p>
@@ -12,12 +12,31 @@
   <p>shift+D                 = deselect current object</p>
   <p>shift+Backspace          = delete current object</p>
   <p>shift+Z                  = reset camera</p>
+</div> -->
+<input id="file-upload" type="file" multiple="false" (change)="onFileInput($event.target.files);">
+
+<div id="top-menu" class="panel">
+  <button mat-flat-button color="primary" [matMenuTriggerFor]="import_menu">Import</button>
+  <mat-menu #import_menu="matMenu">
+    <button mat-menu-item (click)="importScene()">JSON</button>
+  </mat-menu>
+
+  <button mat-flat-button color="primary" [matMenuTriggerFor]="export_menu">Export</button>
+  <mat-menu #export_menu="matMenu">
+    <button mat-menu-item (click)="exportScene('json', 'download')">Download as JSON</button>
+    <button mat-menu-item (click)="exportScene('obj', 'download')">Download as Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="exportScene('stl', 'download')">Download as STL (.STL)</button>
+    <button mat-menu-item (click)="exportScene('dae', 'download')">Download as Collada (.DAE)</button>
+    <!-- <button mat-menu-item>Save to Google Drive</button> -->
+  </mat-menu>
 </div>
 
-<div id="tool-menu" class="panel">
-  <button mat-flat-button (click)="changeTool('translate')">Move</button>
-  <button mat-flat-button (click)="changeTool('scale')">Scale</button>
-  <button mat-flat-button (click)="changeTool('rotate')">Rotate</button>
+<div id="tool-menu" class="panel" >
+  <mat-button-toggle-group>
+    <mat-button-toggle (click)="changeTool('translate')">Move</mat-button-toggle>
+    <mat-button-toggle (click)="changeTool('scale')">Scale</mat-button-toggle>
+    <mat-button-toggle (click)="changeTool('rotate')">Rotate</mat-button-toggle>
+  </mat-button-toggle-group>  
 </div>
 
 <div id="side-menu" class="panel">

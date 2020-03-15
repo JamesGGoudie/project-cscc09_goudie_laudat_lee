@@ -20,8 +20,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
-// import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
+import { ColladaExporter } from 'three/examples/jsm/exporters/ColladaExporter.js';
 
 let Editor = function(){
     const HIGHLIGHT_OUTLINE = {color:0xff9100, linewidth:3};
@@ -140,20 +141,29 @@ let Editor = function(){
         render();
     }
 
-    function importScene(sceneJson){
-        // TODO
+    function exportSceneAsOBJ() {
+        let exporter = new OBJExporter();
+        return exporter.parse(scene);
     }
 
-    function exportScene() {
-        // TODO
+    function exportSceneAsSTL() {
+        let exporter = new STLExporter();
+        return exporter.parse(scene);
     }
 
+    function exportSceneAsCollada() {
+        let exporter = new ColladaExporter();
+        return exporter.parse(scene).data;
+    }
+
+    // Saves the current scene in JSON format
     function saveScene() {
         // save only the objects in the scene
         let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
         let exportedObjects = [];
         allObjects.forEach(function(obj){
             let data = {
+                objectId: obj.uuid,
                 name: obj.name,
                 position: obj.position.toArray(),
                 scale: obj.scale.toArray(),
@@ -164,9 +174,10 @@ let Editor = function(){
             exportedObjects.push(data);
         });
         console.log(exportedObjects);
-        console.log(JSON.stringify(exportedObjects));
+        return JSON.stringify(exportedObjects);
     }
 
+    // Loads a scene from given JSON data.
     function loadScene(data, keepSelected) {
         // clear all existing objects
         clearScene(keepSelected);
@@ -185,33 +196,38 @@ let Editor = function(){
                         currentSelection.uuid === objData.objectId) {
                     continue;
                 }
-
-                let geometry, material, mesh;
-                switch(objData.geometryType){
-                    case 'BoxBufferGeometry':
-                        geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
-                        break;
-                    case 'ConeBufferGeometry':
-                        geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
-                        break;
-                }
-                // set name and material
-                material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.name = objData.name;
-
-                // set position, scale and rotation
-                mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
-                mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
-                mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
-
-                // add to scene
-                scene.add( mesh );
-                mesh.uuid = String(objData.objectId);
-                outlineObject(mesh, DEFAULT_OUTLINE);
+                addCustomObject(objData);
             }
             render();
         }
+    }
+
+    function addCustomObject(objData) {
+        let geometry, material, mesh;
+        switch(objData.geometryType){
+            case 'BoxBufferGeometry':
+                geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
+                break;
+            case 'ConeBufferGeometry':
+                geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
+                break;
+        }
+        // set name and material
+        material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.name = objData.name;
+
+        // set position, scale and rotation
+        mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
+        mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
+        mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
+
+        // add to scene
+        scene.add( mesh );
+        mesh.uuid = String(objData.objectId);
+        outlineObject(mesh, DEFAULT_OUTLINE);
+
+        return mesh;
     }
 
     function selectObject(obj) {
@@ -366,12 +382,28 @@ let Editor = function(){
         }
     };
 
+    this.exportScene = function(filetype) {
+        this.deselectObject();
+        switch(filetype) {
+            case 'json':
+                return saveScene();
+            case 'obj':
+                return exportSceneAsOBJ();
+            case 'dae':
+                return exportSceneAsCollada();
+            case 'stl':
+                return exportSceneAsSTL();
+        }
+        return null;
+    };
+
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
     this.deselectObject = deselectObject;
     this.saveScene = saveScene;
     this.loadScene = loadScene;
+    this.addCustomObject = addCustomObject;
 
     this.renderer = renderer;
     this.camera = camera;

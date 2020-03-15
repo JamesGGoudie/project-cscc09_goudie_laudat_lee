@@ -39,6 +39,8 @@ export class EditorComponent {
     rotZ: new FormControl('', Validators.required),
   });
 
+  private readonly link: HTMLAnchorElement = document.createElement('a');
+
   private updateTimer: number = -1;
 
   private workspaceId: string;
@@ -340,6 +342,47 @@ export class EditorComponent {
           callback(res.data.reportChanges);
         }
       });
+    }
+  }
+
+  public onFileInput(files):void {
+    let file = files.item(0);
+    if (file.type=='application/json') {
+      file.text().then(function(text){
+        let parsed = JSON.parse(text);
+        for (const objData of parsed) {
+          this.reportChanges(this.editor.addCustomObject(objData));
+        }
+      }.bind(this));
+    }
+  } 
+
+  public importScene() {
+    document.getElementById('file-upload').dispatchEvent(new MouseEvent('click'));
+  }
+  
+  public exportScene(filetype:string, action:string):void {
+    let link = this.link;
+    let data = this.editor.exportScene(filetype);
+    if (data) {
+      let filename = 'architect3d_export.' + filetype;
+      switch(action) {
+        case 'download':
+          saveString(data, filename);
+          break;
+        case 'googledrive':
+          break;
+      }
+    }
+
+    function save(blob, filename) {
+      link.href = URL.createObjectURL(blob);
+      link.download = filename || 'data.json';
+      link.dispatchEvent(new MouseEvent('click'));
+    }
+
+    function saveString(text, filename) {
+      save(new Blob([text], {type:'text/plain'}), filename);
     }
   }
 
