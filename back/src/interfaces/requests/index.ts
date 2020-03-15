@@ -1,4 +1,5 @@
 export * from './create-workspace-req';
+export * from './delete-object-req';
 export * from './get-workspace-req';
 export * from './join-workspace-req';
 export * from './pin-object-req';

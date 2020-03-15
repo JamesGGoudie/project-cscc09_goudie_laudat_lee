@@ -6,6 +6,7 @@ import { buildSchema } from 'graphql';
 
 import {
   CreateWorkspaceReq,
+  DeleteObjectReq,
   GetWorkspaceReq,
   JoinWorkspaceReq,
   ObjectInfo,
@@ -85,6 +86,11 @@ const gqlSchema = buildSchema(`
       scaY: Float!,
       scaZ: Float!,
       col: String!
+    ): String
+    deleteObject(
+      objectId: String!,
+      userId: String!,
+      workspaceId: String!
     ): String
   }
 `);
@@ -187,7 +193,6 @@ function updateObjectInWorkspace(workspaceId: string, newObj: ObjectInfo) {
   const workspace = getWorkspace(workspaceId);
 
   const objIndex = workspace.objects.findIndex((oldObj) => {
-    console.log(oldObj.objectId)
     return oldObj.objectId === newObj.objectId;
   });
 
@@ -197,6 +202,8 @@ function updateObjectInWorkspace(workspaceId: string, newObj: ObjectInfo) {
 
   workspace.objects.splice(objIndex, 1);
   workspace.objects.push(newObj);
+
+  return true;
 }
 
 function getWorkspaceObjects(workspaceId: string) {
@@ -205,6 +212,22 @@ function getWorkspaceObjects(workspaceId: string) {
 
 function getObjectVersion(workspaceId: string, objectId: string) {
   return getObject(workspaceId, objectId).version;
+}
+
+function deleteObject(workspaceId: string, objectId: string) {
+  const workspace = getWorkspace(workspaceId);
+
+  const objIndex = workspace.objects.findIndex((obj) => {
+    return obj.objectId === objectId;
+  });
+
+  if (objIndex < 0) {
+    return false;
+  }
+
+  workspace.objects.splice(objIndex, 1);
+
+  return true;
 }
 
 const root = {
@@ -320,6 +343,27 @@ const root = {
     }
 
     return 'All good';
+  },
+  deleteObject: (req: DeleteObjectReq) => {
+    console.log(req);
+
+    if (!workspaceExists(req.workspaceId)) {
+      // Workspace does not exist in the database.
+      return 'Workspace does not exist';
+    }
+
+    if (!objectExists(req.workspaceId, req.objectId)) {
+      return 'Object does not exist';
+    }
+
+    if (!objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
+      // User does not own the object.
+      return 'Not owned';
+    }
+
+    deleteObject(req.workspaceId, req.objectId);
+
+    return 'All Good';
   }
 }
 

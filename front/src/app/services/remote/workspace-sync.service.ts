@@ -7,11 +7,12 @@ import { Mesh, MeshBasicMaterial } from 'three';
 import { BACK_ROUTES } from 'src/app/constants';
 
 import {
+  DeleteObjectVars,
   GetWorkspaceRes,
   GetWorkspaceVars,
   PinObjectRes,
   ReportChangesRes,
-  ReportChangesVars,
+  ReportChangesVars
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -107,6 +108,35 @@ export class WorkspaceSyncService {
     };
 
     return this.http.post<GetWorkspaceRes>(
+        BACK_ROUTES.API,
+        JSON.stringify({query, variables}),
+        httpOptions);
+  }
+
+  public deleteObject(objectId: string, userId: string, workspaceId: string) {
+    const query = `mutation DeleteObject(
+        $objectId: String!,
+        $userId: String!,
+        $workspaceId: String!) {
+      deleteObject(
+        objectId: $objectId,
+        userId: $userId,
+        workspaceId: $workspaceId)
+    }`;
+    const variables: DeleteObjectVars = {
+      objectId: objectId,
+      userId: userId,
+      workspaceId: workspaceId
+    };
+
+    const httpOptions: {headers: HttpHeaders} = {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.http.post<ReportChangesRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);

@@ -4,9 +4,12 @@ import {
 } from '@angular/core';
 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
+
+import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   GetWorkspaceRes,
@@ -44,6 +47,7 @@ export class EditorComponent implements AfterViewInit {
   private oldObj: THREE.Object3D;
 
   public constructor(
+    private readonly router: Router,
     private readonly workspaceStateService: WorkspaceStateService,
     private readonly workspaceSyncService: WorkspaceSyncService
   ) {
@@ -57,11 +61,16 @@ export class EditorComponent implements AfterViewInit {
 
     this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
         (res: GetWorkspaceRes) => {
-      this.editor.loadScene(res.data.getWorkspace);
+      if (res.data.getWorkspace) {
+        this.editor.loadScene(res.data.getWorkspace);
 
-      for (const obj of res.data.getWorkspace) {
-        this.workspaceStateService.saveVersionHistory(
-            obj.objectId, obj.version);
+        for (const obj of res.data.getWorkspace) {
+          this.workspaceStateService.saveVersionHistory(
+              obj.objectId, obj.version);
+        }
+      } else {
+        this.editor.renderer.domElement.remove();
+        this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
       }
     });
   }
@@ -144,8 +153,14 @@ export class EditorComponent implements AfterViewInit {
   }
 
   public deleteCurrentObject(){
-    if (this.getCurrentObject()) {
-      this.editor.deleteObject(this.getCurrentObject());
+    const obj = this.getCurrentObject();
+
+    if (obj) {
+      this.workspaceSyncService.deleteObject(
+        obj.uuid, this.userId, this.workspaceId
+      ).subscribe(() => {
+        this.editor.deleteObject(obj);
+      });
     }
   }
 
@@ -160,7 +175,7 @@ export class EditorComponent implements AfterViewInit {
     });
   }
 
-  public getCurrentObject() {
+  public getCurrentObject(): THREE.Mesh {
     return this.editor.getCurrentSelection();
   }
 
