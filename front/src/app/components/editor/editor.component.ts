@@ -241,13 +241,21 @@ export class EditorComponent {
     });
   }
 
+  /**
+   * Deselect the current object.
+   *
+   * First, update the server with the current information about the object.
+   * Second, unpin the object on the server.
+   */
   private deselectObject(): void {
-    this.workspaceSyncService.unpinObject(
-      this.workspaceId, this.getCurrentObject().uuid, this.userId
-    ).subscribe((res: UnpinObjectRes): void => {
-      if (res.data.unpinObject) {
-        this.editor.deselectObject();
-      }
+    this.reportChanges(this.getCurrentObject(), () => {
+      this.workspaceSyncService.unpinObject(
+        this.workspaceId, this.getCurrentObject().uuid, this.userId
+      ).subscribe((res: UnpinObjectRes): void => {
+        if (res.data.unpinObject) {
+          this.editor.deselectObject();
+        }
+      });
     });
   }
 
@@ -257,6 +265,20 @@ export class EditorComponent {
     this.oldObj = null;
   }
 
+  /**
+   * Ready an object to be sent to the server.
+   *
+   * This method stores a reference to the object and will send it with its
+   * latest changes to the server after one second since the object was first
+   * given to this method.
+   *
+   * This delay prevents several requests being sent back-to-back.
+   *
+   * If the object given is different than the one stored, then the stored one
+   * will be immediately sent to the server.
+   *
+   * @param obj
+   */
   private prepareChanges(obj: THREE.Mesh): void {
     // Report changes if the user changes objects.
     if (this.oldObj !== obj && this.oldObj != null) {
@@ -274,8 +296,12 @@ export class EditorComponent {
     }
   }
 
-  private reportChanges(obj: THREE.Mesh): void {
+  private reportChanges(obj: THREE.Mesh, callback?: () => void): void {
     if (!!obj) {
+      if (obj === this.oldObj) {
+        this.cancelReport();
+      }
+
       const version = this.workspaceStateService.getVersionHistory(
           obj.uuid) + 1;
 
@@ -287,6 +313,10 @@ export class EditorComponent {
       ).subscribe((res: ReportChangesRes): void => {
         if (res.data.reportChanges) {
           this.workspaceStateService.saveVersionHistory(obj.uuid, version);
+        }
+
+        if (!!callback) {
+          callback();
         }
       });
     }
