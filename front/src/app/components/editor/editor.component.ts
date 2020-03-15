@@ -59,37 +59,39 @@ export class EditorComponent {
     this.setUpClickEvent();
     this.setUpKeydownEvent();
 
-    this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
-        (res: GetWorkspaceRes) => {
-      if (res.data.getWorkspace) {
-        this.editor.loadScene(res.data.getWorkspace, false);
+    this.updateWorkspace(false);
 
+    // Every 2.5 seconds, refresh the workspace with whatever is on the server.
+    window.setInterval((): void => {
+      // Keep the selected object since we may not have sent our most recent
+      // changes.
+      this.updateWorkspace(true);
+    }, 2500);
+  }
+
+  /**
+   * Remove all items from the workspace and replace them with anything from
+   * the server.
+   *
+   * @param keepSelected True iff we don't want to replace the selected object.
+   */
+  private updateWorkspace(keepSelected: boolean): void {
+    this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
+        (res: GetWorkspaceRes): void => {
+      if (res.data.getWorkspace) {
+        this.editor.loadScene(res.data.getWorkspace, keepSelected);
+
+        // Save the version of every object.
         for (const obj of res.data.getWorkspace) {
           this.workspaceStateService.saveVersionHistory(
               obj.objectId, obj.version);
         }
       } else {
+        // If the workspace does not exist, navigate to the
         this.editor.renderer.domElement.remove();
         this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
       }
     });
-
-    window.setInterval((): void => {
-      this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
-          (res: GetWorkspaceRes): void => {
-        if (res.data.getWorkspace) {
-          this.editor.loadScene(res.data.getWorkspace, true);
-
-          for (const obj of res.data.getWorkspace) {
-            this.workspaceStateService.saveVersionHistory(
-                obj.objectId, obj.version);
-          }
-        } else {
-          this.editor.renderer.domElement.remove();
-          this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
-        }
-      });
-    }, 2500);
   }
 
   // Form specific functions
@@ -168,7 +170,9 @@ export class EditorComponent {
 
   public deleteCurrentObject(): void {
     const obj = this.getCurrentObject();
-    this.cancelReport();
+    // Since we are deleting the object, we don't need to tell the server
+    // about recent changes.
+    this.resetChangesTimer();
 
     if (obj) {
       this.workspaceSyncService.deleteObject(
@@ -259,7 +263,7 @@ export class EditorComponent {
     });
   }
 
-  private cancelReport(): void {
+  private resetChangesTimer(): void {
     window.clearTimeout(this.updateTimer);
     this.updateTimer = -1;
     this.oldObj = null;
@@ -282,11 +286,11 @@ export class EditorComponent {
   private prepareChanges(obj: THREE.Mesh): void {
     // Report changes if the user changes objects.
     if (this.oldObj !== obj && this.oldObj != null) {
-      this.cancelReport();
+      this.resetChangesTimer();
       this.reportChanges(this.oldObj);
     }
 
-    // Every second, update the server of changes.
+    // Every second, update the server of changes to the object.
     if (this.updateTimer < 0) {
       this.oldObj = obj;
       this.updateTimer = window.setTimeout((): void => {
@@ -298,10 +302,12 @@ export class EditorComponent {
 
   private reportChanges(obj: THREE.Mesh, callback?: () => void): void {
     if (!!obj) {
+      // If the object given is the old object, then reset the timer.
       if (obj === this.oldObj) {
-        this.cancelReport();
+        this.resetChangesTimer();
       }
 
+      // Increment the version of the object.
       const version = this.workspaceStateService.getVersionHistory(
           obj.uuid) + 1;
 
@@ -311,10 +317,12 @@ export class EditorComponent {
         this.workspaceId,
         version
       ).subscribe((res: ReportChangesRes): void => {
+        // Save the version locally.
         if (res.data.reportChanges) {
           this.workspaceStateService.saveVersionHistory(obj.uuid, version);
         }
 
+        // Call the callback, if it exists.
         if (!!callback) {
           callback();
         }
