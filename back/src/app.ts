@@ -51,9 +51,8 @@ const root = {
       return false;
     }
 
-    db.createWorkspace(req.workspaceId, req.workspacePassword, req.userId);
-
-    return true;
+    return db.createWorkspace(
+        req.workspaceId, req.workspacePassword, req.userId);
   },
   joinWorkspace: (req: JoinWorkspaceReq): boolean => {
     console.log(req);
@@ -85,14 +84,7 @@ const root = {
       return false;
     }
 
-    if (db.objectIsPinned(req.workspaceId, req.objectId)) {
-      // Object is pinned.
-      return false;
-    }
-
-    db.pinObject(req.workspaceId, req.objectId, req.userId);
-
-    return true;
+    return db.pinObject(req.workspaceId, req.objectId, req.userId);
   },
   unpinObject: (req: UnpinObjectReq): boolean => {
     console.log(req);
@@ -102,9 +94,7 @@ const root = {
       return false;
     }
 
-    db.unpinObject(req.workspaceId, req.objectId);
-
-    return true;
+    return db.unpinObject(req.workspaceId, req.objectId);
   },
   reportChanges: (req: ReportChangesReq): boolean => {
     console.log(req);
@@ -130,7 +120,7 @@ const root = {
     };
 
     if (!db.objectExists(req.workspaceId, req.objectId)) {
-      db.addObjectToWorkspace(req.workspaceId, newObj);
+      return db.addObjectToWorkspace(req.workspaceId, newObj);
     } else {
       if (!db.objectIsPinnedByUser(
           req.workspaceId, req.objectId, req.userId)) {
@@ -142,10 +132,8 @@ const root = {
         return false;
       }
 
-      db.updateObjectInWorkspace(req.workspaceId, newObj);
+      return db.updateObjectInWorkspace(req.workspaceId, newObj);
     }
-
-    return true;
   },
   deleteObject: (req: DeleteObjectReq): boolean => {
     console.log(req);
@@ -164,9 +152,7 @@ const root = {
       return false;
     }
 
-    db.deleteObject(req.workspaceId, req.objectId);
-
-    return true;
+    return db.deleteObject(req.workspaceId, req.objectId);
   }
 }
 

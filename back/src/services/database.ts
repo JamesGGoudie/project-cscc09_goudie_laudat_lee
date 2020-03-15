@@ -14,13 +14,15 @@ export class Database {
     return this.fakeDatabase[id];
   }
 
-  public createWorkspace(id: string, pass: string, creator: string): void {
+  public createWorkspace(id: string, pass: string, creator: string): boolean {
     this.fakeDatabase[id] = {
       objects: [],
       password: pass,
       pinnedObjects: [],
       users: [creator]
     };
+
+    return true;
   }
 
   public userExists(workspaceId: string, userId: string): boolean {
@@ -34,20 +36,23 @@ export class Database {
   }
 
   public getObject(workspaceId: string, objectId: string): ObjectInfo {
-    return this.getWorkspace(workspaceId).objects.find((obj) => {
+    return this.getWorkspace(workspaceId).objects.find(
+        (obj: ObjectInfo): boolean => {
       return obj.objectId === objectId;
     });
   }
 
   public objectExists(workspaceId: string, objectId: string): boolean {
-    return !!(this.getWorkspace(workspaceId).objects.find((obj) => {
+    return !!(this.getWorkspace(workspaceId).objects.find(
+        (obj: ObjectInfo): boolean => {
       return obj.objectId === objectId;
     }));
   }
 
   public objectIsPinned(workspaceId: string, objectId: string): boolean {
-    return this.getWorkspace(workspaceId).pinnedObjects.findIndex((value) => {
-      return value.objectId === objectId;
+    return this.getWorkspace(workspaceId).pinnedObjects.findIndex(
+        (pinnedData: PinnedInfo): boolean => {
+      return pinnedData.objectId === objectId;
     }) > -1;
   }
 
@@ -57,8 +62,8 @@ export class Database {
     userId: string
   ): boolean {
     const obj = this.getWorkspace(workspaceId).pinnedObjects.find(
-        (value: PinnedInfo): boolean => {
-      return value.objectId === objectId;
+        (pinnedData: PinnedInfo): boolean => {
+      return pinnedData.objectId === objectId;
     });
 
     if (!obj) {
@@ -74,16 +79,21 @@ export class Database {
   ): boolean {
     const workspace = this.getWorkspace(workspaceId);
 
-    const prevPinnedIndex = workspace.pinnedObjects.findIndex(
+    const prevPinnedInfo = workspace.pinnedObjects.find(
         (obj: PinnedInfo): boolean => {
-      return obj.userId === userId;
+      return obj.objectId === objectId;
     });
 
-    if (prevPinnedIndex === -1) {
-      return false;
+    if (prevPinnedInfo) {
+      // If the object is pinned by another user...
+      if (prevPinnedInfo.userId !== userId) {
+        return false;
+      }
+
+      // The user has already pinned the object.
+      return true;
     }
 
-    workspace.pinnedObjects.splice(prevPinnedIndex, 1);
     workspace.pinnedObjects.push({objectId: objectId, userId: userId});
 
     return true;
@@ -97,6 +107,7 @@ export class Database {
       return obj.objectId === objectId;
     });
 
+    // If the object is unpinned...
     if (prevPinnedIndex === -1) {
       return false;
     }
