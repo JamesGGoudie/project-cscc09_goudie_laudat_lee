@@ -12,9 +12,11 @@ import { Editor } from '../../../assets/js/Editor';
 import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
+  DeleteObjectRes,
   GetWorkspaceRes,
   PinObjectRes,
-  ReportChangesRes
+  ReportChangesRes,
+  UnpinObjectRes
 } from 'src/app/interfaces';
 
 import { WorkspaceStateService, WorkspaceSyncService } from 'src/app/services';
@@ -75,17 +77,24 @@ export class EditorComponent implements AfterViewInit {
       }
     });
 
+    /*
     window.setInterval(() => {
       this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
           (res: GetWorkspaceRes) => {
-        this.editor.loadScene(res.data.getWorkspace, true);
+        if (res.data.getWorkspace) {
+          this.editor.loadScene(res.data.getWorkspace, true);
 
-        for (const obj of res.data.getWorkspace) {
-          this.workspaceStateService.saveVersionHistory(
-              obj.objectId, obj.version);
+          for (const obj of res.data.getWorkspace) {
+            this.workspaceStateService.saveVersionHistory(
+                obj.objectId, obj.version);
+          }
+        } else {
+          this.editor.renderer.domElement.remove();
+          this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
         }
       });
     }, 2500);
+    */
   }
 
   public ngAfterViewInit(): void {
@@ -171,8 +180,10 @@ export class EditorComponent implements AfterViewInit {
     if (obj) {
       this.workspaceSyncService.deleteObject(
         obj.uuid, this.userId, this.workspaceId
-      ).subscribe(() => {
-        this.editor.deleteObject(obj);
+      ).subscribe((res: DeleteObjectRes) => {
+        if (res.data.deleteObject) {
+          this.editor.deleteObject(obj);
+        }
       });
     }
   }
@@ -236,7 +247,13 @@ export class EditorComponent implements AfterViewInit {
   }
 
   private deselectObject() {
-    this.editor.deselectObject();
+    this.workspaceSyncService.unpinObject(
+      this.workspaceId, this.getCurrentObject().uuid, this.userId
+    ).subscribe((res: UnpinObjectRes) => {
+      if (res.data.unpinObject) {
+        this.editor.deselectObject();
+      }
+    });
   }
 
   private prepareChanges(obj: THREE.Mesh): void {

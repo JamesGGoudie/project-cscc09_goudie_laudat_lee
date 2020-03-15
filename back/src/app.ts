@@ -162,8 +162,8 @@ function objectIsPinnedByUser(
 function pinObject(workspaceId: string, objectId: string, userId: string) {
   const workspace = getWorkspace(workspaceId);
 
-  const prevPinnedIndex = workspace.pinnedObjects.findIndex((value) => {
-    return value.userId === userId;
+  const prevPinnedIndex = workspace.pinnedObjects.findIndex((obj) => {
+    return obj.userId === userId;
   });
 
   if (prevPinnedIndex > -1) {
@@ -176,8 +176,8 @@ function pinObject(workspaceId: string, objectId: string, userId: string) {
 function unpinObject(workspaceId: string, objectId: string) {
   const workspace = getWorkspace(workspaceId);
 
-  const prevPinnedIndex = workspace.pinnedObjects.findIndex((value) => {
-    value.objectId === objectId;
+  const prevPinnedIndex = workspace.pinnedObjects.findIndex((obj) => {
+    return obj.objectId === objectId;
   });
 
   if (prevPinnedIndex > -1) {

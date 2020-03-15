@@ -13,7 +13,8 @@ import {
   GetWorkspaceVars,
   PinObjectRes,
   ReportChangesRes,
-  ReportChangesVars
+  ReportChangesVars,
+  UnpinObjectRes
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -55,17 +56,20 @@ export class WorkspaceSyncService {
   }
 
   public unpinObject(
-    workspaceId: string, objectId: string
-  ): Observable<PinObjectRes> {
+    workspaceId: string, objectId: string, userId: string
+  ): Observable<UnpinObjectRes> {
     const query = `query Unpin(
         $workspaceId: String!,
+        $userId: String!,
         $objectId: String!) {
       unpinObject(
           workspaceId: $workspaceId,
+          userId: $userId
           objectId: $objectId)
     }`;
     const variables = {
       objectId,
+      userId,
       workspaceId
     };
 
@@ -76,7 +80,7 @@ export class WorkspaceSyncService {
       })
     };
 
-    return this.http.post<PinObjectRes>(
+    return this.http.post<UnpinObjectRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);

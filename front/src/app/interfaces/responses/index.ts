@@ -4,3 +4,4 @@ export * from './get-workspace-response';
 export * from './join-workspace-response';
 export * from './pin-object-response';
 export * from './report-changes-response';
+export * from './unpin-object-response';
