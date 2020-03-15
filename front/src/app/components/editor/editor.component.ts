@@ -74,6 +74,8 @@ export class EditorComponent implements AfterViewInit {
   public updateObjectMaterial(event:ColorEvent):void {
     let obj = this.getCurrentObject();
     this.editor.updateObjectMaterial(obj, event.color.hex);
+
+    this.prepareChanges(obj);
   }
 
   public updateObjectName():void {
@@ -82,6 +84,8 @@ export class EditorComponent implements AfterViewInit {
     if (obj && name) {
       obj.name = name;
     }
+
+    this.prepareChanges(obj);
   }
 
   public updateObjectPosition():void {
@@ -89,6 +93,8 @@ export class EditorComponent implements AfterViewInit {
     let y = this.objForm.get('posY').value;
     let z = this.objForm.get('posZ').value;
     this.editor.updateObjectPosition(this.getCurrentObject(), x, y, z);
+
+    this.prepareChanges(this.getCurrentObject());
   }
 
   public updateObjectScale():void {
@@ -96,6 +102,8 @@ export class EditorComponent implements AfterViewInit {
     let y = this.objForm.get('scaY').value;
     let z = this.objForm.get('scaZ').value;
     this.editor.updateObjectScale(this.getCurrentObject(), x, y, z);
+
+    this.prepareChanges(this.getCurrentObject());
   }
 
   public updateObjectRotation():void {
@@ -103,6 +111,8 @@ export class EditorComponent implements AfterViewInit {
     let y = this.objForm.get('rotY').value;
     let z = this.objForm.get('rotZ').value;
     this.editor.updateObjectRotation(this.getCurrentObject(), x, y, z);
+
+    this.prepareChanges(this.getCurrentObject());
   }
 
   public updateEditControls(): void {
@@ -120,21 +130,7 @@ export class EditorComponent implements AfterViewInit {
       this.objForm.get('rotZ').setValue(obj.rotation.z);
     }
 
-    // Every second, update the server of changes.
-    if (this.updateTimer < 0) {
-      this.oldObj = obj;
-      this.updateTimer = window.setTimeout(() => {
-        this.updateTimer = -1;
-        this.reportChanges(obj);
-      }, 1000);
-    }
-
-    // Report changes if the user changes objects.
-    if (this.oldObj !== obj) {
-      window.clearTimeout(this.updateTimer);
-      this.updateTimer = -1;
-      this.reportChanges(obj);
-    }
+    this.prepareChanges(obj);
   }
 
   // Editor specific functions
@@ -190,6 +186,24 @@ export class EditorComponent implements AfterViewInit {
       }
       // }
     });
+  }
+
+  private prepareChanges(obj: THREE.Mesh): void {
+    // Every second, update the server of changes.
+    if (this.updateTimer < 0) {
+      this.oldObj = obj;
+      this.updateTimer = window.setTimeout(() => {
+        this.updateTimer = -1;
+        this.reportChanges(obj);
+      }, 1000);
+    }
+
+    // Report changes if the user changes objects.
+    if (this.oldObj !== obj) {
+      window.clearTimeout(this.updateTimer);
+      this.updateTimer = -1;
+      this.reportChanges(obj);
+    }
   }
 
   private reportChanges(obj: THREE.Mesh): void {
