@@ -134,7 +134,7 @@ const root = {
     } else {
       if (!db.objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
         // User does not own the object.
-        return true;
+        return false;
       }
 
       if (db.getObjectVersion(req.workspaceId, req.objectId) > req.version) {
@@ -155,7 +155,7 @@ const root = {
     }
 
     if (!db.objectExists(req.workspaceId, req.objectId)) {
-      return true;
+      return false;
     }
 
     if (!db.objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {

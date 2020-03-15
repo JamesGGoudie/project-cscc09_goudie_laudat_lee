@@ -174,6 +174,7 @@ export class EditorComponent implements AfterViewInit {
 
   public deleteCurrentObject(){
     const obj = this.getCurrentObject();
+    this.cancelReport();
 
     if (obj) {
       this.workspaceSyncService.deleteObject(
@@ -254,11 +255,16 @@ export class EditorComponent implements AfterViewInit {
     });
   }
 
+  private cancelReport(): void {
+    window.clearTimeout(this.updateTimer);
+    this.updateTimer = -1;
+    this.oldObj = null;
+  }
+
   private prepareChanges(obj: THREE.Mesh): void {
     // Report changes if the user changes objects.
-    if (this.oldObj !== obj) {
-      window.clearTimeout(this.updateTimer);
-      this.updateTimer = -1;
+    if (this.oldObj !== obj && this.oldObj != null) {
+      this.cancelReport();
       this.reportChanges(this.oldObj);
     }
 
