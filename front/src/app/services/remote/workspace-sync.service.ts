@@ -12,9 +12,11 @@ import {
   GetWorkspaceRes,
   GetWorkspaceVars,
   PinObjectRes,
+  PinObjectVars,
   ReportChangesRes,
   ReportChangesVars,
-  UnpinObjectRes
+  UnpinObjectRes,
+  UnpinObjectVars,
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -36,7 +38,7 @@ export class WorkspaceSyncService {
           objectId: $objectId,
           userId: $userId)
     }`;
-    const variables = {
+    const variables: PinObjectVars = {
       objectId,
       workspaceId,
       userId
@@ -67,7 +69,7 @@ export class WorkspaceSyncService {
           userId: $userId
           objectId: $objectId)
     }`;
-    const variables = {
+    const variables: UnpinObjectVars = {
       objectId,
       userId,
       workspaceId
