@@ -279,6 +279,8 @@ let Editor = function(){
         mesh.position.set(0, 100, 0);
         outlineObject(mesh, DEFAULT_OUTLINE);
         render();
+
+        return mesh;
     };
 
     function deleteObject(obj) {

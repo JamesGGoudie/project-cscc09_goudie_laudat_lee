@@ -44,7 +44,7 @@ export class EditorComponent implements AfterViewInit {
 
   private workspaceId: string;
   private userId: string;
-  private oldObj: THREE.Object3D;
+  private oldObj: THREE.Mesh;
 
   public constructor(
     private readonly router: Router,
@@ -150,7 +150,7 @@ export class EditorComponent implements AfterViewInit {
   }
 
   public addNewObject(type:string) {
-    this.editor.addNewObject(type);
+    this.prepareChanges(this.editor.addNewObject(type));
   }
 
   public deleteCurrentObject(){
@@ -228,6 +228,13 @@ export class EditorComponent implements AfterViewInit {
   }
 
   private prepareChanges(obj: THREE.Mesh): void {
+    // Report changes if the user changes objects.
+    if (this.oldObj !== obj) {
+      window.clearTimeout(this.updateTimer);
+      this.updateTimer = -1;
+      this.reportChanges(this.oldObj);
+    }
+
     // Every second, update the server of changes.
     if (this.updateTimer < 0) {
       this.oldObj = obj;
@@ -235,13 +242,6 @@ export class EditorComponent implements AfterViewInit {
         this.updateTimer = -1;
         this.reportChanges(obj);
       }, 1000);
-    }
-
-    // Report changes if the user changes objects.
-    if (this.oldObj !== obj) {
-      window.clearTimeout(this.updateTimer);
-      this.updateTimer = -1;
-      this.reportChanges(obj);
     }
   }
 
