@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { EditorComponent } from './editor.component';
@@ -14,6 +15,8 @@ describe('EditorComponent', () => {
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
+
+        NoopAnimationsModule,
 
         EditorModule
       ]
