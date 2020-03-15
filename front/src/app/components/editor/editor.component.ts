@@ -87,7 +87,8 @@ export class EditorComponent {
               obj.objectId, obj.version);
         }
       } else {
-        // If the workspace does not exist, navigate to the
+        // If the workspace does not exist, navigate to the workspace control
+        // screen.
         this.editor.renderer.domElement.remove();
         this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
       }
