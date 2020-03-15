@@ -194,12 +194,19 @@ export class EditorComponent implements AfterViewInit {
 
   private reportChanges(obj: THREE.Mesh): void {
     if (!!obj) {
+      const version = this.workspaceStateService.getVersionHistory(
+          obj.uuid) + 1;
+
       this.workspaceSyncService.reportChanges(
         obj,
         this.userId,
         this.workspaceId,
-        this.workspaceStateService.getVersionHistory(obj.uuid) + 1
-      ).subscribe((res: ReportChangesRes) => {});
+        version
+      ).subscribe((res: ReportChangesRes) => {
+        if (res.data.reportChanges) {
+          this.workspaceStateService.saveVersionHistory(obj.uuid, version);
+        }
+      });
     }
   }
 
