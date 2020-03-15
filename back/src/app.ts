@@ -50,22 +50,22 @@ const gqlSchema = buildSchema(`
       workspaceId: String!,
       workspacePassword: String!,
       username: String!
-    ): String
+    ): Boolean
     joinWorkspace(
       workspaceId: String!,
       workspacePassword: String!,
       username: String!
-    ): String
+    ): Boolean
     pinObject(
       objectId: String!,
       userId: String!,
       workspaceId: String!
-    ): String
+    ): Boolean
     unpinObject(
       objectId: String!,
       userId: String!,
       workspaceId: String!
-    ): String
+    ): Boolean
   }
 
   type Mutation {
@@ -86,12 +86,12 @@ const gqlSchema = buildSchema(`
       scaY: Float!,
       scaZ: Float!,
       col: String!
-    ): String
+    ): Boolean
     deleteObject(
       objectId: String!,
       userId: String!,
       workspaceId: String!
-    ): String
+    ): Boolean
   }
 `);
 
@@ -246,70 +246,70 @@ const root = {
 
     if (workspaceExists(req.workspaceId)) {
       // Workspace already exists in the database.
-      return 'Workspace already exists';
+      return false;
     }
 
     createWorkspace(req.workspaceId, req.workspacePassword, req.username);
 
-    return 'Success';
+    return true;
   },
   joinWorkspace: (req: JoinWorkspaceReq) => {
     console.log(req);
 
     if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return 'Workspace does not exist';
+      return false;
     }
 
     const workspace = getWorkspace(req.workspaceId);
 
     if (userExists(req.workspaceId, req.username)) {
       // Username already in use.
-      return 'UserId in use';
+      return false;
     }
 
     if (!passwordMatches(workspace.password, req.workspacePassword)) {
       // Wrong password.
-      return 'Bad pass';
+      return false;
     }
 
-    return 'Success';
+    return true;
   },
   pinObject: (req: PinObjectReq) => {
     console.log(req);
 
     if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return 'Workspace does not exist';
+      return false;
     }
 
     if (objectIsPinned(req.workspaceId, req.objectId)) {
       // Object is pinned.
-      return 'Object in use';
+      return false;
     }
 
     pinObject(req.workspaceId, req.objectId, req.userId);
 
-    return 'Object pinned';
+    return true;
   },
   unpinObject: (req: UnpinObjectReq) => {
     console.log(req);
 
     if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return 'Workspace does not exist';
+      return false;
     }
 
     unpinObject(req.workspaceId, req.objectId);
 
-    return 'Unpinned object';
+    return true;
   },
   reportChanges: (req: ReportChangesReq) => {
     console.log(req);
 
     if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return 'Workspace does not exist';
+      return false;
     }
 
     const newObj: ObjectInfo = {
@@ -332,38 +332,38 @@ const root = {
     } else {
       if (!objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
         // User does not own the object.
-        return 'Not owned';
+        return true;
       }
 
       if (getObjectVersion(req.workspaceId, req.objectId) > req.version) {
-        return 'Bad Version';
+        return false;
       }
 
       updateObjectInWorkspace(req.workspaceId, newObj);
     }
 
-    return 'All good';
+    return true;
   },
   deleteObject: (req: DeleteObjectReq) => {
     console.log(req);
 
     if (!workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return 'Workspace does not exist';
+      return false;
     }
 
     if (!objectExists(req.workspaceId, req.objectId)) {
-      return 'Object does not exist';
+      return true;
     }
 
     if (!objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
       // User does not own the object.
-      return 'Not owned';
+      return false;
     }
 
     deleteObject(req.workspaceId, req.objectId);
 
-    return 'All Good';
+    return true;
   }
 }
 

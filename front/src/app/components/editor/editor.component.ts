@@ -63,7 +63,7 @@ export class EditorComponent implements AfterViewInit {
     this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
         (res: GetWorkspaceRes) => {
       if (res.data.getWorkspace) {
-        this.editor.loadScene(res.data.getWorkspace);
+        this.editor.loadScene(res.data.getWorkspace, false);
 
         for (const obj of res.data.getWorkspace) {
           this.workspaceStateService.saveVersionHistory(
@@ -74,6 +74,18 @@ export class EditorComponent implements AfterViewInit {
         this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
       }
     });
+
+    window.setInterval(() => {
+      this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
+          (res: GetWorkspaceRes) => {
+        this.editor.loadScene(res.data.getWorkspace, true);
+
+        for (const obj of res.data.getWorkspace) {
+          this.workspaceStateService.saveVersionHistory(
+              obj.objectId, obj.version);
+        }
+      });
+    }, 2500);
   }
 
   public ngAfterViewInit(): void {

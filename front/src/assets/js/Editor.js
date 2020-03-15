@@ -167,9 +167,9 @@ let Editor = function(){
         console.log(JSON.stringify(exportedObjects));
     }
 
-    function loadScene(data) {
+    function loadScene(data, keepSelected) {
         // clear all existing objects
-        clearScene();
+        clearScene(keepSelected);
         if (data){
             let parsed;
 
@@ -179,7 +179,13 @@ let Editor = function(){
                 parsed = data;
             }
 
-            parsed.forEach(function(objData){
+            for (const objData of parsed) {
+                if (keepSelected &&
+                        currentSelection &&
+                        currentSelection.uuid === objData.objectId) {
+                    continue;
+                }
+
                 let geometry, material, mesh;
                 switch(objData.geometryType){
                     case 'BoxBufferGeometry':
@@ -203,7 +209,7 @@ let Editor = function(){
                 scene.add( mesh );
                 mesh.uuid = String(objData.objectId);
                 outlineObject(mesh, DEFAULT_OUTLINE);
-            });
+            }
             render();
         }
     }
@@ -293,8 +299,15 @@ let Editor = function(){
         }
     };
 
-    function clearScene(){
-        let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
+    function clearScene(keepSelected){
+        // Get all mesh objects except for the one selected if indicated.
+        let allObjects = scene.children.filter((obj) => {
+            return obj instanceof THREE.Mesh &&
+                    !(keepSelected &&
+                    currentSelection &&
+                    currentSelection.uuid === obj.uuid);
+        });
+
         allObjects.forEach(function(obj){
             deleteObject(obj);
         });
