@@ -57,7 +57,8 @@ export class EditorComponent implements AfterViewInit {
     this.workspaceId = workspaceStateService.getWorkspaceId();
     this.userId = workspaceStateService.getUserId();
 
-    this.setUpClickObjectEvent();
+    this.setUpClickEvent();
+    this.setUpKeydownEvent();
 
     this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
         (res: GetWorkspaceRes) => {
@@ -183,7 +184,7 @@ export class EditorComponent implements AfterViewInit {
     return this.editor.getObjectList();
   }
 
-  private setUpClickObjectEvent() {
+  private setUpClickEvent() {
     // when selecting an object by clicking on it
     document.addEventListener('click', (e) => {
       e.preventDefault();
@@ -201,6 +202,29 @@ export class EditorComponent implements AfterViewInit {
       }
       // }
     });
+  }
+
+  private setUpKeydownEvent() {
+    window.addEventListener('keydown', (event) => {
+      if (event.shiftKey) {
+        switch ( event.keyCode ) {
+          case 68:
+            // D
+            this.deselectObject();
+            break;
+          case 8:
+            // Backspace
+            this.deleteCurrentObject();
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
+
+  private deselectObject() {
+    this.editor.deselectObject();
   }
 
   private prepareChanges(obj: THREE.Mesh): void {

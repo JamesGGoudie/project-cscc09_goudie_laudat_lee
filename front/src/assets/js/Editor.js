@@ -95,12 +95,6 @@ let Editor = function(){
                     case 109: // -, _, num-
                         control.setSize( Math.max( control.size - 0.1, 0.1 ) );
                         break;
-                    case 68: // D
-                        deselectObject();
-                        break;
-                    case 8: // Backspace
-                        deleteObject(currentSelection);
-                        break;
                     case 90: // Z
                         resetCamera();
                         break;
@@ -360,6 +354,7 @@ let Editor = function(){
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
+    this.deselectObject = deselectObject;
     this.saveScene = saveScene;
     this.loadScene = loadScene;
 

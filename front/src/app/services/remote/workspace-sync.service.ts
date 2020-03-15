@@ -7,6 +7,7 @@ import { Mesh, MeshBasicMaterial } from 'three';
 import { BACK_ROUTES } from 'src/app/constants';
 
 import {
+  DeleteObjectRes,
   DeleteObjectVars,
   GetWorkspaceRes,
   GetWorkspaceVars,
@@ -136,7 +137,7 @@ export class WorkspaceSyncService {
       })
     };
 
-    return this.http.post<ReportChangesRes>(
+    return this.http.post<DeleteObjectRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
