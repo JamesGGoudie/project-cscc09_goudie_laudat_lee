@@ -77,7 +77,6 @@ export class EditorComponent implements AfterViewInit {
       }
     });
 
-    /*
     window.setInterval(() => {
       this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
           (res: GetWorkspaceRes) => {
@@ -94,7 +93,6 @@ export class EditorComponent implements AfterViewInit {
         }
       });
     }, 2500);
-    */
   }
 
   public ngAfterViewInit(): void {
