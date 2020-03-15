@@ -12,7 +12,6 @@ describe('WorkspaceControlComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ WorkspaceControlComponent ],
       imports: [
         HttpClientTestingModule,
         RouterTestingModule,
