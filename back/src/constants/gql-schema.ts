@@ -19,12 +19,12 @@ export const GQL_SCHEMA = buildSchema(`
     createWorkspace(
       workspaceId: String!,
       workspacePassword: String!,
-      username: String!
+      userId: String!
     ): Boolean
     joinWorkspace(
       workspaceId: String!,
       workspacePassword: String!,
-      username: String!
+      userId: String!
     ): Boolean
     pinObject(
       objectId: String!,

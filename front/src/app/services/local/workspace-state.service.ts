@@ -23,7 +23,7 @@ export class WorkspaceStateService {
     return localStorage.getItem(LS_KEYS.PINNED_OBJ);
   }
 
-  public setPinnedObject(id: string) {
+  public setPinnedObject(id: string): void {
     localStorage.setItem(LS_KEYS.PINNED_OBJ, id);
   }
 
@@ -31,7 +31,7 @@ export class WorkspaceStateService {
     return localStorage.getItem(LS_KEYS.USER_ID);
   }
 
-  public setUserId(id: string) {
+  public setUserId(id: string): void {
     localStorage.setItem(LS_KEYS.USER_ID, id);
   }
 
@@ -39,7 +39,7 @@ export class WorkspaceStateService {
     return localStorage.getItem(LS_KEYS.WORKSPACE_ID);
   }
 
-  public setWorkspaceId(id: string) {
+  public setWorkspaceId(id: string): void {
     localStorage.setItem(LS_KEYS.WORKSPACE_ID, id);
   }
 

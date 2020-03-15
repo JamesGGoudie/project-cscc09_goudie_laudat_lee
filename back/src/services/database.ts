@@ -1,4 +1,4 @@
-import { ObjectInfo, Workspace } from '../interfaces';
+import { ObjectInfo, PinnedInfo, Workspace } from '../interfaces';
 
 export class Database {
 
@@ -6,15 +6,15 @@ export class Database {
     [workspaceId: string]: Workspace
   } = {};
 
-  public workspaceExists(id: string) {
+  public workspaceExists(id: string): boolean {
     return !!this.getWorkspace(id);
   }
 
-  public getWorkspace(id: string) {
+  public getWorkspace(id: string): Workspace {
     return this.fakeDatabase[id];
   }
 
-  public createWorkspace(id: string, pass: string, creator: string) {
+  public createWorkspace(id: string, pass: string, creator: string): void {
     this.fakeDatabase[id] = {
       objects: [],
       password: pass,
@@ -23,11 +23,13 @@ export class Database {
     };
   }
 
-  public userExists(workspaceId: string, userId: string) {
+  public userExists(workspaceId: string, userId: string): boolean {
     return this.getWorkspace(workspaceId).users.includes(userId);
   }
 
-  public passwordMatches(workspacePass: string, suppliedPass: string) {
+  public passwordMatches(
+    workspacePass: string, suppliedPass: string
+  ): boolean {
     return workspacePass === suppliedPass;
   }
 
@@ -54,7 +56,8 @@ export class Database {
     objectId: string,
     userId: string
   ): boolean {
-    const obj = this.getWorkspace(workspaceId).pinnedObjects.find((value) => {
+    const obj = this.getWorkspace(workspaceId).pinnedObjects.find(
+        (value: PinnedInfo): boolean => {
       return value.objectId === objectId;
     });
 
@@ -66,40 +69,58 @@ export class Database {
     return obj.userId === userId;
   }
 
-  public pinObject(workspaceId: string, objectId: string, userId: string) {
+  public pinObject(
+    workspaceId: string, objectId: string, userId: string
+  ): boolean {
     const workspace = this.getWorkspace(workspaceId);
 
-    const prevPinnedIndex = workspace.pinnedObjects.findIndex((obj) => {
+    const prevPinnedIndex = workspace.pinnedObjects.findIndex(
+        (obj: PinnedInfo): boolean => {
       return obj.userId === userId;
     });
 
-    if (prevPinnedIndex > -1) {
-      workspace.pinnedObjects.splice(prevPinnedIndex, 1);
+    if (prevPinnedIndex === -1) {
+      return false;
     }
 
+    workspace.pinnedObjects.splice(prevPinnedIndex, 1);
     workspace.pinnedObjects.push({objectId: objectId, userId: userId});
+
+    return true;
   }
 
-  public unpinObject(workspaceId: string, objectId: string) {
+  public unpinObject(workspaceId: string, objectId: string): boolean {
     const workspace = this.getWorkspace(workspaceId);
 
-    const prevPinnedIndex = workspace.pinnedObjects.findIndex((obj) => {
+    const prevPinnedIndex = workspace.pinnedObjects.findIndex(
+        (obj: PinnedInfo): boolean => {
       return obj.objectId === objectId;
     });
 
-    if (prevPinnedIndex > -1) {
-      workspace.pinnedObjects.splice(prevPinnedIndex, 1);
+    if (prevPinnedIndex === -1) {
+      return false;
     }
+
+    workspace.pinnedObjects.splice(prevPinnedIndex, 1);
+
+    return true;
   }
 
-  public addObjectToWorkspace(workspaceId: string, obj: ObjectInfo) {
+  public addObjectToWorkspace(
+    workspaceId: string, obj: ObjectInfo
+  ): boolean {
     this.getWorkspace(workspaceId).objects.push(obj);
+
+    return true;
   }
 
-  public updateObjectInWorkspace(workspaceId: string, newObj: ObjectInfo) {
+  public updateObjectInWorkspace(
+    workspaceId: string, newObj: ObjectInfo
+  ): boolean {
     const workspace = this.getWorkspace(workspaceId);
 
-    const objIndex = workspace.objects.findIndex((oldObj) => {
+    const objIndex = workspace.objects.findIndex(
+        (oldObj: ObjectInfo): boolean => {
       return oldObj.objectId === newObj.objectId;
     });
 
@@ -113,18 +134,19 @@ export class Database {
     return true;
   }
 
-  public getWorkspaceObjects(workspaceId: string) {
+  public getWorkspaceObjects(workspaceId: string): ObjectInfo[] {
     return this.getWorkspace(workspaceId).objects;
   }
 
-  public getObjectVersion(workspaceId: string, objectId: string) {
+  public getObjectVersion(workspaceId: string, objectId: string) : number{
     return this.getObject(workspaceId, objectId).version;
   }
 
-  public deleteObject(workspaceId: string, objectId: string) {
+  public deleteObject(workspaceId: string, objectId: string): boolean {
     const workspace = this.getWorkspace(workspaceId);
 
-    const objIndex = workspace.objects.findIndex((obj) => {
+    const objIndex = workspace.objects.findIndex(
+        (obj: ObjectInfo): boolean => {
       return obj.objectId === objectId;
     });
 

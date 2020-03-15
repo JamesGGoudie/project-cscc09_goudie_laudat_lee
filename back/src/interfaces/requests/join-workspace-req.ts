@@ -2,6 +2,6 @@ export interface JoinWorkspaceReq {
 
   readonly workspaceId: string;
   readonly workspacePassword: string;
-  readonly username: string;
+  readonly userId: string;
 
 }

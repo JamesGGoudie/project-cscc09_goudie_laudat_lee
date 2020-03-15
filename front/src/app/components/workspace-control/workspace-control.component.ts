@@ -26,12 +26,12 @@ export class WorkspaceControlComponent {
   public readonly createForm: FormGroup = new FormGroup({
     workspaceId: new FormControl(),
     workspacePassword: new FormControl(),
-    username: new FormControl()
+    userId: new FormControl()
   });
   public readonly joinForm: FormGroup = new FormGroup({
     workspaceId: new FormControl(),
     workspacePassword: new FormControl(),
-    username: new FormControl()
+    userId: new FormControl()
   });
 
   public constructor(
@@ -42,23 +42,23 @@ export class WorkspaceControlComponent {
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
-        (res: CreateWorkspaceRes) => {
+        (res: CreateWorkspaceRes): void => {
       if (res.data.createWorkspace) {
-        this.setupWorkspace(form.workspaceId, form.username);
+        this.setupWorkspace(form.workspaceId, form.userId);
       }
     });
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
     this.workspaceControlService.joinWorkspace(form).subscribe(
-        (res: JoinWorkspaceRes) => {
+        (res: JoinWorkspaceRes): void => {
       if (res.data.joinWorkspace) {
-        this.setupWorkspace(form.workspaceId, form.username);
+        this.setupWorkspace(form.workspaceId, form.userId);
       }
     });
   }
 
-  private setupWorkspace(workspaceId: string, userId: string) {
+  private setupWorkspace(workspaceId: string, userId: string): void {
     this.workspaceStateService.setWorkspaceId(workspaceId);
     this.workspaceStateService.setUserId(userId);
 

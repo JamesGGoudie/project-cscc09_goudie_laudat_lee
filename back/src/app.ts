@@ -43,7 +43,7 @@ const root = {
 
     return db.getWorkspaceObjects(req.workspaceId);
   },
-  createWorkspace: (req: CreateWorkspaceReq) => {
+  createWorkspace: (req: CreateWorkspaceReq): boolean => {
     console.log(req);
 
     if (db.workspaceExists(req.workspaceId)) {
@@ -51,11 +51,11 @@ const root = {
       return false;
     }
 
-    db.createWorkspace(req.workspaceId, req.workspacePassword, req.username);
+    db.createWorkspace(req.workspaceId, req.workspacePassword, req.userId);
 
     return true;
   },
-  joinWorkspace: (req: JoinWorkspaceReq) => {
+  joinWorkspace: (req: JoinWorkspaceReq): boolean => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
@@ -65,7 +65,7 @@ const root = {
 
     const workspace = db.getWorkspace(req.workspaceId);
 
-    if (db.userExists(req.workspaceId, req.username)) {
+    if (db.userExists(req.workspaceId, req.userId)) {
       // Username already in use.
       return false;
     }
@@ -77,7 +77,7 @@ const root = {
 
     return true;
   },
-  pinObject: (req: PinObjectReq) => {
+  pinObject: (req: PinObjectReq): boolean => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
@@ -94,7 +94,7 @@ const root = {
 
     return true;
   },
-  unpinObject: (req: UnpinObjectReq) => {
+  unpinObject: (req: UnpinObjectReq): boolean => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
@@ -106,7 +106,7 @@ const root = {
 
     return true;
   },
-  reportChanges: (req: ReportChangesReq) => {
+  reportChanges: (req: ReportChangesReq): boolean => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
@@ -132,7 +132,8 @@ const root = {
     if (!db.objectExists(req.workspaceId, req.objectId)) {
       db.addObjectToWorkspace(req.workspaceId, newObj);
     } else {
-      if (!db.objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
+      if (!db.objectIsPinnedByUser(
+          req.workspaceId, req.objectId, req.userId)) {
         // User does not own the object.
         return false;
       }
@@ -146,7 +147,7 @@ const root = {
 
     return true;
   },
-  deleteObject: (req: DeleteObjectReq) => {
+  deleteObject: (req: DeleteObjectReq): boolean => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {

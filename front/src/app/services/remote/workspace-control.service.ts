@@ -7,8 +7,10 @@ import { BACK_ROUTES } from 'src/app/constants';
 import {
   CreateWorkspaceForm,
   CreateWorkspaceRes,
+  CreateWorkspaceVars,
   JoinWorkspaceForm,
   JoinWorkspaceRes,
+  JoinWorkspaceVars
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -22,18 +24,18 @@ export class WorkspaceControlService {
     form: CreateWorkspaceForm
   ): Observable<CreateWorkspaceRes> {
     const query = `query Create(
-        $id: String!,
-        $pass: String!,
-        $user: String!) {
+        $workspaceId: String!,
+        $workspacePassword: String!,
+        $userId: String!) {
       createWorkspace(
-          workspaceId: $id,
-          workspacePassword: $pass,
-          username: $user)
+          workspaceId: $workspaceId,
+          workspacePassword: $workspacePassword,
+          userId: $userId)
     }`;
-    const variables = {
-      id: form.workspaceId,
-      pass: form.workspacePassword,
-      user: form.username
+    const variables: CreateWorkspaceVars = {
+      workspaceId: form.workspaceId,
+      workspacePassword: form.workspacePassword,
+      userId: form.userId
     }
 
     const httpOptions: {headers: HttpHeaders} = {
@@ -53,18 +55,18 @@ export class WorkspaceControlService {
     form: JoinWorkspaceForm
   ): Observable<JoinWorkspaceRes> {
     const query = `query Join(
-        $id: String!,
-        $pass: String!,
-        $user: String!) {
+        $workspaceId: String!,
+        $workspacePassword: String!,
+        $userId: String!) {
       joinWorkspace(
-          workspaceId: $id,
-          workspacePassword: $pass,
-          username: $user)
+          workspaceId: $workspaceId,
+          workspacePassword: $workspacePassword,
+          userId: $userId)
     }`;
-    const variables = {
-      id: form.workspaceId,
-      pass: form.workspacePassword,
-      user: form.username
+    const variables: JoinWorkspaceVars = {
+      workspaceId: form.workspaceId,
+      workspacePassword: form.workspacePassword,
+      userId: form.userId
     }
 
     const httpOptions: {headers: HttpHeaders} = {

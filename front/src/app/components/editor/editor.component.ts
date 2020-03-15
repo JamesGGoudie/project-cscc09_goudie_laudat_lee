@@ -1,7 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-} from '@angular/core';
+import { Component } from '@angular/core';
 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -26,7 +23,7 @@ import { WorkspaceStateService, WorkspaceSyncService } from 'src/app/services';
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent implements AfterViewInit {
+export class EditorComponent {
   private readonly editor: Editor;
 
   public readonly objForm: FormGroup = new FormGroup({ // Generic attributes of an object
@@ -77,9 +74,9 @@ export class EditorComponent implements AfterViewInit {
       }
     });
 
-    window.setInterval(() => {
+    window.setInterval((): void => {
       this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
-          (res: GetWorkspaceRes) => {
+          (res: GetWorkspaceRes): void => {
         if (res.data.getWorkspace) {
           this.editor.loadScene(res.data.getWorkspace, true);
 
@@ -95,19 +92,16 @@ export class EditorComponent implements AfterViewInit {
     }, 2500);
   }
 
-  public ngAfterViewInit(): void {
-  }
-
   // Form specific functions
 
-  public updateObjectMaterial(event:ColorEvent):void {
+  public updateObjectMaterial(event:ColorEvent): void {
     let obj = this.getCurrentObject();
     this.editor.updateObjectMaterial(obj, event.color.hex);
 
     this.prepareChanges(obj);
   }
 
-  public updateObjectName():void {
+  public updateObjectName(): void {
     let name = this.objForm.get('name').value;
     let obj = this.getCurrentObject();
     if (obj && name) {
@@ -117,7 +111,7 @@ export class EditorComponent implements AfterViewInit {
     this.prepareChanges(obj);
   }
 
-  public updateObjectPosition():void {
+  public updateObjectPosition(): void {
     let x = this.objForm.get('posX').value;
     let y = this.objForm.get('posY').value;
     let z = this.objForm.get('posZ').value;
@@ -126,7 +120,7 @@ export class EditorComponent implements AfterViewInit {
     this.prepareChanges(this.getCurrentObject());
   }
 
-  public updateObjectScale():void {
+  public updateObjectScale(): void {
     let x = this.objForm.get('scaX').value;
     let y = this.objForm.get('scaY').value;
     let z = this.objForm.get('scaZ').value;
@@ -135,7 +129,7 @@ export class EditorComponent implements AfterViewInit {
     this.prepareChanges(this.getCurrentObject());
   }
 
-  public updateObjectRotation():void {
+  public updateObjectRotation(): void {
     let x = this.objForm.get('rotX').value;
     let y = this.objForm.get('rotY').value;
     let z = this.objForm.get('rotZ').value;
@@ -164,22 +158,22 @@ export class EditorComponent implements AfterViewInit {
 
   // Editor specific functions
 
-  public changeTool(tool:string) {
+  public changeTool(tool:string): void {
     this.editor.changeTool(tool);
   }
 
-  public addNewObject(type:string) {
+  public addNewObject(type:string): void {
     this.prepareChanges(this.editor.addNewObject(type));
   }
 
-  public deleteCurrentObject(){
+  public deleteCurrentObject(): void {
     const obj = this.getCurrentObject();
     this.cancelReport();
 
     if (obj) {
       this.workspaceSyncService.deleteObject(
         obj.uuid, this.userId, this.workspaceId
-      ).subscribe((res: DeleteObjectRes) => {
+      ).subscribe((res: DeleteObjectRes): void => {
         if (res.data.deleteObject) {
           this.editor.deleteObject(obj);
         }
@@ -190,7 +184,7 @@ export class EditorComponent implements AfterViewInit {
   public selectObject(obj:THREE.Mesh | THREE.Object3D) {
     this.workspaceSyncService.pinObject(
       this.workspaceId, obj.uuid, this.userId
-    ).subscribe((res: PinObjectRes) => {
+    ).subscribe((res: PinObjectRes): void => {
       if (res.data.pinObject) {
         this.editor.selectObject(obj);
         this.updateEditControls();
@@ -202,34 +196,36 @@ export class EditorComponent implements AfterViewInit {
     return this.editor.getCurrentSelection();
   }
 
-  public getObjectList() {
+  public getObjectList(): THREE.Mesh[] {
     return this.editor.getObjectList();
   }
 
-  private setUpClickEvent() {
+  private setUpClickEvent(): void {
     // when selecting an object by clicking on it
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (e :MouseEvent): void => {
       e.preventDefault();
-      // Only select if nothing is currently selected
-      // if (!currentSelection) {
-      var raycaster = new THREE.Raycaster();
-      var mouse = new THREE.Vector2();
-      mouse.x = ( e.clientX / this.editor.renderer.domElement.clientWidth ) * 2 - 1;
-      mouse.y = - ( e.clientY / this.editor.renderer.domElement.clientHeight ) * 2 + 1;
-      raycaster.setFromCamera( mouse, this.editor.camera );
+      const raycaster = new THREE.Raycaster();
+      const mouse = new THREE.Vector2();
+      mouse.x = 2 * (
+          e.clientX / this.editor.renderer.domElement.clientWidth
+          ) - 1;
+      mouse.y = -2 * (
+          e.clientY / this.editor.renderer.domElement.clientHeight
+          ) + 1;
+      raycaster.setFromCamera(mouse, this.editor.camera);
 
-      var intersects = raycaster.intersectObjects( this.editor.scene.children );
-      if ( intersects.length > 0) {
+      const intersects = raycaster.intersectObjects(
+          this.editor.scene.children);
+      if (intersects.length > 0) {
         this.selectObject(intersects[0].object);
       }
-      // }
     });
   }
 
-  private setUpKeydownEvent() {
-    window.addEventListener('keydown', (event) => {
+  private setUpKeydownEvent(): void {
+    window.addEventListener('keydown', (event: KeyboardEvent): void => {
       if (event.shiftKey) {
-        switch ( event.keyCode ) {
+        switch (event.keyCode) {
           case 68:
             // D
             this.deselectObject();
@@ -245,10 +241,10 @@ export class EditorComponent implements AfterViewInit {
     });
   }
 
-  private deselectObject() {
+  private deselectObject(): void {
     this.workspaceSyncService.unpinObject(
       this.workspaceId, this.getCurrentObject().uuid, this.userId
-    ).subscribe((res: UnpinObjectRes) => {
+    ).subscribe((res: UnpinObjectRes): void => {
       if (res.data.unpinObject) {
         this.editor.deselectObject();
       }
@@ -271,7 +267,7 @@ export class EditorComponent implements AfterViewInit {
     // Every second, update the server of changes.
     if (this.updateTimer < 0) {
       this.oldObj = obj;
-      this.updateTimer = window.setTimeout(() => {
+      this.updateTimer = window.setTimeout((): void => {
         this.updateTimer = -1;
         this.reportChanges(obj);
       }, 1000);
@@ -288,7 +284,7 @@ export class EditorComponent implements AfterViewInit {
         this.userId,
         this.workspaceId,
         version
-      ).subscribe((res: ReportChangesRes) => {
+      ).subscribe((res: ReportChangesRes): void => {
         if (res.data.reportChanges) {
           this.workspaceStateService.saveVersionHistory(obj.uuid, version);
         }

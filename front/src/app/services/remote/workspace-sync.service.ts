@@ -88,7 +88,7 @@ export class WorkspaceSyncService {
         httpOptions);
   }
 
-  public getWorkspace(workspaceId: string) {
+  public getWorkspace(workspaceId: string): Observable<GetWorkspaceRes> {
     const query = `query GetWorkspace(
         $workspaceId: String!) {
       getWorkspace(
@@ -120,7 +120,11 @@ export class WorkspaceSyncService {
         httpOptions);
   }
 
-  public deleteObject(objectId: string, userId: string, workspaceId: string) {
+  public deleteObject(
+    objectId: string,
+    userId: string,
+    workspaceId: string
+  ): Observable<DeleteObjectRes> {
     const query = `mutation DeleteObject(
         $objectId: String!,
         $userId: String!,
@@ -154,7 +158,7 @@ export class WorkspaceSyncService {
     userId: string,
     workspaceId: string,
     version: number
-  ) {
+  ): Observable<ReportChangesRes> {
     const mat: MeshBasicMaterial = obj.material as MeshBasicMaterial;
 
     const query = `mutation ReportChanges(
