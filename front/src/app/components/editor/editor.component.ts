@@ -253,7 +253,7 @@ export class EditorComponent {
    * Second, unpin the object on the server.
    */
   private deselectObject(): void {
-    this.reportChanges(this.getCurrentObject(), () => {
+    this.reportChanges(this.getCurrentObject(), (): void => {
       this.workspaceSyncService.unpinObject(
         this.workspaceId, this.getCurrentObject().uuid, this.userId
       ).subscribe((res: UnpinObjectRes): void => {
@@ -301,7 +301,19 @@ export class EditorComponent {
     }
   }
 
-  private reportChanges(obj: THREE.Mesh, callback?: () => void): void {
+  /**
+   * Send the object to the server.
+   *
+   * The server will update its version of the scene using what was given.
+   *
+   * @param obj
+   * @param callback To be called once the response from the server has been
+   *     recieved.
+   */
+  private reportChanges(
+    obj: THREE.Mesh,
+    callback?: (success: boolean) => void
+  ): void {
     if (!!obj) {
       // If the object given is the old object, then reset the timer.
       if (obj === this.oldObj) {
@@ -325,7 +337,7 @@ export class EditorComponent {
 
         // Call the callback, if it exists.
         if (!!callback) {
-          callback();
+          callback(res.data.reportChanges);
         }
       });
     }
