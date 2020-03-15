@@ -91,6 +91,7 @@ export class Database {
       }
 
       // The user has already pinned the object.
+      // Technically a success.
       return true;
     }
 
@@ -107,9 +108,10 @@ export class Database {
       return obj.objectId === objectId;
     });
 
-    // If the object is unpinned...
     if (prevPinnedIndex === -1) {
-      return false;
+      // The object is already unpinned.
+      // Technically a success.
+      return true;
     }
 
     workspace.pinnedObjects.splice(prevPinnedIndex, 1);
@@ -136,6 +138,7 @@ export class Database {
     });
 
     if (objIndex < 0) {
+      // The object does not exist in the workspace.
       return false;
     }
 
@@ -162,7 +165,9 @@ export class Database {
     });
 
     if (objIndex < 0) {
-      return false;
+      // The object does not exist in the workspace.
+      // Technically a success.
+      return true;
     }
 
     workspace.objects.splice(objIndex, 1);

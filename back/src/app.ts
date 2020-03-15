@@ -128,7 +128,10 @@ const root = {
         return false;
       }
 
-      if (db.getObjectVersion(req.workspaceId, req.objectId) > req.version) {
+      if (db.getObjectVersion(req.workspaceId, req.objectId) >= req.version) {
+        // The database has a more up-to-date version.
+        // This may have happened due to race conditions.
+        // Ignore the request.
         return false;
       }
 
@@ -144,7 +147,9 @@ const root = {
     }
 
     if (!db.objectExists(req.workspaceId, req.objectId)) {
-      return false;
+      // The object does not exist in the database.
+      // Technically a success.
+      return true;
     }
 
     if (!db.objectIsPinnedByUser(req.workspaceId, req.objectId, req.userId)) {
