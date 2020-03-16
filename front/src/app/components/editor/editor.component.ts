@@ -349,9 +349,27 @@ export class EditorComponent {
     let file = files.item(0);
     if (file.type=='application/json') {
       file.text().then(function(text){
-        let parsed = JSON.parse(text);
-        for (const objData of parsed) {
-          this.reportChanges(this.editor.addCustomObject(objData));
+        let parsed = [];
+        try{
+          parsed = JSON.parse(text);
+        } catch(err) {
+          console.log('Error in parsing JSON file. JSON badly formatted.');
+        } finally {
+          for (const objData of parsed) {
+            // check that given json has all the required properties
+            if (objData.uuid instanceof String &&
+                objData.name instanceof String &&
+                objData.position instanceof Array &&
+                objData.scale instanceof Array &&
+                objData.rotation instanceof Array &&
+                objData.geometryType instanceof String &&
+                objData.materialColorHex instanceof String &&
+                !objData.position.some(isNaN) &&
+                !objData.scale.some(isNaN) &&
+                !objData.rotation.some(isNaN)) {
+              this.reportChanges(this.editor.addCustomObject(objData));
+            }
+          }
         }
       }.bind(this));
     }
