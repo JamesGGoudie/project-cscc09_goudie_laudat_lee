@@ -169,7 +169,7 @@ export class EditorComponent {
     const obj = this.editor.addNewObject(type);
 
     this.selectObject(obj);
-    this.prepareChanges(obj);
+    this.reportChanges(obj);
   }
 
   public deleteCurrentObject(): void {
