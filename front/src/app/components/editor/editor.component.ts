@@ -166,7 +166,10 @@ export class EditorComponent {
   }
 
   public addNewObject(type:string): void {
-    this.prepareChanges(this.editor.addNewObject(type));
+    const obj = this.editor.addNewObject(type);
+
+    this.selectObject(obj);
+    this.prepareChanges(obj);
   }
 
   public deleteCurrentObject(): void {
