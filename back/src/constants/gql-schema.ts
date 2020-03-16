@@ -16,6 +16,9 @@ export const GQL_SCHEMA = buildSchema(`
     getWorkspace(
       workspaceId: String!
     ): [ObjectInfo]
+  }
+
+  type Mutation {
     createWorkspace(
       workspaceId: String!,
       workspacePassword: String!,
@@ -36,9 +39,6 @@ export const GQL_SCHEMA = buildSchema(`
       userId: String!,
       workspaceId: String!
     ): Boolean
-  }
-
-  type Mutation {
     reportChanges(
       objectId: String!,
       userId: String!,

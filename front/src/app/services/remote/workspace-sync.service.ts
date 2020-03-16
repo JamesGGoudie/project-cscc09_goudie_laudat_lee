@@ -29,7 +29,7 @@ export class WorkspaceSyncService {
   public pinObject(
     workspaceId: string, objectId: string, userId: string
   ): Observable<PinObjectRes> {
-    const query = `query Pin(
+    const query = `mutation Pin(
         $workspaceId: String!,
         $objectId: String!,
         $userId: String!) {
@@ -60,7 +60,7 @@ export class WorkspaceSyncService {
   public unpinObject(
     workspaceId: string, objectId: string, userId: string
   ): Observable<UnpinObjectRes> {
-    const query = `query Unpin(
+    const query = `mutation Unpin(
         $workspaceId: String!,
         $userId: String!,
         $objectId: String!) {

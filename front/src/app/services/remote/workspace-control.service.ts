@@ -23,7 +23,7 @@ export class WorkspaceControlService {
   public createWorkspace(
     form: CreateWorkspaceForm
   ): Observable<CreateWorkspaceRes> {
-    const query = `query Create(
+    const query = `mutation Create(
         $workspaceId: String!,
         $workspacePassword: String!,
         $userId: String!) {
@@ -54,7 +54,7 @@ export class WorkspaceControlService {
   public joinWorkspace(
     form: JoinWorkspaceForm
   ): Observable<JoinWorkspaceRes> {
-    const query = `query Join(
+    const query = `mutation Join(
         $workspaceId: String!,
         $workspacePassword: String!,
         $userId: String!) {
