@@ -18,7 +18,9 @@ import {
 })
 export class WorkspaceControlService {
 
-  public constructor(private http: HttpClient) {}
+  public constructor(
+    private readonly http: HttpClient
+  ) {}
 
   public createWorkspace(
     form: CreateWorkspaceForm

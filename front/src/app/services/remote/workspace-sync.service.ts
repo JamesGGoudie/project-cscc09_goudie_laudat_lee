@@ -19,16 +19,19 @@ import {
   UnpinObjectVars,
 } from 'src/app/interfaces';
 
+import { RtcService } from './rtc.service';
+
 @Injectable({
   providedIn: 'root'
 })
 export class WorkspaceSyncService {
 
-  public constructor(private http: HttpClient) {}
+  public constructor(private rtc: RtcService) {}
 
   public pinObject(
     workspaceId: string, objectId: string, userId: string
   ): Observable<PinObjectRes> {
+    /*
     const query = `mutation Pin(
         $workspaceId: String!,
         $objectId: String!,
@@ -55,11 +58,15 @@ export class WorkspaceSyncService {
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
+    */
+
+
   }
 
   public unpinObject(
     workspaceId: string, objectId: string, userId: string
   ): Observable<UnpinObjectRes> {
+    /*
     const query = `mutation Unpin(
         $workspaceId: String!,
         $userId: String!,
@@ -86,9 +93,11 @@ export class WorkspaceSyncService {
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
+    */
   }
 
   public getWorkspace(workspaceId: string): Observable<GetWorkspaceRes> {
+    /*
     const query = `query GetWorkspace(
         $workspaceId: String!) {
       getWorkspace(
@@ -118,6 +127,7 @@ export class WorkspaceSyncService {
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
+    */
   }
 
   public deleteObject(
@@ -125,6 +135,7 @@ export class WorkspaceSyncService {
     userId: string,
     workspaceId: string
   ): Observable<DeleteObjectRes> {
+    /*
     const query = `mutation DeleteObject(
         $objectId: String!,
         $userId: String!,
@@ -151,6 +162,7 @@ export class WorkspaceSyncService {
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
+    */
   }
 
   public reportChanges(
@@ -159,6 +171,7 @@ export class WorkspaceSyncService {
     workspaceId: string,
     version: number
   ): Observable<ReportChangesRes> {
+    /*
     const mat: MeshBasicMaterial = obj.material as MeshBasicMaterial;
 
     const query = `mutation ReportChanges(
@@ -226,6 +239,7 @@ export class WorkspaceSyncService {
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
+    */
   }
 
 }

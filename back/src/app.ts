@@ -51,30 +51,31 @@ const root = {
       return false;
     }
 
-    return db.createWorkspace(
-        req.workspaceId, req.workspacePassword, req.userId);
+    if (db.createWorkspace(req.workspaceId, req.workspacePassword)) {
+      return db.addUserToWorkspace(req.workspaceId, req.userId);
+    } else {
+      return false;
+    }
   },
-  joinWorkspace: (req: JoinWorkspaceReq): boolean => {
+  joinWorkspace: (req: JoinWorkspaceReq): string[] => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
       // Workspace does not exist in the database.
-      return false;
+      return [];
     }
-
-    const workspace = db.getWorkspace(req.workspaceId);
 
     if (db.userExists(req.workspaceId, req.userId)) {
       // Username already in use.
-      return false;
+      return [];
     }
 
-    if (!db.passwordMatches(workspace.password, req.workspacePassword)) {
+    if (!db.passwordMatches(req.workspaceId, req.workspacePassword)) {
       // Wrong password.
-      return false;
+      return [];
     }
 
-    return true;
+    return db.getWorkspacePeerIds(req.workspaceId);
   },
   pinObject: (req: PinObjectReq): boolean => {
     console.log(req);

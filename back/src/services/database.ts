@@ -14,15 +14,28 @@ export class Database {
     return this.fakeDatabase[id];
   }
 
-  public createWorkspace(id: string, pass: string, creator: string): boolean {
+  public createWorkspace(id: string, pass: string): boolean {
     this.fakeDatabase[id] = {
+      name: id,
       objects: [],
       password: pass,
+      peerIds: [],
       pinnedObjects: [],
-      users: [creator]
+      users: []
     };
 
     return true;
+  }
+
+  public addUserToWorkspace(workspaceId: string, userId: string): boolean {
+    this.fakeDatabase[workspaceId].users.push(userId);
+    this.fakeDatabase[workspaceId].peerIds.push(`${workspaceId}-${userId}`);
+
+    return true;
+  }
+
+  public getWorkspacePeerIds(workspaceId: string): string[] {
+    return this.fakeDatabase[workspaceId].peerIds;
   }
 
   public userExists(workspaceId: string, userId: string): boolean {
@@ -30,9 +43,9 @@ export class Database {
   }
 
   public passwordMatches(
-    workspacePass: string, suppliedPass: string
+    workspaceId: string, suppliedPass: string
   ): boolean {
-    return workspacePass === suppliedPass;
+    return this.fakeDatabase[workspaceId].password === suppliedPass;
   }
 
   public getObject(workspaceId: string, objectId: string): ObjectInfo {

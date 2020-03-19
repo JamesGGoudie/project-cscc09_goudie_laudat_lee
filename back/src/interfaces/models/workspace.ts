@@ -3,9 +3,11 @@ import { PinnedInfo } from './pinned-info';
 
 export interface Workspace {
 
+  name: string;
   objects: ObjectInfo[];
-  password: string,
-  pinnedObjects: PinnedInfo[],
-  users: string[]
+  password: string;
+  peerIds: string[];
+  pinnedObjects: PinnedInfo[];
+  users: string[];
 
 }

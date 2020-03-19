@@ -12,6 +12,7 @@ import {
 } from 'src/app/interfaces';
 
 import {
+  RtcService,
   WorkspaceControlService,
   WorkspaceStateService
 } from 'src/app/services';
@@ -36,6 +37,7 @@ export class WorkspaceControlComponent {
 
   public constructor(
     private readonly router: Router,
+    private readonly rtc: RtcService,
     private readonly workspaceControlService: WorkspaceControlService,
     private readonly workspaceStateService: WorkspaceStateService
   ) {}
@@ -44,7 +46,9 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceRes): void => {
       if (res.data.createWorkspace) {
-        this.setupWorkspace(form.workspaceId, form.userId);
+        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
+          this.setupWorkspace(form.workspaceId, form.userId);
+        });
       }
     });
   }
@@ -53,7 +57,11 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceRes): void => {
       if (res.data.joinWorkspace) {
-        this.setupWorkspace(form.workspaceId, form.userId);
+        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
+          this.rtc.connectToPeers(res.data.joinWorkspace).subscribe(() => {
+            this.setupWorkspace(form.workspaceId, form.userId);
+          });
+        });
       }
     });
   }
