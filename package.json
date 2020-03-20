@@ -8,7 +8,7 @@
   "scripts": {
     "start-back": "npm run serve-back",
     "build-back": "npm run build-ts",
-    "serve-back": "node dist/app.js",
+    "serve-back": "node dist/back/app.js",
     "build-ts": "tsc --project ./back/",
     "ng": "ng",
     "start-front": "ng serve",
