@@ -46,8 +46,12 @@ export class WorkspaceControlComponent {
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceRes): void => {
-      if (res.data.createWorkspace) {
-        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
+      if (res.data.createWorkspace.err) {
+        console.error(res.data.createWorkspace.err);
+      } else if (!res.data.createWorkspace.success) {
+      } else {
+        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(
+            (): void => {
           this.setupWorkspace(form.workspaceId, form.userId, false);
         });
       }
@@ -57,10 +61,14 @@ export class WorkspaceControlComponent {
   public onJoinSubmit(form: JoinWorkspaceForm): void {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceRes): void => {
-      if (res.data.joinWorkspace) {
-        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
-          this.rtc.connectToPeers(res.data.joinWorkspace).subscribe(() => {
-            this.zone.run(() => {
+      if (res.data.joinWorkspace.err) {
+        console.error(res.data.joinWorkspace.err);
+      } else {
+        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(
+            (): void => {
+          this.rtc.connectToPeers(res.data.joinWorkspace.peers).subscribe(
+              (): void => {
+            this.zone.run((): void => {
               this.setupWorkspace(form.workspaceId, form.userId, true);
             });
           });

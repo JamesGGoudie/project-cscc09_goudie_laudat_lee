@@ -26,13 +26,18 @@ export class WorkspaceControlService {
     form: CreateWorkspaceForm
   ): Observable<CreateWorkspaceRes> {
     const query = `mutation Create(
-        $workspaceId: String!,
-        $workspacePassword: String!,
-        $userId: String!) {
+      $workspaceId: String!,
+      $workspacePassword: String!,
+      $userId: String!
+    ) {
       createWorkspace(
-          workspaceId: $workspaceId,
-          workspacePassword: $workspacePassword,
-          userId: $userId)
+        workspaceId: $workspaceId,
+        workspacePassword: $workspacePassword,
+        userId: $userId
+      ) {
+        err,
+        success
+      }
     }`;
     const variables: CreateWorkspaceVars = {
       workspaceId: form.workspaceId,
@@ -59,11 +64,16 @@ export class WorkspaceControlService {
     const query = `mutation Join(
         $workspaceId: String!,
         $workspacePassword: String!,
-        $userId: String!) {
+        $userId: String!
+    ) {
       joinWorkspace(
-          workspaceId: $workspaceId,
-          workspacePassword: $workspacePassword,
-          userId: $userId)
+        workspaceId: $workspaceId,
+        workspacePassword: $workspacePassword,
+        userId: $userId
+      ) {
+        err,
+        peers
+      }
     }`;
     const variables: JoinWorkspaceVars = {
       workspaceId: form.workspaceId,

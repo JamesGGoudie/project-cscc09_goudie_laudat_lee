@@ -7,7 +7,9 @@ import { GQL_SCHEMA } from './constants';
 
 import {
   CreateWorkspaceReq,
-  JoinWorkspaceReq
+  CreateWorkspaceRes,
+  JoinWorkspaceReq,
+  JoinWorkspaceRes
 } from './interfaces';
 
 import { Database } from './services';
@@ -27,47 +29,65 @@ app.use((req, res, next) => {
 const db = new Database();
 
 const root = {
-  createWorkspace: (req: CreateWorkspaceReq): boolean => {
+  createWorkspace: (req: CreateWorkspaceReq): CreateWorkspaceRes => {
     console.log(req);
 
     if (db.workspaceExists(req.workspaceId)) {
-      // Workspace already exists in the database.
-      return false;
+      return {
+        err: 'Workspace already exists'
+      };
     }
 
     if (db.createWorkspace(req.workspaceId, req.workspacePassword)) {
-      return db.addUserToWorkspace(req.workspaceId, req.userId);
+      if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
+        return {
+          success: true
+        }
+      } else {
+        return {
+          err: 'Workspace was created, but failed to add user to database'
+        }
+      }
     } else {
-      return false;
+      return {
+          err: 'Workspace does not exist, but cound not be created'
+      };
     }
   },
-  joinWorkspace: (req: JoinWorkspaceReq): string[] => {
+  joinWorkspace: (req: JoinWorkspaceReq): JoinWorkspaceRes => {
     console.log(req);
 
     if (!db.workspaceExists(req.workspaceId)) {
-      // Workspace does not exist in the database.
-      return [];
+      return {
+        err: 'Workspace does not exist'
+      };
     }
 
     if (db.userExists(req.workspaceId, req.userId)) {
-      // Username already in use.
-      return [];
+      return {
+        err: 'Username is taken'
+      };
     }
 
     if (!db.passwordMatches(req.workspaceId, req.workspacePassword)) {
-      // Wrong password.
-      return [];
+      return {
+        err: 'Wrong password'
+      };
     }
 
     if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
       // Get all peer IDs except for the current user.
-      return db.getWorkspacePeerIds(req.workspaceId).filter(
-          (peer: string): boolean => {
-        return peer.substring(req.workspaceId.length + 1) !== req.userId;
-      });
+      return {
+        peers: db.getWorkspacePeerIds(req.workspaceId).filter(
+            (peer: string): boolean => {
+          return peer.substring(req.workspaceId.length + 1) !== req.userId;
+        })
+      };
     } else {
-      // Failed to add user to database.
-      return [];
+      return {
+        err: 'Workspace exists, password is correct, and user ID is' +
+            ' available, but failed to add user to workspace'
+      };
     }
   }
 }

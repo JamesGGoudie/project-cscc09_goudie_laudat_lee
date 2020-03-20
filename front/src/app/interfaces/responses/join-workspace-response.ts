@@ -1,5 +1,8 @@
 export interface JoinWorkspaceRes {
   readonly data: {
-    readonly joinWorkspace: string[]
+    readonly joinWorkspace: {
+      readonly err: string;
+      readonly peers: string[];
+    }
   }
 }

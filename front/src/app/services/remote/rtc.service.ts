@@ -54,7 +54,7 @@ export class RtcService {
       this.setUpConnection(conn);
 
       conn.on('error', (err): void => {
-        console.log(err);
+        console.error(err);
       });
     });
 
@@ -77,7 +77,7 @@ export class RtcService {
       const conn = this.peer.connect(id);
 
       this.peer.on('error', (err) => {
-        console.log(err);
+        console.error(err);
       });
 
       conn.on('open', () => {
@@ -86,7 +86,7 @@ export class RtcService {
       });
 
       conn.on('error', (err): void => {
-        console.log(err);
+        console.error(err);
         countConn();
       });
     }
