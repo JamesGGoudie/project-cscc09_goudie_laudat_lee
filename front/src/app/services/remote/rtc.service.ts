@@ -58,6 +58,10 @@ export class RtcService {
 
     this.peer.on('connection', (conn) => {
       this.setUpConnection(conn);
+
+      conn.on('error', (err): void => {
+        console.log(err);
+      });
     });
 
     return s;
@@ -67,16 +71,29 @@ export class RtcService {
     let i = 0;
     const s: Subject<void> = new Subject();
 
+    const countConn: () => void = () => {
+      ++i;
+
+      if (i === ids.length) {
+        s.next();
+      }
+    };
+
     for (const id of ids) {
       const conn = this.peer.connect(id);
-      this.setUpConnection(conn);
+
+      this.peer.on('error', (err) => {
+        console.log(err);
+      });
 
       conn.on('open', () => {
-        ++i;
+        this.setUpConnection(conn);
+        countConn();
+      });
 
-        if (i === ids.length) {
-          s.next();
-        }
+      conn.on('error', (err): void => {
+        console.log(err);
+        countConn();
       });
     }
 
@@ -203,21 +220,32 @@ export class RtcService {
   private sendToArbiter(data: RtcMessage): void {
     console.log(data);
 
-    this.connections.get(this.peers[0]).send(data);
+    this.send(data, this.connections.get(this.peers[0]));
   }
 
   private sendToPeer(data: RtcMessage, peer: string): void {
     console.log(data);
+    console.log(peer);
 
-    this.connections.get(peer).send(data);
+    this.send(data, this.connections.get(peer));
   }
 
   private sendToAll(data: RtcMessage): void {
     console.log(data);
 
     this.connections.forEach((conn: Peer.DataConnection): void => {
-      conn.send(data);
+      this.send(data, conn);
     });
+  }
+
+  private send(data: RtcMessage, conn: Peer.DataConnection): void {
+    if (conn.open) {
+      conn.send(data);
+    } else {
+      conn.on('open', () => {
+        conn.send(data);
+      });
+    }
   }
 
   private setUpConnection(conn: Peer.DataConnection) {
@@ -226,6 +254,7 @@ export class RtcService {
 
     conn.on('data', (data: RtcMessage) => {
       console.log(data);
+      console.log(conn.peer);
       switch (data.type) {
         case RtcMessageType.CopyWorkspaceReq:
           this.processCopyWorkspaceReq(data as RtcCopyWsReq, conn.peer);

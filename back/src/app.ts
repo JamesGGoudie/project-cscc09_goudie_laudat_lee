@@ -75,7 +75,16 @@ const root = {
       return [];
     }
 
-    return db.getWorkspacePeerIds(req.workspaceId);
+    if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
+      // Get all peer IDs except for the current user.
+      return db.getWorkspacePeerIds(req.workspaceId).filter(
+          (peer: string): boolean => {
+        return peer.substring(req.workspaceId.length + 1) !== req.userId;
+      });
+    } else {
+      // Failed to add user to database.
+      return [];
+    }
   },
   pinObject: (req: PinObjectReq): boolean => {
     console.log(req);

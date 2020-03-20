@@ -98,7 +98,10 @@ export class EditorComponent {
 
     this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
       this.rtc.sendCopyWorkspaceRes(
-          this.editor.scene.children.filter(obj => obj instanceof THREE.Mesh),
+          this.editor.scene.children.filter(
+            (obj: THREE.Object3D): boolean => {
+              return obj instanceof THREE.Mesh;
+            }),
           peer);
     });
 
