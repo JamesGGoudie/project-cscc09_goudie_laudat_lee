@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { ColorEvent } from 'ngx-color';
@@ -57,6 +58,7 @@ export class EditorComponent {
   public auth2: any;
 
   public constructor(
+    public snackBar: MatSnackBar,
     private readonly router: Router,
     private readonly workspaceStateService: WorkspaceStateService,
     private readonly workspaceSyncService: WorkspaceSyncService
@@ -411,29 +413,36 @@ export class EditorComponent {
     }
   }
 
-  public uploadSceneToDrive() {
+  public uploadSceneToDrive(filetype:string) {
     // check that user is signed into google
     if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
       // https://developers.google.com/drive/api/v3/manage-uploads#multipart
-      let data = this.editor.exportScene('json')
-      let file = new Blob([data], {type:'plain/text'});
-      let metadata = {
-        'name':'architect3d_export.json',
-        'mimeType':'application/json',
-      }
-      let accessToken = gapi.auth.getToken().access_token;
-      let form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
-      form.append('file', file);
+      let data = this.editor.exportScene(filetype)
+      if (data) {
+        let file = new Blob([data], {type:'plain/text'});
+        let metadata = {
+          'name':'architect3d_export.'+filetype,
+          'mimeType':'text/plain',
+        }
+        let accessToken = gapi.auth.getToken().access_token;
+        let form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+        form.append('file', file);
 
-      let xhr = new XMLHttpRequest();
-      xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
-      xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-      xhr.responseType = 'json';
-      xhr.onload = () => {
-        if (xhr.status === 200) console.log('Successfully uploaded file to google drive!');
-      };
-      xhr.send(form);
+        let xhr = new XMLHttpRequest();
+        xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            console.log('Successfully uploaded file to google drive!');
+            this.showNotification('Uploaded file to Google Drive!', 'Dismiss');
+          }
+        };
+        xhr.send(form);
+      } else {
+        console.log('invalid file type for export');
+      }
     }
   }
 
@@ -505,5 +514,9 @@ export class EditorComponent {
   public isLoggedIntoGoogle():boolean{
     if (gapi.auth2) return gapi.auth2.getAuthInstance().isSignedIn.get();
     else return false;
+  }
+
+  public showNotification(message:string, action:string) {
+    this.snackBar.open(message, action, {duration:5000});
   }
 }

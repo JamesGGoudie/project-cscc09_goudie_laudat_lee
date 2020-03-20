@@ -23,11 +23,22 @@
 
   <button mat-flat-button color="primary" [matMenuTriggerFor]="export_menu">Export</button>
   <mat-menu #export_menu="matMenu">
-    <button mat-menu-item (click)="downloadScene('json')">Download as JSON</button>
-    <button mat-menu-item (click)="downloadScene('obj')">Download as Wavefront (.OBJ)</button>
-    <button mat-menu-item (click)="downloadScene('stl')">Download as STL (.STL)</button>
-    <button mat-menu-item (click)="downloadScene('dae')">Download as Collada (.DAE)</button>
-    <button mat-menu-item id="saveToDriveBtn" [disabled]="!isLoggedIntoGoogle()" (click)="uploadSceneToDrive()">Save to Google Drive</button>
+    <button mat-menu-item [matMenuTriggerFor]="export_download_menu">Download</button>
+    <button mat-menu-item id="saveToDriveBtn" [disabled]="!isLoggedIntoGoogle()" [matMenuTriggerFor]="export_drive_menu">Save to Google Drive</button>
+  </mat-menu>
+
+  <mat-menu #export_download_menu="matMenu">
+    <button mat-menu-item (click)="downloadScene('json')">JSON</button>
+    <button mat-menu-item (click)="downloadScene('obj')">Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="downloadScene('stl')">STL (.STL)</button>
+    <button mat-menu-item (click)="downloadScene('dae')">Collada (.DAE)</button>
+  </mat-menu>
+
+  <mat-menu #export_drive_menu="matMenu">
+    <button mat-menu-item (click)="uploadSceneToDrive('json')">JSON</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('obj')">Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('stl')">STL (.STL)</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('dae')">Collada (.DAE)</button>
   </mat-menu>
 
   <button mat-flat-button color="accent" id="googleSignInBtn" style="display:none">Link Google Account</button>
