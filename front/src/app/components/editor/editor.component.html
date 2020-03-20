@@ -23,14 +23,15 @@
 
   <button mat-flat-button color="primary" [matMenuTriggerFor]="export_menu">Export</button>
   <mat-menu #export_menu="matMenu">
-    <button mat-menu-item (click)="exportScene('json', 'download')">Download as JSON</button>
-    <button mat-menu-item (click)="exportScene('obj', 'download')">Download as Wavefront (.OBJ)</button>
-    <button mat-menu-item (click)="exportScene('stl', 'download')">Download as STL (.STL)</button>
-    <button mat-menu-item (click)="exportScene('dae', 'download')">Download as Collada (.DAE)</button>
-    <button mat-menu-item (click)="exportScene('json', 'googledrive')">Save to Google Drive</button>
+    <button mat-menu-item (click)="downloadScene('json')">Download as JSON</button>
+    <button mat-menu-item (click)="downloadScene('obj')">Download as Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="downloadScene('stl')">Download as STL (.STL)</button>
+    <button mat-menu-item (click)="downloadScene('dae')">Download as Collada (.DAE)</button>
+    <button mat-menu-item id="saveToDriveBtn" [disabled]="!isLoggedIntoGoogle()" (click)="uploadSceneToDrive()">Save to Google Drive</button>
   </mat-menu>
 
-  <!-- <button mat-flat-button color="accent" id="googleSignInButton" (click)="linkGoogleAccount()">Link Google Account</button> -->
+  <button mat-flat-button color="accent" id="googleSignInBtn" style="display:none">Link Google Account</button>
+  <button mat-flat-button color="accent" id="googleSignOutBtn" style="display:none">Unlink Google Account</button>
 </div>
 
 <div id="tool-menu" class="panel" >

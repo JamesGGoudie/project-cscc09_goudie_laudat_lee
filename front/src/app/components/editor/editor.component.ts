@@ -18,6 +18,8 @@ import {
 
 import { WorkspaceStateService, WorkspaceSyncService } from 'src/app/services';
 
+declare const gapi: any;
+
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
@@ -51,8 +53,8 @@ export class EditorComponent {
   private CLIENT_SECRET = 'yjrHIOD_qBVgbnvdf3l90oQD';
   private API_KEY = 'AIzaSyDeapSoJmwymR3N0X0GgZKgrKnoLpxHVqo';
   private SCOPES = 'https://www.googleapis.com/auth/drive';
-  private REDIRECT_URI = 'http://localhost:4200/editor'; 
-  private authenticatedGoogle = false;
+  private DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+  public auth2: any;
 
   public constructor(
     private readonly router: Router,
@@ -61,6 +63,8 @@ export class EditorComponent {
   ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
+
+    this.handleClientLoad();
 
     this.workspaceId = workspaceStateService.getWorkspaceId();
     this.userId = workspaceStateService.getUserId();
@@ -388,18 +392,12 @@ export class EditorComponent {
     document.getElementById('file-upload').dispatchEvent(new MouseEvent('click'));
   }
   
-  public exportScene(filetype:string, action:string):void {
+  public downloadScene(filetype:string):void {
     let link = this.link;
     let data = this.editor.exportScene(filetype);
     if (data) {
       let filename = 'architect3d_export.' + filetype;
-      switch(action) {
-        case 'download':
-          saveString(data, filename);
-          break;
-        case 'googledrive':
-          break;
-      }
+      saveString(data, filename);
     }
 
     function save(blob, filename) {
@@ -413,4 +411,99 @@ export class EditorComponent {
     }
   }
 
+  public uploadSceneToDrive() {
+    // check that user is signed into google
+    if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+      // https://developers.google.com/drive/api/v3/manage-uploads#multipart
+      let data = this.editor.exportScene('json')
+      let file = new Blob([data], {type:'plain/text'});
+      let metadata = {
+        'name':'architect3d_export.json',
+        'mimeType':'application/json',
+      }
+      let accessToken = gapi.auth.getToken().access_token;
+      let form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+      form.append('file', file);
+
+      let xhr = new XMLHttpRequest();
+      xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+      xhr.responseType = 'json';
+      xhr.onload = () => {
+        if (xhr.status === 200) console.log('Successfully uploaded file to google drive!');
+      };
+      xhr.send(form);
+    }
+  }
+
+  // Google Authentication Methods
+  // Ref: https://developers.google.com/drive/api/v3/quickstart/js
+  // https://developers.google.com/identity/sign-in/web/reference
+  /**
+   *  On load, called to load the auth2 library and API client library.
+   */
+  public handleClientLoad() {
+    gapi.load('client:auth2', this.initClient.bind(this));
+  }
+
+  /**
+   *  Initializes the API client library and sets up sign-in state
+   *  listeners.
+   */
+  public initClient() {
+    let authorizeButton = document.getElementById('googleSignInBtn');
+    let signoutButton = document.getElementById('googleSignOutBtn');
+    gapi.client.init({
+      apiKey: this.API_KEY,
+      clientId: this.CLIENT_ID,
+      discoveryDocs: this.DISCOVERY_DOCS,
+      scope: this.SCOPES
+    }).then(function () {
+      // Listen for sign-in state changes.
+      gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
+
+      // Handle the initial sign-in state.
+      this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
+      authorizeButton.onclick = this.handleAuthClick;
+      signoutButton.onclick = this.handleSignoutClick;
+    }.bind(this), function(error) {
+      console.log(JSON.stringify(error, null, 2));
+    });
+  }
+
+  /**
+   *  Called when the signed in status changes, to update the UI
+   *  appropriately. After a sign-in, the API is called.
+   */
+  public updateSigninStatus(isSignedIn) {
+    let authorizeButton = document.getElementById('googleSignInBtn');
+    let signoutButton = document.getElementById('googleSignOutBtn');
+    if (isSignedIn) {
+      authorizeButton.style.display = 'none';
+      signoutButton.style.display = 'inline-block';
+    } else {
+      authorizeButton.style.display = 'inline-block';
+      signoutButton.style.display = 'none';
+    }
+  }
+
+  /**
+   *  Sign in the user upon button click.
+   */
+  public handleAuthClick(event) {
+    gapi.auth2.getAuthInstance().signIn();
+  }
+
+  /**
+   *  Sign out the user upon button click.
+   */
+  public handleSignoutClick(event) {
+    gapi.auth2.getAuthInstance().signOut();
+  }
+
+  public isLoggedIntoGoogle():boolean{
+    if (gapi.auth2) return gapi.auth2.getAuthInstance().isSignedIn.get();
+    else return false;
+  }
 }
