@@ -78,6 +78,7 @@ export class RtcService {
 
       this.peer.on('error', (err) => {
         console.error(err);
+        countConn();
       });
 
       conn.on('open', () => {
@@ -87,7 +88,6 @@ export class RtcService {
 
       conn.on('error', (err): void => {
         console.error(err);
-        countConn();
       });
     }
 
