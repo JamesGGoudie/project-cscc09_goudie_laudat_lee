@@ -40,13 +40,22 @@ const root = {
 
     if (db.createWorkspace(req.workspaceId, req.workspacePassword)) {
       if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
-        return {
-          success: true
+        const peerId: string = db.createPeerInWorkspace(req.workspaceId);
+
+        if (peerId) {
+          return {
+            yourPeerId: peerId
+          };
+        } else {
+          return {
+            err: 'Workspace and User was created, but failed to created Peed' +
+                ' ID'
+          };
         }
       } else {
         return {
           err: 'Workspace was created, but failed to add user to database'
-        }
+        };
       }
     } else {
       return {
@@ -76,13 +85,23 @@ const root = {
     }
 
     if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
-      // Get all peer IDs except for the current user.
-      return {
-        peers: db.getWorkspacePeerIds(req.workspaceId).filter(
-            (peer: string): boolean => {
-          return peer.substring(req.workspaceId.length + 1) !== req.userId;
-        })
-      };
+      const peerId: string = db.createPeerInWorkspace(req.workspaceId);
+
+      if (peerId) {
+        const otherPeers: string[] = db.getWorkspacePeerIds(req.workspaceId)
+            .filter((other: string): boolean => {
+          return other !== peerId;
+        });
+
+        return {
+          otherPeerIds: otherPeers,
+          yourPeerId: peerId
+        }
+      } else {
+        return {
+          err: 'User was created, but could not create peer ID'
+        };
+      }
     } else {
       return {
         err: 'Workspace exists, password is correct, and user ID is' +

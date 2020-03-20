@@ -1,6 +1,7 @@
 export interface JoinWorkspaceRes {
 
   err?: string;
-  peers?: string[];
+  yourPeerId?: string;
+  otherPeerIds?: string[];
 
 }

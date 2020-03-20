@@ -36,7 +36,7 @@ export class WorkspaceControlService {
         userId: $userId
       ) {
         err,
-        success
+        yourPeerId
       }
     }`;
     const variables: CreateWorkspaceVars = {
@@ -72,7 +72,8 @@ export class WorkspaceControlService {
         userId: $userId
       ) {
         err,
-        peers
+        yourPeerId,
+        otherPeerIds
       }
     }`;
     const variables: JoinWorkspaceVars = {

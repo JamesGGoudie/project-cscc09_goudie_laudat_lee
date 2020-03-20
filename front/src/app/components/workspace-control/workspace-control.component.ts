@@ -48,9 +48,8 @@ export class WorkspaceControlComponent {
         (res: CreateWorkspaceRes): void => {
       if (res.data.createWorkspace.err) {
         console.error(res.data.createWorkspace.err);
-      } else if (!res.data.createWorkspace.success) {
       } else {
-        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(
+        this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
             (): void => {
           this.setupWorkspace(form.workspaceId, form.userId, false);
         });
@@ -64,10 +63,10 @@ export class WorkspaceControlComponent {
       if (res.data.joinWorkspace.err) {
         console.error(res.data.joinWorkspace.err);
       } else {
-        this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(
+        this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
             (): void => {
-          this.rtc.connectToPeers(res.data.joinWorkspace.peers).subscribe(
-              (): void => {
+          this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
+              .subscribe((): void => {
             this.zone.run((): void => {
               this.setupWorkspace(form.workspaceId, form.userId, true);
             });

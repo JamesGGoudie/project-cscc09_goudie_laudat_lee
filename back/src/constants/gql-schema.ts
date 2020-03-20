@@ -3,11 +3,12 @@ import { buildSchema } from 'graphql';
 export const GQL_SCHEMA = buildSchema(`
   type CreateWsRes {
     err: String,
-    success: Boolean
+    yourPeerId: String
   }
   type JoinWsRes {
     err: String,
-    peers: [String!]
+    otherPeerIds: [String!],
+    yourPeerId: String
   }
 
   type Query {

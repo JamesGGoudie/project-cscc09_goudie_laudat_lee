@@ -1,4 +1,5 @@
 import { Workspace } from '../interfaces';
+import { randomPeerId } from '../utils';
 
 export class Database {
 
@@ -27,9 +28,16 @@ export class Database {
 
   public addUserToWorkspace(workspaceId: string, userId: string): boolean {
     this.fakeDatabase[workspaceId].users.push(userId);
-    this.fakeDatabase[workspaceId].peerIds.push(`${workspaceId}-${userId}`);
 
     return true;
+  }
+
+  public createPeerInWorkspace(workspaceId: string): string {
+    const peerId = randomPeerId();
+
+    this.fakeDatabase[workspaceId].peerIds.push(peerId);
+
+    return peerId;
   }
 
   public getWorkspacePeerIds(workspaceId: string): string[] {
