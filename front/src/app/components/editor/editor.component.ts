@@ -95,6 +95,20 @@ export class EditorComponent {
     this.rtc.deleteObject().subscribe((objId: string): void => {
       this.editor.deleteObjectByUuid(objId);
     });
+
+    this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
+      this.rtc.sendCopyWorkspaceRes(
+          this.editor.scene.children.filter(obj => obj instanceof THREE.Mesh),
+          peer);
+    });
+
+    this.rtc.copyWorkspaceRes().subscribe((objs: ObjectInfo[]): void => {
+      this.editor.loadScene(objs);
+    });
+
+    if (this.state.getJoinedWorkspace()) {
+      this.rtc.sendCopyWorkspaceReq();
+    }
   }
 
   /**

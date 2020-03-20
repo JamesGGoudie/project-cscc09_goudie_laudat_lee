@@ -193,21 +193,14 @@ let Editor = function(){
         outlineObject(mesh, DEFAULT_OUTLINE);
     }
 
-    function loadObj(objData, keepSelected) {
-        if (keepSelected &&
-                currentSelection &&
-                currentSelection.uuid === objData.objectId) {
-            return;
-        }
-
+    function loadObj(objData) {
         addObjToScene(objData);
-
         render();
     }
 
-    function loadScene(data, keepSelected) {
+    function loadScene(data) {
         // clear all existing objects
-        clearScene(keepSelected);
+        clearScene();
         if (data){
             let parsed;
 
@@ -218,7 +211,7 @@ let Editor = function(){
             }
 
             for (const objData of parsed) {
-                loadObj(objData, keepSelected);
+                addObjToScene(objData);
             }
             render();
         }
@@ -319,13 +312,10 @@ let Editor = function(){
         }
     };
 
-    function clearScene(keepSelected){
+    function clearScene(){
         // Get all mesh objects except for the one selected if indicated.
         let allObjects = scene.children.filter((obj) => {
-            return obj instanceof THREE.Mesh &&
-                    !(keepSelected &&
-                    currentSelection &&
-                    currentSelection.uuid === obj.uuid);
+            return obj instanceof THREE.Mesh;
         });
 
         allObjects.forEach(function(obj){

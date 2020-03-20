@@ -4,9 +4,9 @@ import { ObjectInfo } from '../models';
 
 import { RtcMessage } from './rtc-message';
 
-export interface RtcCopyWsMsg extends RtcMessage {
+export interface RtcCopyWsRes extends RtcMessage {
 
-  type: RtcMessageType.CopyWorkspace;
+  type: RtcMessageType.CopyWorkspaceRes;
 
   workspaceObjects: ObjectInfo[];
 

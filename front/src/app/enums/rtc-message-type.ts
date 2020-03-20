@@ -5,6 +5,7 @@ export enum RtcMessageType {
   DeleteObject,
   CreateObject,
   ModifyObject,
-  CopyWorkspace
+  CopyWorkspaceReq,
+  CopyWorkspaceRes
 
 }

@@ -7,6 +7,8 @@ import { LS_KEYS } from 'src/app/constants';
 })
 export class WorkspaceStateService {
 
+  private joinedWorkspace: boolean = false;
+
   private workspaceId: string;
   private userId: string;
   private pinnedObj: string;
@@ -14,6 +16,14 @@ export class WorkspaceStateService {
   private pinnedByOthers: string[] = [];
 
   private versionHistory: {[objId: string]: number} = {};
+
+  public setJoinedWorkspace(value: boolean): void {
+    this.joinedWorkspace = value;
+  }
+
+  public getJoinedWorkspace(): boolean {
+    return this.joinedWorkspace;
+  }
 
   public saveVersionHistory(objId: string, version: number): void {
     this.versionHistory[objId] = version;

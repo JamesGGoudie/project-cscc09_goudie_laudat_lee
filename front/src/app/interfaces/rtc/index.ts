@@ -1,4 +1,5 @@
-export * from './rtc-copy-ws-msg';
+export * from './rtc-copy-ws-req';
+export * from './rtc-copy-ws-res';
 export * from './rtc-create-obj-msg';
 export * from './rtc-delete-obj-msg';
 export * from './rtc-message';

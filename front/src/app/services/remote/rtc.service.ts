@@ -8,7 +8,8 @@ import { RtcMessageType } from 'src/app/enums';
 
 import {
   ObjectInfo,
-  RtcCopyWsMsg,
+  RtcCopyWsReq,
+  RtcCopyWsRes,
   RtcCreateObjMsg,
   RtcDeleteObjMsg,
   RtcMessage,
@@ -32,11 +33,14 @@ export class RtcService {
       new Subject<ObjectInfo>();
   private readonly onModifyObject: Subject<ObjectInfo> =
       new Subject<ObjectInfo>();
-  private readonly onCopyWorkspace: Subject<ObjectInfo[]> =
+  private readonly onCopyWorkspaceReq: Subject<string> = new Subject<string>();
+  private readonly onCopyWorkspaceRes: Subject<ObjectInfo[]> =
       new Subject<ObjectInfo[]>();
 
   private peer: Peer;
-  private readonly connections: Peer.DataConnection[] = [];
+  private readonly peers: string[] = [];
+  private readonly connections: Map<string, Peer.DataConnection> =
+      new Map<string, Peer.DataConnection>();
 
   public constructor(
     private readonly zone: NgZone,
@@ -85,7 +89,7 @@ export class RtcService {
       objectId: id
     };
 
-    this.send(data);
+    this.sendToAll(data);
   }
 
   public sendUnpinObjectMessage(id: string): void {
@@ -94,7 +98,7 @@ export class RtcService {
       objectId: id
     };
 
-    this.send(data);
+    this.sendToAll(data);
   }
 
   public sendDeleteObjectMessage(id: string): void {
@@ -103,7 +107,7 @@ export class RtcService {
       objectId: id
     }
 
-    this.send(data);
+    this.sendToAll(data);
   }
 
   public sendCreateObjectMessage(obj: THREE.Mesh): void {
@@ -112,7 +116,7 @@ export class RtcService {
       objectInfo: this.convertMeshToObjInfo(obj)
     }
 
-    this.send(data);
+    this.sendToAll(data);
   }
 
   public sendModifyObjectMessage(obj: THREE.Mesh): void {
@@ -121,7 +125,24 @@ export class RtcService {
       objectInfo: this.convertMeshToObjInfo(obj)
     }
 
-    this.send(data);
+    this.sendToAll(data);
+  }
+
+  public sendCopyWorkspaceReq(): void {
+    const data: RtcCopyWsReq = {
+      type: RtcMessageType.CopyWorkspaceReq
+    };
+
+    this.sendToArbiter(data);
+  }
+
+  public sendCopyWorkspaceRes(obj: THREE.Mesh[], peer: string): void {
+    const data: RtcCopyWsRes = {
+      type: RtcMessageType.CopyWorkspaceRes,
+      workspaceObjects: obj.map(obj => this.convertMeshToObjInfo(obj))
+    };
+
+    this.sendToPeer(data, peer);
   }
 
   public pinObject(): Observable<string> {
@@ -144,8 +165,12 @@ export class RtcService {
     return this.onModifyObject;
   }
 
-  public copyWorkspace(): Observable<ObjectInfo[]> {
-    return this.onCopyWorkspace;
+  public copyWorkspaceReq(): Observable<string> {
+    return this.onCopyWorkspaceReq;
+  }
+
+  public copyWorkspaceRes(): Observable<ObjectInfo[]> {
+    return this.onCopyWorkspaceRes;
   }
 
   private convertMeshToObjInfo(mesh: THREE.Mesh): ObjectInfo {
@@ -175,23 +200,38 @@ export class RtcService {
     };
   }
 
-  private send(data: RtcMessage): void {
+  private sendToArbiter(data: RtcMessage): void {
     console.log(data);
-    for (const conn of this.connections) {
+
+    this.connections.get(this.peers[0]).send(data);
+  }
+
+  private sendToPeer(data: RtcMessage, peer: string): void {
+    console.log(data);
+
+    this.connections.get(peer).send(data);
+  }
+
+  private sendToAll(data: RtcMessage): void {
+    console.log(data);
+
+    this.connections.forEach((conn: Peer.DataConnection): void => {
       conn.send(data);
-    }
+    });
   }
 
   private setUpConnection(conn: Peer.DataConnection) {
-    console.log(conn);
-
-    this.connections.push(conn);
+    this.peers.push(conn.peer);
+    this.connections.set(conn.peer, conn);
 
     conn.on('data', (data: RtcMessage) => {
       console.log(data);
       switch (data.type) {
-        case RtcMessageType.CopyWorkspace:
-          this.processCopyWorkspace(data as RtcCopyWsMsg);
+        case RtcMessageType.CopyWorkspaceReq:
+          this.processCopyWorkspaceReq(data as RtcCopyWsReq, conn.peer);
+          break;
+        case RtcMessageType.CopyWorkspaceRes:
+          this.processCopyWorkspaceRes(data as RtcCopyWsRes);
           break;
         case RtcMessageType.CreateObject:
           this.processCreateObject(data as RtcCreateObjMsg);
@@ -234,8 +274,12 @@ export class RtcService {
     this.onModifyObject.next(data.objectInfo);
   }
 
-  private processCopyWorkspace(data: RtcCopyWsMsg) {
-    this.onCopyWorkspace.next(data.workspaceObjects);
+  private processCopyWorkspaceReq(data: RtcCopyWsReq, peer: string) {
+    this.onCopyWorkspaceReq.next(peer);
+  }
+
+  private processCopyWorkspaceRes(data: RtcCopyWsRes) {
+    this.onCopyWorkspaceRes.next(data.workspaceObjects);
   }
 
 }

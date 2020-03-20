@@ -40,7 +40,7 @@ export class WorkspaceControlComponent {
     private readonly router: Router,
     private readonly rtc: RtcService,
     private readonly workspaceControlService: WorkspaceControlService,
-    private readonly workspaceStateService: WorkspaceStateService
+    private readonly state: WorkspaceStateService
   ) {}
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
@@ -48,7 +48,7 @@ export class WorkspaceControlComponent {
         (res: CreateWorkspaceRes): void => {
       if (res.data.createWorkspace) {
         this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
-          this.setupWorkspace(form.workspaceId, form.userId);
+          this.setupWorkspace(form.workspaceId, form.userId, false);
         });
       }
     });
@@ -61,7 +61,7 @@ export class WorkspaceControlComponent {
         this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
           this.rtc.connectToPeers(res.data.joinWorkspace).subscribe(() => {
             this.zone.run(() => {
-              this.setupWorkspace(form.workspaceId, form.userId);
+              this.setupWorkspace(form.workspaceId, form.userId, true);
             });
           });
         });
@@ -69,9 +69,14 @@ export class WorkspaceControlComponent {
     });
   }
 
-  private setupWorkspace(workspaceId: string, userId: string): void {
-    this.workspaceStateService.setWorkspaceId(workspaceId);
-    this.workspaceStateService.setUserId(userId);
+  private setupWorkspace(
+    workspaceId: string,
+    userId: string,
+    joined: boolean
+  ): void {
+    this.state.setJoinedWorkspace(joined);
+    this.state.setWorkspaceId(workspaceId);
+    this.state.setUserId(userId);
 
     this.router.navigate([FRONT_ROUTES.EDITOR]);
   }
