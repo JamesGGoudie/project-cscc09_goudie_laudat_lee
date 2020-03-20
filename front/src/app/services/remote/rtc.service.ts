@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 import Peer from 'peerjs';
@@ -18,7 +18,6 @@ import {
   RtcUnpinObjMsg
 } from 'src/app/interfaces';
 
-import { WorkspaceStateService } from '../local';
 import { MeshBasicMaterial } from 'three';
 
 @Injectable({
@@ -41,11 +40,6 @@ export class RtcService {
   private readonly peers: string[] = [];
   private readonly connections: Map<string, Peer.DataConnection> =
       new Map<string, Peer.DataConnection>();
-
-  public constructor(
-    private readonly zone: NgZone,
-    private readonly state: WorkspaceStateService
-  ) {}
 
   public createPeer(id: string): Observable<void> {
     this.peer = new Peer(id);

@@ -1,28 +1,18 @@
 import { Component } from '@angular/core';
 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
-import { FRONT_ROUTES } from 'src/app/constants';
-
 import {
-  DeleteObjectRes,
-  GetWorkspaceRes,
-  PinObjectRes,
-  ReportChangesRes,
-  UnpinObjectRes,
   ObjectInfo
 } from 'src/app/interfaces';
 
 import {
   RtcService,
-  WorkspaceStateService,
-  WorkspaceSyncService
+  WorkspaceStateService
 } from 'src/app/services';
-import { Scene } from 'three';
 
 @Component({
   selector: 'app-editor',
@@ -47,33 +37,17 @@ export class EditorComponent {
 
   private updateTimer: number = -1;
 
-  private workspaceId: string;
-  private userId: string;
   private oldObj: THREE.Mesh;
 
   public constructor(
-    private readonly router: Router,
     private readonly rtc: RtcService,
-    private readonly state: WorkspaceStateService,
-    private readonly workspaceSyncService: WorkspaceSyncService
+    private readonly state: WorkspaceStateService
   ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
 
-    this.workspaceId = state.getWorkspaceId();
-    this.userId = state.getUserId();
-
     this.setUpClickEvent();
     this.setUpKeydownEvent();
-
-    this.updateWorkspace(false);
-
-    // Every 2.5 seconds, refresh the workspace with whatever is on the server.
-    window.setInterval((): void => {
-      // Keep the selected object since we may not have sent our most recent
-      // changes.
-      this.updateWorkspace(true);
-    }, 2500);
 
     this.rtc.createObject().subscribe((objInfo: ObjectInfo): void => {
       this.editor.loadObj(objInfo, false);
@@ -112,32 +86,6 @@ export class EditorComponent {
     if (this.state.getJoinedWorkspace()) {
       this.rtc.sendCopyWorkspaceReq();
     }
-  }
-
-  /**
-   * Remove all items from the workspace and replace them with anything from
-   * the server.
-   *
-   * @param keepSelected True iff we don't want to replace the selected object.
-   */
-  private updateWorkspace(keepSelected: boolean): void {
-    // this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
-    //     (res: GetWorkspaceRes): void => {
-    //   if (res.data.getWorkspace) {
-    //     this.editor.loadScene(res.data.getWorkspace, keepSelected);
-
-    //     // Save the version of every object.
-    //     for (const obj of res.data.getWorkspace) {
-    //       this.state.saveVersionHistory(
-    //           obj.objectId, obj.version);
-    //     }
-    //   } else {
-    //     // If the workspace does not exist, navigate to the workspace control
-    //     // screen.
-    //     this.editor.renderer.domElement.remove();
-    //     this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
-    //   }
-    // });
   }
 
   // Form specific functions
@@ -215,7 +163,6 @@ export class EditorComponent {
 
     this.selectObject(obj);
     this.rtc.sendCreateObjectMessage(obj);
-    // this.reportChanges(obj);
   }
 
   public deleteCurrentObject(): void {
@@ -228,14 +175,6 @@ export class EditorComponent {
       this.rtc.sendDeleteObjectMessage(obj.uuid);
 
       this.editor.deleteObject(obj);
-
-      // this.workspaceSyncService.deleteObject(
-      //   obj.uuid, this.userId, this.workspaceId
-      // ).subscribe((res: DeleteObjectRes): void => {
-      //   if (res.data.deleteObject) {
-      //     this.editor.deleteObject(obj);
-      //   }
-      // });
     }
   }
 
@@ -251,15 +190,6 @@ export class EditorComponent {
         this.updateEditControls();
       }
     }
-
-    // this.workspaceSyncService.pinObject(
-    //   this.workspaceId, obj.uuid, this.userId
-    // ).subscribe((res: PinObjectRes): void => {
-    //   if (res.data.pinObject) {
-    //     this.editor.selectObject(obj);
-    //     this.updateEditControls();
-    //   }
-    // });
   }
 
   public getCurrentObject(): THREE.Mesh {
@@ -326,16 +256,6 @@ export class EditorComponent {
 
       this.editor.deselectCurrentObject();
     };
-
-    // this.reportChanges(this.getCurrentObject(), (): void => {
-    //   this.workspaceSyncService.unpinObject(
-    //     this.workspaceId, this.getCurrentObject().uuid, this.userId
-    //   ).subscribe((res: UnpinObjectRes): void => {
-    //     if (res.data.unpinObject) {
-    //       this.editor.deselectCurrentObject();
-    //     }
-    //   });
-    // });
   }
 
   private resetChangesTimer(): void {
@@ -381,44 +301,13 @@ export class EditorComponent {
    * The server will update its version of the scene using what was given.
    *
    * @param obj
-   * @param callback To be called once the response from the server has been
-   *     recieved.
    */
   private reportChanges(
-    obj: THREE.Mesh,
-    callback?: (success: boolean) => void
+    obj: THREE.Mesh
   ): void {
     if (obj) {
       this.rtc.sendModifyObjectMessage(obj);
     }
-
-    // if (!!obj) {
-    //   // If the object given is the old object, then reset the timer.
-    //   if (obj === this.oldObj) {
-    //     this.resetChangesTimer();
-    //   }
-
-    //   // Increment the version of the object.
-    //   const version = this.state.getVersionHistory(
-    //       obj.uuid) + 1;
-
-    //   this.workspaceSyncService.reportChanges(
-    //     obj,
-    //     this.userId,
-    //     this.workspaceId,
-    //     version
-    //   ).subscribe((res: ReportChangesRes): void => {
-    //     // Save the version locally.
-    //     if (res.data.reportChanges) {
-    //       this.state.saveVersionHistory(obj.uuid, version);
-    //     }
-
-    //     // Call the callback, if it exists.
-    //     if (!!callback) {
-    //       callback(res.data.reportChanges);
-    //     }
-    //   });
-    // }
   }
 
 }
