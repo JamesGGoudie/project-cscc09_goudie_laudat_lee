@@ -196,13 +196,13 @@ let Editor = function(){
                         currentSelection.uuid === objData.objectId) {
                     continue;
                 }
-                addCustomObject(objData);
+                addCustomObject(objData, false);
             }
             render();
         }
     }
 
-    function addCustomObject(objData) {
+    function addCustomObject(objData, isNew) {
         let geometry, material, mesh;
         switch(objData.geometryType){
             case 'BoxBufferGeometry':
@@ -224,7 +224,7 @@ let Editor = function(){
 
         // add to scene
         scene.add( mesh );
-        mesh.uuid = String(objData.objectId);
+        if (!isNew) mesh.uuid = String(objData.objectId);
         outlineObject(mesh, DEFAULT_OUTLINE);
 
         return mesh;

@@ -47,6 +47,13 @@ export class EditorComponent {
   private userId: string;
   private oldObj: THREE.Mesh;
 
+  private CLIENT_ID = '316564469406-tbr553n24lmf2rkap6ir7rcmv0fi6oro.apps.googleusercontent.com';
+  private CLIENT_SECRET = 'yjrHIOD_qBVgbnvdf3l90oQD';
+  private API_KEY = 'AIzaSyDeapSoJmwymR3N0X0GgZKgrKnoLpxHVqo';
+  private SCOPES = 'https://www.googleapis.com/auth/drive';
+  private REDIRECT_URI = 'http://localhost:4200/editor'; 
+  private authenticatedGoogle = false;
+
   public constructor(
     private readonly router: Router,
     private readonly workspaceStateService: WorkspaceStateService,
@@ -346,9 +353,12 @@ export class EditorComponent {
   }
 
   public onFileInput(files):void {
+    console.log('file input');
     let file = files.item(0);
+    console.log(file);
     if (file.type=='application/json') {
       file.text().then(function(text){
+        console.log(text);
         let parsed = [];
         try{
           parsed = JSON.parse(text);
@@ -357,17 +367,16 @@ export class EditorComponent {
         } finally {
           for (const objData of parsed) {
             // check that given json has all the required properties
-            if (objData.uuid instanceof String &&
-                objData.name instanceof String &&
-                objData.position instanceof Array &&
-                objData.scale instanceof Array &&
-                objData.rotation instanceof Array &&
-                objData.geometryType instanceof String &&
-                objData.materialColorHex instanceof String &&
+            if (typeof objData.name == "string"  &&
+                typeof objData.geometryType == "string" &&
+                typeof objData.materialColorHex == "string" &&
                 !objData.position.some(isNaN) &&
                 !objData.scale.some(isNaN) &&
-                !objData.rotation.some(isNaN)) {
-              this.reportChanges(this.editor.addCustomObject(objData));
+                !objData.rotation.slice(0,3).some(isNaN)) {
+              console.log(objData);
+              const newObj = this.editor.addCustomObject(objData, true);
+              console.log(newObj);
+              this.reportChanges(newObj);
             }
           }
         }

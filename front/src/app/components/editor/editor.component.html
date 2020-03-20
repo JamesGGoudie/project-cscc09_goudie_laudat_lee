@@ -13,7 +13,7 @@
   <p>shift+Backspace          = delete current object</p>
   <p>shift+Z                  = reset camera</p>
 </div> -->
-<input id="file-upload" type="file" multiple="false" (change)="onFileInput($event.target.files);">
+<input id="file-upload" type="file" multiple="false" (change)="onFileInput($event.target.files);" (click)="$event.target.value = null">
 
 <div id="top-menu" class="panel">
   <button mat-flat-button color="primary" [matMenuTriggerFor]="import_menu">Import</button>
@@ -27,8 +27,10 @@
     <button mat-menu-item (click)="exportScene('obj', 'download')">Download as Wavefront (.OBJ)</button>
     <button mat-menu-item (click)="exportScene('stl', 'download')">Download as STL (.STL)</button>
     <button mat-menu-item (click)="exportScene('dae', 'download')">Download as Collada (.DAE)</button>
-    <!-- <button mat-menu-item>Save to Google Drive</button> -->
+    <button mat-menu-item (click)="exportScene('json', 'googledrive')">Save to Google Drive</button>
   </mat-menu>
+
+  <!-- <button mat-flat-button color="accent" id="googleSignInButton" (click)="linkGoogleAccount()">Link Google Account</button> -->
 </div>
 
 <div id="tool-menu" class="panel" >
