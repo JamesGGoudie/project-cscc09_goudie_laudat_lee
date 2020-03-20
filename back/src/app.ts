@@ -13,8 +13,11 @@ import {
   ObjectInfo,
   PinObjectReq,
   ReportChangesReq,
-  UnpinObjectReq
+  UnpinObjectReq,
 } from './interfaces';
+
+import { SignUpReq } from './interfaces/requests/sign-up-req';
+
 
 import { Database } from './services';
 
@@ -53,6 +56,17 @@ const root = {
 
     return db.createWorkspace(
         req.workspaceId, req.workspacePassword, req.userId);
+  },
+  signUp: (req: SignUpReq): boolean => {
+    console.log(req);
+
+    if (db.workspaceExists(req.workspaceId)) {
+      // Workspace already exists in the database.
+      return false;
+    }
+
+    return db.createWorkspace(
+        req.workspaceId, req.password, req.username);
   },
   joinWorkspace: (req: JoinWorkspaceReq): boolean => {
     console.log(req);

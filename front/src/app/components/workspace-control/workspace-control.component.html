@@ -50,4 +50,89 @@
       <button mat-button type="submit">Join Workspace</button>
     </form>
   </mat-expansion-panel>
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Sign-up
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form
+        [formGroup]="signUp"
+        (ngSubmit)="onSignUpSubmit(signUp.value)">
+      <mat-form-field>
+        <mat-label>Email Address</mat-label>
+        <input matInput formControlName="emailAddress">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Enter first workspace ID</mat-label>
+        <input matInput formControlName="workspaceId">
+      </mat-form-field>
+
+      <button mat-button type="submit">Sign up</button>
+    </form>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Sign-in
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
+      <mat-form-field>
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Enter a workspace ID</mat-label>
+        <input matInput formControlName="workspaceId">
+      </mat-form-field>
+
+      <button mat-button type="submit">Sign in</button>
+    </form>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Make team
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
+      <mat-form-field>
+        <mat-label>Member 1 username</mat-label>
+        <input matInput formControlName="member1">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Member 2 username</mat-label>
+        <input matInput formControlName="member2">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Member 3 username</mat-label>
+        <input matInput formControlName="member3">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Member 4 username</mat-label>
+        <input matInput formControlName="member4">
+      </mat-form-field>
+
+      <button mat-button type="submit">Invite members</button>
+    </form>
+  </mat-expansion-panel>
 </mat-accordion>

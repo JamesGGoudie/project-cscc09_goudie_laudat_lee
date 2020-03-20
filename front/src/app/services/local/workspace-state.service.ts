@@ -43,4 +43,8 @@ export class WorkspaceStateService {
     localStorage.setItem(LS_KEYS.WORKSPACE_ID, id);
   }
 
+  public setUsername(username: string): void {
+    localStorage.setItem(LS_KEYS.USERNAME, username);
+  }
+
 }

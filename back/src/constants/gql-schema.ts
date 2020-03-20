@@ -29,6 +29,12 @@ export const GQL_SCHEMA = buildSchema(`
       workspacePassword: String!,
       userId: String!
     ): Boolean
+    signUp(
+      emailAddress: String!,
+      username: String!,
+      password: String!,
+      workspaceId: String!
+    ): Boolean
     pinObject(
       objectId: String!,
       userId: String!,
