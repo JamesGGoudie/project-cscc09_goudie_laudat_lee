@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -36,6 +36,7 @@ export class WorkspaceControlComponent {
   });
 
   public constructor(
+    private readonly zone: NgZone,
     private readonly router: Router,
     private readonly rtc: RtcService,
     private readonly workspaceControlService: WorkspaceControlService,
@@ -59,7 +60,9 @@ export class WorkspaceControlComponent {
       if (res.data.joinWorkspace) {
         this.rtc.createPeer(`${form.workspaceId}-${form.userId}`).subscribe(() => {
           this.rtc.connectToPeers(res.data.joinWorkspace).subscribe(() => {
-            this.setupWorkspace(form.workspaceId, form.userId);
+            this.zone.run(() => {
+              this.setupWorkspace(form.workspaceId, form.userId);
+            });
           });
         });
       }

@@ -13,10 +13,16 @@ import {
   GetWorkspaceRes,
   PinObjectRes,
   ReportChangesRes,
-  UnpinObjectRes
+  UnpinObjectRes,
+  ObjectInfo
 } from 'src/app/interfaces';
 
-import { WorkspaceStateService, WorkspaceSyncService } from 'src/app/services';
+import {
+  RtcService,
+  WorkspaceStateService,
+  WorkspaceSyncService
+} from 'src/app/services';
+import { Scene } from 'three';
 
 @Component({
   selector: 'app-editor',
@@ -47,14 +53,15 @@ export class EditorComponent {
 
   public constructor(
     private readonly router: Router,
-    private readonly workspaceStateService: WorkspaceStateService,
+    private readonly rtc: RtcService,
+    private readonly state: WorkspaceStateService,
     private readonly workspaceSyncService: WorkspaceSyncService
   ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
 
-    this.workspaceId = workspaceStateService.getWorkspaceId();
-    this.userId = workspaceStateService.getUserId();
+    this.workspaceId = state.getWorkspaceId();
+    this.userId = state.getUserId();
 
     this.setUpClickEvent();
     this.setUpKeydownEvent();
@@ -67,6 +74,27 @@ export class EditorComponent {
       // changes.
       this.updateWorkspace(true);
     }, 2500);
+
+    this.rtc.createObject().subscribe((objInfo: ObjectInfo): void => {
+      this.editor.loadObj(objInfo, false);
+    });
+
+    this.rtc.modifyObject().subscribe((objInfo: ObjectInfo): void => {
+      this.editor.deleteObjectByUuid(objInfo.objectId);
+      this.editor.loadObj(objInfo, true);
+    });
+
+    this.rtc.pinObject().subscribe((objId: string): void => {
+      this.state.addOtherUsersPin(objId);
+    });
+
+    this.rtc.unpinObject().subscribe((objId: string): void => {
+      this.state.removeOtherUsersPin(objId);
+    });
+
+    this.rtc.deleteObject().subscribe((objId: string): void => {
+      this.editor.deleteObjectByUuid(objId);
+    });
   }
 
   /**
@@ -76,23 +104,23 @@ export class EditorComponent {
    * @param keepSelected True iff we don't want to replace the selected object.
    */
   private updateWorkspace(keepSelected: boolean): void {
-    this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
-        (res: GetWorkspaceRes): void => {
-      if (res.data.getWorkspace) {
-        this.editor.loadScene(res.data.getWorkspace, keepSelected);
+    // this.workspaceSyncService.getWorkspace(this.workspaceId).subscribe(
+    //     (res: GetWorkspaceRes): void => {
+    //   if (res.data.getWorkspace) {
+    //     this.editor.loadScene(res.data.getWorkspace, keepSelected);
 
-        // Save the version of every object.
-        for (const obj of res.data.getWorkspace) {
-          this.workspaceStateService.saveVersionHistory(
-              obj.objectId, obj.version);
-        }
-      } else {
-        // If the workspace does not exist, navigate to the workspace control
-        // screen.
-        this.editor.renderer.domElement.remove();
-        this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
-      }
-    });
+    //     // Save the version of every object.
+    //     for (const obj of res.data.getWorkspace) {
+    //       this.state.saveVersionHistory(
+    //           obj.objectId, obj.version);
+    //     }
+    //   } else {
+    //     // If the workspace does not exist, navigate to the workspace control
+    //     // screen.
+    //     this.editor.renderer.domElement.remove();
+    //     this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
+    //   }
+    // });
   }
 
   // Form specific functions
@@ -166,10 +194,11 @@ export class EditorComponent {
   }
 
   public addNewObject(type:string): void {
-    const obj = this.editor.addNewObject(type);
+    const obj: THREE.Mesh = this.editor.addNewObject(type);
 
     this.selectObject(obj);
-    this.reportChanges(obj);
+    this.rtc.sendCreateObjectMessage(obj);
+    // this.reportChanges(obj);
   }
 
   public deleteCurrentObject(): void {
@@ -179,25 +208,41 @@ export class EditorComponent {
     this.resetChangesTimer();
 
     if (obj) {
-      this.workspaceSyncService.deleteObject(
-        obj.uuid, this.userId, this.workspaceId
-      ).subscribe((res: DeleteObjectRes): void => {
-        if (res.data.deleteObject) {
-          this.editor.deleteObject(obj);
-        }
-      });
+      this.rtc.sendDeleteObjectMessage(obj.uuid);
+
+      this.editor.deleteObject(obj);
+
+      // this.workspaceSyncService.deleteObject(
+      //   obj.uuid, this.userId, this.workspaceId
+      // ).subscribe((res: DeleteObjectRes): void => {
+      //   if (res.data.deleteObject) {
+      //     this.editor.deleteObject(obj);
+      //   }
+      // });
     }
   }
 
-  public selectObject(obj:THREE.Mesh | THREE.Object3D) {
-    this.workspaceSyncService.pinObject(
-      this.workspaceId, obj.uuid, this.userId
-    ).subscribe((res: PinObjectRes): void => {
-      if (res.data.pinObject) {
+  public selectObject(obj: THREE.Mesh | THREE.Object3D) {
+    if (obj) {
+      if (!this.state.isPinnedByOther(obj.uuid)) {
+        this.deselectCurrentObject();
+        this.rtc.sendPinObjectMessage(obj.uuid);
+
+        this.state.setCurrentUsersPin(obj.uuid);
+
         this.editor.selectObject(obj);
         this.updateEditControls();
       }
-    });
+    }
+
+    // this.workspaceSyncService.pinObject(
+    //   this.workspaceId, obj.uuid, this.userId
+    // ).subscribe((res: PinObjectRes): void => {
+    //   if (res.data.pinObject) {
+    //     this.editor.selectObject(obj);
+    //     this.updateEditControls();
+    //   }
+    // });
   }
 
   public getCurrentObject(): THREE.Mesh {
@@ -236,7 +281,7 @@ export class EditorComponent {
         switch (event.keyCode) {
           case 68:
             // D
-            this.deselectObject();
+            this.deselectCurrentObject();
             break;
           case 8:
             // Backspace
@@ -255,16 +300,25 @@ export class EditorComponent {
    * First, update the server with the current information about the object.
    * Second, unpin the object on the server.
    */
-  private deselectObject(): void {
-    this.reportChanges(this.getCurrentObject(), (): void => {
-      this.workspaceSyncService.unpinObject(
-        this.workspaceId, this.getCurrentObject().uuid, this.userId
-      ).subscribe((res: UnpinObjectRes): void => {
-        if (res.data.unpinObject) {
-          this.editor.deselectObject();
-        }
-      });
-    });
+  private deselectCurrentObject(): void {
+    const obj = this.getCurrentObject();
+
+    if (obj) {
+      this.rtc.sendModifyObjectMessage(this.getCurrentObject());
+      this.rtc.sendUnpinObjectMessage(this.getCurrentObject().uuid);
+
+      this.editor.deselectCurrentObject();
+    };
+
+    // this.reportChanges(this.getCurrentObject(), (): void => {
+    //   this.workspaceSyncService.unpinObject(
+    //     this.workspaceId, this.getCurrentObject().uuid, this.userId
+    //   ).subscribe((res: UnpinObjectRes): void => {
+    //     if (res.data.unpinObject) {
+    //       this.editor.deselectCurrentObject();
+    //     }
+    //   });
+    // });
   }
 
   private resetChangesTimer(): void {
@@ -300,7 +354,7 @@ export class EditorComponent {
       this.updateTimer = window.setTimeout((): void => {
         this.updateTimer = -1;
         this.reportChanges(obj);
-      }, 1000);
+      }, 100);
     }
   }
 
@@ -317,33 +371,37 @@ export class EditorComponent {
     obj: THREE.Mesh,
     callback?: (success: boolean) => void
   ): void {
-    if (!!obj) {
-      // If the object given is the old object, then reset the timer.
-      if (obj === this.oldObj) {
-        this.resetChangesTimer();
-      }
-
-      // Increment the version of the object.
-      const version = this.workspaceStateService.getVersionHistory(
-          obj.uuid) + 1;
-
-      this.workspaceSyncService.reportChanges(
-        obj,
-        this.userId,
-        this.workspaceId,
-        version
-      ).subscribe((res: ReportChangesRes): void => {
-        // Save the version locally.
-        if (res.data.reportChanges) {
-          this.workspaceStateService.saveVersionHistory(obj.uuid, version);
-        }
-
-        // Call the callback, if it exists.
-        if (!!callback) {
-          callback(res.data.reportChanges);
-        }
-      });
+    if (obj) {
+      this.rtc.sendModifyObjectMessage(obj);
     }
+
+    // if (!!obj) {
+    //   // If the object given is the old object, then reset the timer.
+    //   if (obj === this.oldObj) {
+    //     this.resetChangesTimer();
+    //   }
+
+    //   // Increment the version of the object.
+    //   const version = this.state.getVersionHistory(
+    //       obj.uuid) + 1;
+
+    //   this.workspaceSyncService.reportChanges(
+    //     obj,
+    //     this.userId,
+    //     this.workspaceId,
+    //     version
+    //   ).subscribe((res: ReportChangesRes): void => {
+    //     // Save the version locally.
+    //     if (res.data.reportChanges) {
+    //       this.state.saveVersionHistory(obj.uuid, version);
+    //     }
+
+    //     // Call the callback, if it exists.
+    //     if (!!callback) {
+    //       callback(res.data.reportChanges);
+    //     }
+    //   });
+    // }
   }
 
 }

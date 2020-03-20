@@ -167,6 +167,44 @@ let Editor = function(){
         console.log(JSON.stringify(exportedObjects));
     }
 
+    function addObjToScene(objData) {
+        let geometry, material, mesh;
+        switch(objData.geometryType){
+            case 'BoxBufferGeometry':
+                geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
+                break;
+            case 'ConeBufferGeometry':
+                geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
+                break;
+        }
+        // set name and material
+        material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
+        mesh = new THREE.Mesh(geometry, material);
+        mesh.name = objData.name;
+
+        // set position, scale and rotation
+        mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
+        mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
+        mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
+
+        // add to scene
+        scene.add( mesh );
+        mesh.uuid = String(objData.objectId);
+        outlineObject(mesh, DEFAULT_OUTLINE);
+    }
+
+    function loadObj(objData, keepSelected) {
+        if (keepSelected &&
+                currentSelection &&
+                currentSelection.uuid === objData.objectId) {
+            return;
+        }
+
+        addObjToScene(objData);
+
+        render();
+    }
+
     function loadScene(data, keepSelected) {
         // clear all existing objects
         clearScene(keepSelected);
@@ -180,35 +218,7 @@ let Editor = function(){
             }
 
             for (const objData of parsed) {
-                if (keepSelected &&
-                        currentSelection &&
-                        currentSelection.uuid === objData.objectId) {
-                    continue;
-                }
-
-                let geometry, material, mesh;
-                switch(objData.geometryType){
-                    case 'BoxBufferGeometry':
-                        geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
-                        break;
-                    case 'ConeBufferGeometry':
-                        geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
-                        break;
-                }
-                // set name and material
-                material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
-                mesh = new THREE.Mesh(geometry, material);
-                mesh.name = objData.name;
-
-                // set position, scale and rotation
-                mesh.position.set(objData.position[0], objData.position[1], objData.position[2]);
-                mesh.scale.set(objData.scale[0], objData.scale[1], objData.scale[2]);
-                mesh.rotation.set(objData.rotation[0], objData.rotation[1], objData.rotation[2]);
-
-                // add to scene
-                scene.add( mesh );
-                mesh.uuid = String(objData.objectId);
-                outlineObject(mesh, DEFAULT_OUTLINE);
+                loadObj(objData, keepSelected);
             }
             render();
         }
@@ -216,7 +226,7 @@ let Editor = function(){
 
     function selectObject(obj) {
         console.log('selected: ', obj);
-        deselectObject();
+        deselectCurrentObject();
 
         if (!(obj instanceof THREE.GridHelper)) {
             // outline object
@@ -232,7 +242,7 @@ let Editor = function(){
     }
 
     // deselects current object
-    function deselectObject() {
+    function deselectCurrentObject() {
         var selected = currentSelection;
         if (selected) {
             // remove outline from object
@@ -263,6 +273,16 @@ let Editor = function(){
         }
     }
 
+    function deleteObjectByUuid(uuid) {
+        deleteObject(getObjByUuid(uuid));
+    }
+
+    function getObjByUuid(uuid) {
+        return scene.children.find((obj) => {
+            return obj.uuid === uuid;
+        });
+    }
+
     function addNewObject(type) {
         let geometry, prop, name;
         let material = new THREE.MeshBasicMaterial( DEFAULT_MATERIAL ); // this one has no shading
@@ -291,7 +311,7 @@ let Editor = function(){
 
     function deleteObject(obj) {
         if (obj) {
-            if (obj==currentSelection) deselectObject();
+            if (obj==currentSelection) deselectCurrentObject();
             obj.geometry.dispose();
             obj.material.dispose();
             scene.remove(obj);
@@ -369,9 +389,11 @@ let Editor = function(){
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
-    this.deselectObject = deselectObject;
+    this.deselectCurrentObject = deselectCurrentObject;
     this.saveScene = saveScene;
     this.loadScene = loadScene;
+    this.loadObj = loadObj;
+    this.deleteObjectByUuid = deleteObjectByUuid;
 
     this.renderer = renderer;
     this.camera = camera;

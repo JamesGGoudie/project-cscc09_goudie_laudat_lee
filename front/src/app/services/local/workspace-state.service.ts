@@ -11,7 +11,7 @@ export class WorkspaceStateService {
   private userId: string;
   private pinnedObj: string;
 
-  private pinnedByOthers: string[];
+  private pinnedByOthers: string[] = [];
 
   private versionHistory: {[objId: string]: number} = {};
 
@@ -25,12 +25,12 @@ export class WorkspaceStateService {
     return version != undefined ? version : -1;
   }
 
-  public getPinnedObject(): string {
+  public getCurrentUsersPin(): string {
     // return localStorage.getItem(LS_KEYS.PINNED_OBJ);
     return this.pinnedObj;
   }
 
-  public setPinnedObject(id: string): void {
+  public setCurrentUsersPin(id: string): void {
     // localStorage.setItem(LS_KEYS.PINNED_OBJ, id);
     this.pinnedObj = id;
   }
@@ -55,8 +55,16 @@ export class WorkspaceStateService {
     this.workspaceId = id;
   }
 
-  public storeOtherUsersPin(id: string): void {
-    this.pinnedByOthers.push(id);
+  public addOtherUsersPin(id: string): void {
+    if (!this.isPinnedByOther(id)) {
+      this.pinnedByOthers.push(id);
+    }
+  }
+
+  public isPinnedByOther(objectId: string): boolean {
+    return this.pinnedByOthers.findIndex((id: string): boolean => {
+      return id === objectId;
+    }) > -1;
   }
 
   public removeOtherUsersPin(id: string): void {
