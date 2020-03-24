@@ -6,6 +6,7 @@
   "author": "James Gabriel Goudie",
   "license": "ISC",
   "scripts": {
+    "build": "npm run build-back && npm run build-front",
     "start-back": "npm run serve-back",
     "build-back": "npm run build-ts",
     "serve-back": "node dist/back/app.js",
