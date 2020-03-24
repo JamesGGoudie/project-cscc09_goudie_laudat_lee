@@ -10,7 +10,6 @@
     "npm": "6.14.2"
   },
   "scripts": {
-    "build": "npm run build-back && npm run build-front",
     "start-back": "npm run serve-back",
     "build-back": "npm run build-ts",
     "serve-back": "node dist/back/app.js",
@@ -21,7 +20,9 @@
     "test-front": "ng test",
     "lint-front": "ng lint",
     "e2e-front": "ng e2e",
-    "start-rtc": "node web-rtc/server.js"
+    "start-rtc": "node web-rtc/server.js",
+    "heroku-postbuild": "npm run build-back && npm run build-front-heroku",
+    "build-front-heroku": "ng build-heroku"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
