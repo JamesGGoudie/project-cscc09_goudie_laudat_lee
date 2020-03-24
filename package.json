@@ -7,7 +7,7 @@
   "license": "ISC",
   "engines": {
     "node": "13.6.0",
-    "npm": "6.14.2"
+    "npm": "6.13.4"
   },
   "scripts": {
     "start-back": "npm run serve-back",
@@ -22,7 +22,7 @@
     "e2e-front": "ng e2e",
     "start-rtc": "node web-rtc/server.js",
     "heroku-postbuild": "npm run build-back && npm run build-front-heroku",
-    "build-front-heroku": "ng build-heroku"
+    "build-front-heroku": "ng run build-heroku"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
