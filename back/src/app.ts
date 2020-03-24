@@ -122,6 +122,12 @@ const graphQlOptions: graphqlHTTP.Options = {
 
 app.use('/graphql', graphqlHTTP(graphQlOptions));
 
+app.get(
+    '/.well-known/acme-challenge/XQpuZJ9faBfbkBDDMabj0VugWq2qCkyKCwGzG-v4_og',
+    (req, res, next) => {
+  res.send('XQpuZJ9faBfbkBDDMabj0VugWq2qCkyKCwGzG-v4_og.vm072PJs_xRHA3hYKODvmlIcdN3Af7H0LQegd8mx6qw');
+});
+
 const PORT = 3000;
 
 app.listen(PORT, (err) => {

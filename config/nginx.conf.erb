@@ -44,5 +44,9 @@ http {
     location /graphql {
       proxy_pass http://localhost:3000;
     }
+
+    location /.well-known/acme-challenge {
+      proxy_pass http://localhost:3000;
+    }
   }
 }
