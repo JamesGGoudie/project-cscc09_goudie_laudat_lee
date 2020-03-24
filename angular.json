@@ -41,7 +41,6 @@
                   "with": "front/src/environments/environment.prod.ts"
                 }
               ],
-              "outputPath": "/dist/front",
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
