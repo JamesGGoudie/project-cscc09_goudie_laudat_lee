@@ -1,1 +1,1 @@
-web: bin/start-nginx-solo & node back/app.js & wait -n
+web: bin/start-nginx-solo & node dist/back/app.js & wait -n
