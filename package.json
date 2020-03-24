@@ -17,11 +17,12 @@
     "ng": "ng",
     "start-front": "ng serve",
     "build-front": "ng build",
+    "build-front-prod": "ng build --prod",
     "test-front": "ng test",
     "lint-front": "ng lint",
     "e2e-front": "ng e2e",
     "start-rtc": "node web-rtc/server.js",
-    "heroku-postbuild": "npm run build-back && npm run build-front"
+    "heroku-postbuild": "npm run build-back && npm run build-front-prod"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",

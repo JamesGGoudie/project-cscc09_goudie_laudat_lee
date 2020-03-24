@@ -1,5 +1,5 @@
 export const environment = {
-  backend: 'http://localhost:3000',
+  backend: 'https://architect-three-d.herokuapp.com:3000',
   peerHost: '/',
   peerPort: 9000,
   production: true

@@ -14,12 +14,15 @@ import {
 
 import { Database } from './services';
 
+// const FRONT = 'http://localhost:4200';
+const FRONT = 'https://architect-three-d.herokuapp.com:443';
+
 const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
-app.use(cors({origin: 'http://localhost:4200'}));
+app.use(cors({origin: FRONT}));
 
 app.use((req, res, next) => {
   console.log('HTTP request', req.method, req.url, req.body);
