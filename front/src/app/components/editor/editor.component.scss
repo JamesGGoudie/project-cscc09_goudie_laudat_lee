@@ -1,0 +1,60 @@
+body {
+  margin: 0;
+}
+
+canvas {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.panel {
+  position: absolute;
+  // background: #fff;
+  padding: 10px;
+
+  mat-expansion-panel {
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 4px;
+      
+      li {
+
+        button {
+          text-align: left;
+          width:100%;
+        }
+
+        button:hover {
+          background: #eeeeee;  
+        }
+      }
+    }
+  }
+}
+
+#tool-menu {
+  bottom:0;
+}
+
+#side-menu {
+  width: 260px;
+  max-height: 96%;
+  right: 0;
+  top:0;
+  overflow: scroll;
+
+  mat-form-field {
+    width:100%
+  }
+}
+
+.delete-button {
+  margin-top: 20px;
+}
+
+button {
+  margin-right: 10px;;
+}
