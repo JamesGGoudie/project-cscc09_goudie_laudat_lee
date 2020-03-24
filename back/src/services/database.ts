@@ -16,8 +16,6 @@ export class Database {
     ssl: USE_SSL
   });
 
-  private fakeDatabase: {[key: string]: Workspace} = {};
-
   public connectDatabase(): Promise<void> {
     return this.client.connect();
   }
