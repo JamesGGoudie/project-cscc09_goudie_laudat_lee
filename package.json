@@ -5,6 +5,9 @@
   "main": "dist/app.js",
   "author": "James Gabriel Goudie",
   "license": "ISC",
+  "engines": {
+    "node": "13.6.0"
+  },
   "scripts": {
     "build": "npm run build-back && npm run build-front",
     "start-back": "npm run serve-back",
@@ -17,8 +20,7 @@
     "test-front": "ng test",
     "lint-front": "ng lint",
     "e2e-front": "ng e2e",
-    "start-rtc": "node web-rtc/server.js",
-    "heroku-prebuild": "rm package-lock.json"
+    "start-rtc": "node web-rtc/server.js"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
