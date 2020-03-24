@@ -31,6 +31,13 @@ http {
   }
 
   server {
+    listen 80;
+    server_name www.architect3d.me;
+
+    return 301 https://www.architect3d.me$request_uri;
+  }
+
+  server {
     listen <%= ENV["PORT"] %>;
     server_name _;
 		keepalive_timeout 5;
