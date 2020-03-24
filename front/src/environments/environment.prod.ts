@@ -3,6 +3,6 @@ export const environment = {
   peerHost: '/',
   peerKey: 'architect',
   peerPath: 'peer',
-  peerPort: 9000,
+  peerPort: 443,
   production: true
 };
