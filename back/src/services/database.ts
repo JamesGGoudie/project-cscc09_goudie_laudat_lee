@@ -3,11 +3,11 @@ import { Client, QueryConfig, QueryResult, QueryResultRow } from 'pg';
 import { Workspace } from '../interfaces';
 import { randomPeerId } from '../utils';
 
-// const DATABASE_URL: string = process.env.DATABASE_URL;
-// const USE_SSL: boolean = true;
-const DATABASE_URL: string =
-    'postgres://postgres:qwerasdf@localhost:5432/architect';
-const USE_SSL: boolean = false;
+const DATABASE_URL: string = process.env.DATABASE_URL;
+const USE_SSL: boolean = true;
+// const DATABASE_URL: string =
+//     'postgres://postgres:qwerasdf@localhost:5432/architect';
+// const USE_SSL: boolean = false;
 
 export class Database {
 
