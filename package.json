@@ -6,7 +6,8 @@
   "author": "James Gabriel Goudie",
   "license": "ISC",
   "engines": {
-    "node": "13.6.0"
+    "node": "13.6.0",
+    "npm": "6.14.2"
   },
   "scripts": {
     "build": "npm run build-back && npm run build-front",
