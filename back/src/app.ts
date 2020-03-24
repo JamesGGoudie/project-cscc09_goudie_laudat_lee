@@ -14,8 +14,8 @@ import {
 
 import { Database } from './services';
 
-const FRONT = 'http://localhost:4200';
-// const FRONT = 'https://architect-three-d.herokuapp.com:443';
+// const FRONT = 'http://localhost:4200';
+const FRONT = 'https://www.architect3d.com:443';
 
 const app = express();
 
