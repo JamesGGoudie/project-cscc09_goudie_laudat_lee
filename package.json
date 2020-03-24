@@ -22,7 +22,7 @@
     "e2e-front": "ng e2e",
     "start-rtc": "node web-rtc/server.js",
     "heroku-postbuild": "npm run build-back && npm run build-front-heroku",
-    "build-front-heroku": "ng run build-heroku"
+    "build-front-heroku": "ng build --prod"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
