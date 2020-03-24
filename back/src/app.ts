@@ -14,8 +14,8 @@ import {
 
 import { Database } from './services';
 
-// const FRONT = 'http://localhost:4200';
-const FRONT = 'https://architect-three-d.herokuapp.com:443';
+const FRONT = 'http://localhost:4200';
+// const FRONT = 'https://architect-three-d.herokuapp.com:443';
 
 const app = express();
 
@@ -31,103 +31,101 @@ app.use((req, res, next) => {
 
 const db = new Database();
 
-const root = {
-  createWorkspace: (req: CreateWorkspaceReq): CreateWorkspaceRes => {
-    console.log(req);
-
-    if (db.workspaceExists(req.workspaceId)) {
-      return {
-        err: 'Workspace already exists'
-      };
-    }
-
-    if (db.createWorkspace(req.workspaceId, req.workspacePassword)) {
-      if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
-        const peerId: string = db.createPeerInWorkspace(req.workspaceId);
-
-        if (peerId) {
-          return {
-            yourPeerId: peerId
-          };
-        } else {
-          return {
-            err: 'Workspace and User was created, but failed to created Peed' +
-                ' ID'
-          };
+db.connectDatabase().then(() => {
+  const root = {
+    createWorkspace: async (
+      req: CreateWorkspaceReq
+    ): Promise<CreateWorkspaceRes> => {
+      return await db.workspaceExists(req.workspaceId).then(
+          (workspaceExists: boolean): Promise<boolean> => {
+        if (workspaceExists) {
+          throw 'Workspace already exists';
         }
-      } else {
+
+        return db.createWorkspace(req.workspaceId, req.workspacePassword);
+      }).then((created: boolean): Promise<string> => {
+        if (!created) {
+          throw 'Workspace does not exist, but failed to create workspace';
+        }
+
+        return db.addUserToWorkspace(req.workspaceId, req.userId);
+      }).then((peerId: string): CreateWorkspaceRes => {
+        if (!peerId) {
+          throw 'Workspace created, but user was not';
+        }
+
         return {
-          err: 'Workspace was created, but failed to add user to database'
-        };
-      }
-    } else {
-      return {
-          err: 'Workspace does not exist, but cound not be created'
-      };
-    }
-  },
-  joinWorkspace: (req: JoinWorkspaceReq): JoinWorkspaceRes => {
-    console.log(req);
+          yourPeerId: peerId
+        }
+      }).catch((err: string): CreateWorkspaceRes => {
+        return {err};
+      });
+    },
+    joinWorkspace: async (
+      req: JoinWorkspaceReq
+    ): Promise<JoinWorkspaceRes> => {
+      let peerId: string;
 
-    if (!db.workspaceExists(req.workspaceId)) {
-      return {
-        err: 'Workspace does not exist'
-      };
-    }
+      return await db.workspaceExists(req.workspaceId).then(
+          (workspaceExists: boolean): Promise<boolean> => {
+        if (!workspaceExists) {
+          throw 'Workspace does not exist';
+        }
 
-    if (db.userExists(req.workspaceId, req.userId)) {
-      return {
-        err: 'Username is taken'
-      };
-    }
+        return db.userExists(req.workspaceId, req.userId);
+      }).then((userExists: boolean): Promise<boolean> => {
+        if (userExists) {
+          throw 'Username is taken';
+        }
 
-    if (!db.passwordMatches(req.workspaceId, req.workspacePassword)) {
-      return {
-        err: 'Wrong password'
-      };
-    }
+        return db.passwordMatches(req.workspaceId, req.workspacePassword);
+      }).then((matches: boolean): Promise<string> => {
+        if (!matches) {
+          throw 'Wrong password';
+        }
 
-    if (db.addUserToWorkspace(req.workspaceId, req.userId)) {
-      const peerId: string = db.createPeerInWorkspace(req.workspaceId);
+        return db.addUserToWorkspace(req.workspaceId, req.userId);
+      }).then((peer: string): Promise<string[]> => {
+        if (!peer) {
+          throw 'Workspace exists, password is correct, and user ID is' +
+              ' available, but failed to add user to workspace';
+        }
 
-      if (peerId) {
-        const otherPeers: string[] = db.getWorkspacePeerIds(req.workspaceId)
-            .filter((other: string): boolean => {
-          return other !== peerId;
-        });
+        peerId = peer;
+
+        return db.getOtherUsersPeerIds(req.workspaceId, req.userId);
+      }).then((otherPeers: string[]): JoinWorkspaceRes => {
+        if (!otherPeers) {
+          throw 'User was added to workspace, but could not get other users';
+        }
 
         return {
           otherPeerIds: otherPeers,
           yourPeerId: peerId
         }
-      } else {
-        return {
-          err: 'User was created, but could not create peer ID'
-        };
-      }
-    } else {
-      return {
-        err: 'Workspace exists, password is correct, and user ID is' +
-            ' available, but failed to add user to workspace'
-      };
+      }).catch((err: string): JoinWorkspaceRes => {
+        return {err}
+      });
     }
   }
-}
 
-const graphQlOptions: graphqlHTTP.Options = {
-  graphiql: true,
-  rootValue: root,
-  schema: GQL_SCHEMA
-}
-
-app.use('/graphql', graphqlHTTP(graphQlOptions));
-
-const PORT = 3000;
-
-app.listen(PORT, (err) => {
-  if (err) {
-    console.log(err);
-  } else {
-    console.log('HTTP server on http://localhost:%s', PORT);
+  const graphQlOptions: graphqlHTTP.Options = {
+    graphiql: true,
+    rootValue: root,
+    schema: GQL_SCHEMA
   }
+
+  app.use('/graphql', graphqlHTTP(graphQlOptions));
+
+  const PORT = 3000;
+
+  app.listen(PORT, (err) => {
+    if (err) {
+      console.log(err);
+    } else {
+      console.log('HTTP server on http://localhost:%s', PORT);
+    }
+  });
+}).catch((err) => {
+  console.error(err);
 });
