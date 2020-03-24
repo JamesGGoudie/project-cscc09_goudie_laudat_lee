@@ -17,7 +17,8 @@
     "test-front": "ng test",
     "lint-front": "ng lint",
     "e2e-front": "ng e2e",
-    "start-rtc": "node web-rtc/server.js"
+    "start-rtc": "node web-rtc/server.js",
+    "heroku-prebuild": "rm package-lock.json"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
