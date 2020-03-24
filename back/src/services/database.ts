@@ -1,6 +1,5 @@
 import { Client, QueryConfig, QueryResult, QueryResultRow } from 'pg';
 
-import { Workspace } from '../interfaces';
 import { randomPeerId } from '../utils';
 
 const DATABASE_URL: string = process.env.DATABASE_URL;
