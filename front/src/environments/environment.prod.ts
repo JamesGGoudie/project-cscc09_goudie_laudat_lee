@@ -3,6 +3,6 @@ export const environment = {
   peerHost: '0.peerjs.com',
   peerKey: 'peerjs',
   peerPath: '/',
-  peerPort: 80,
+  peerPort: 443,
   production: true
 };
