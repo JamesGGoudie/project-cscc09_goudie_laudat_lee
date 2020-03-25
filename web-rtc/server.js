@@ -4,3 +4,11 @@ const ps = PeerServer({
     path: '/peer',
     key: 'architect',
     proxied: true});
+
+ps.on('connection', (client) => {
+  console.log(`Connected to: ${client.id}`);
+});
+
+ps.on('disconnect', (client) => {
+  console.log(`Disconnected from: ${client.id}`);
+});
