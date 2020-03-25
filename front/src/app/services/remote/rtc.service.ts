@@ -44,6 +44,8 @@ export class RtcService {
 
   public createPeer(id: string): Observable<void> {
     this.peer = new Peer(id, {
+      debug: 3,
+
       host: environment.peerHost,
       key: environment.peerKey,
       path: environment.peerPath,
