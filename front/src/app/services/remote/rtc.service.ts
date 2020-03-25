@@ -43,14 +43,7 @@ export class RtcService {
       new Map<string, Peer.DataConnection>();
 
   public createPeer(id: string): Observable<void> {
-    this.peer = new Peer(id, {
-      debug: 3,
-
-      host: environment.peerHost,
-      key: environment.peerKey,
-      path: environment.peerPath,
-      port: environment.peerPort,
-    });
+    this.peer = new Peer(id);
 
     const s: Subject<void> = new Subject();
 
