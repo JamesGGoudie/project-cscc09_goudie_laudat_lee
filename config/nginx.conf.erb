@@ -31,6 +31,10 @@ http {
     server_name _;
     keepalive_timeout 5;
 
+    if ($http_x_forwarded_proto != 'https') {
+      return 301 https://$host$request_uri;
+    }
+
     location / {
       client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
