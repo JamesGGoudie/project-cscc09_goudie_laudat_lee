@@ -47,7 +47,7 @@ export class RtcService {
       host: environment.peerHost,
       key: environment.peerKey,
       path: environment.peerPath,
-      port: environment.peerPort,
+      port: environment.peerPort
     });
 
     const s: Subject<void> = new Subject();
