@@ -12,3 +12,5 @@ ps.on('connection', (client) => {
 ps.on('disconnect', (client) => {
   console.log(`Disconnected from: ${client.id}`);
 });
+
+console.log('Help me Obi Wan Kenobi, you are my only hope.');

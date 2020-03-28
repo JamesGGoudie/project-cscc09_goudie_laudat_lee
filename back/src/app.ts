@@ -124,6 +124,7 @@ db.connectDatabase().then(() => {
       console.log(err);
     } else {
       console.log('HTTP server on http://localhost:%s', PORT);
+      console.log('Hello boys, I\'m baaaaaaaaaaaaaaaaaaaaack!!!!!!!!');
     }
   });
 }).catch((err) => {

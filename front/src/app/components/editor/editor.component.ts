@@ -13,7 +13,6 @@ import {
   RtcService,
   WorkspaceStateService
 } from 'src/app/services';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-editor',
@@ -191,10 +190,6 @@ export class EditorComponent {
         this.updateEditControls();
       }
     }
-  }
-
-  public getTestText(): string {
-    return environment.production ? 'This is prod' : 'This is not prod';
   }
 
   public getCurrentObject(): THREE.Mesh {
