@@ -6,7 +6,7 @@ import {
   JoinWorkspaceRes
 } from '../interfaces';
 
-import { Database } from '../services';
+import { Database } from './database';
 
 export class GraphQlFactory {
 

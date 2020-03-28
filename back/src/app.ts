@@ -4,8 +4,7 @@ import express from 'express';
 import graphqlHTTP from 'express-graphql';
 
 import { GQL_SCHEMA } from './constants';
-import { GraphQlFactory } from './graphql';
-import { Database } from './services';
+import { Database, GraphQlFactory } from './services';
 
 // const FRONT = 'http://localhost:4200';
 const FRONT = 'https://www.architect3d.com:443';
