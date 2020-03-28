@@ -12,6 +12,7 @@
   <p>shift+D                 = deselect current object</p>
   <p>shift+Backspace          = delete current object</p>
   <p>shift+Z                  = reset camera</p>
+  <p>This is a test          = Test Passed</p>
 </div>
 
 <div id="tool-menu" class="panel">
@@ -30,7 +31,7 @@
 
     <mat-expansion-panel *ngIf="getCurrentObject()">
       <mat-expansion-panel-header>Edit Object</mat-expansion-panel-header>
-      
+
       <!-- OBJECT SPECIFIC PROPERTIES (NAME, POSITION, SCALE, ROTATION) -->
       <form [formGroup]="objForm" >
         <mat-form-field appearance="fill" color="primary">
