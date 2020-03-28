@@ -10,8 +10,6 @@ import { Database } from '../services';
 
 export class GraphQlFactory {
 
-  public constructor(private readonly db: Database) {}
-
   private readonly createWorkspace:
       (req: CreateWorkspaceReq)=> Promise<CreateWorkspaceRes> =
       async (req: CreateWorkspaceReq): Promise<CreateWorkspaceRes> => {
@@ -87,6 +85,8 @@ export class GraphQlFactory {
       return {err}
     });
   }
+
+  public constructor(private readonly db: Database) {}
 
   public getRoot(): GraphQlRoot {
     return {
