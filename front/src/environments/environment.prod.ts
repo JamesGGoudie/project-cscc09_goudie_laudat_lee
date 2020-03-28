@@ -1,8 +1,8 @@
 export const environment = {
   backend: '',
-  peerHost: '0.peerjs.com',
-  peerKey: 'peerjs',
-  peerPath: '/',
+  peerHost: '/',
+  peerKey: 'architect',
+  peerPath: '/peer',
   peerPort: 443,
   production: true
 };
