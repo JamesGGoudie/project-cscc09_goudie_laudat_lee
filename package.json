@@ -5,6 +5,10 @@
   "main": "dist/app.js",
   "author": "James Gabriel Goudie",
   "license": "ISC",
+  "engines": {
+    "node": "13.6.0",
+    "npm": "6.13.4"
+  },
   "scripts": {
     "start-back": "npm run serve-back",
     "build-back": "npm run build-ts",
@@ -13,10 +17,11 @@
     "ng": "ng",
     "start-front": "ng serve",
     "build-front": "ng build",
+    "build-front-prod": "ng build --prod",
     "test-front": "ng test",
     "lint-front": "ng lint",
     "e2e-front": "ng e2e",
-    "start-rtc": "node web-rtc/server.js"
+    "heroku-postbuild": "npm run build-back && npm run build-front-prod"
   },
   "dependencies": {
     "@angular/animations": "~9.0.5",
@@ -37,6 +42,7 @@
     "ngx-color": "^5.0.1",
     "peer": "^0.3.2",
     "peerjs": "^1.2.0",
+    "pg": "^7.18.2",
     "rxjs": "~6.5.4",
     "three": "^0.114.0",
     "tslib": "^1.10.0",
@@ -53,6 +59,7 @@
     "@types/jasmine": "~3.5.0",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^12.12.29",
+    "@types/pg": "^7.14.3",
     "codelyzer": "^5.1.2",
     "jasmine-core": "~3.5.0",
     "jasmine-spec-reporter": "~4.2.1",

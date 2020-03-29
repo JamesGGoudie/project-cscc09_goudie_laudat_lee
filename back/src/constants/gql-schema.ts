@@ -1,6 +1,6 @@
-import { buildSchema } from 'graphql';
+import { buildSchema, GraphQLSchema } from 'graphql';
 
-export const GQL_SCHEMA = buildSchema(`
+export const GQL_SCHEMA: GraphQLSchema = buildSchema(`
   type CreateWsRes {
     err: String,
     yourPeerId: String
