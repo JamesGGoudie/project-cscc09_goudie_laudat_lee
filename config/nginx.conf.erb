@@ -48,13 +48,16 @@ http {
       return 301 https://$host$request_uri;
     }
 
-    error_page 404 = https://$host;
+    # error_page 404 = https://$host;
 
     location / {
       client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
       # Path to app
       root /app/dist/front;
+
+      index index.html;
+      try_files $uri $uri/ /index.html;
     }
 
     location /graphql {
