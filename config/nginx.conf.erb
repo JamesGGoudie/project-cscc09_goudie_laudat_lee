@@ -48,11 +48,9 @@ http {
       return 301 https://$host$request_uri;
     }
 
-    location / {
-      error_page 404 = @static;
-    }
+    error_page 404 = https://$host$request_uri;
 
-    location @static {
+    location / {
       client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
       # Path to app
