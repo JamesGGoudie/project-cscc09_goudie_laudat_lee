@@ -3,6 +3,7 @@ import { Observable, Subject } from 'rxjs';
 
 import Peer from 'peerjs';
 import * as THREE from 'three';
+import { MeshBasicMaterial } from 'three';
 
 import { RtcMessageType } from 'src/app/enums';
 
@@ -18,7 +19,7 @@ import {
   RtcUnpinObjMsg
 } from 'src/app/interfaces';
 
-import { MeshBasicMaterial } from 'three';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -42,7 +43,12 @@ export class RtcService {
       new Map<string, Peer.DataConnection>();
 
   public createPeer(id: string): Observable<void> {
-    this.peer = new Peer(id);
+    this.peer = new Peer(id, {
+      host: environment.peerHost,
+      key: environment.peerKey,
+      path: environment.peerPath,
+      port: environment.peerPort
+    });
 
     const s: Subject<void> = new Subject();
 
