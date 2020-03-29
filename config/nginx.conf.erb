@@ -1,3 +1,18 @@
+# Credits:
+#
+# Original Config:
+# https://github.com/heroku/heroku-buildpack-nginx/blob/master/config/nginx.conf.erb
+# https://github.com/heroku/heroku-buildpack-nginx/blob/master/config/nginx-solo-sample.conf.erb
+#
+# Nginx as Websocket Proxy:
+# https://www.nginx.com/blog/websocket-nginx/
+#
+# HTTP to HTTPS Redirect:
+# https://github.com/mgmco/heroku-buildpack-nginx/blob/master/config/nginx.conf.erb
+#
+# Let Angular handle 404:
+# https://www.digitalocean.com/community/questions/nginx-404-error-with-existing-urls-angular-2-one-page-application-with-routing
+
 daemon off;
 # Heroku dynos have at least 4 cores.
 worker_processes <%= ENV['NGINX_WORKERS'] || 4 %>;
