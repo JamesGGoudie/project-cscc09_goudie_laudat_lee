@@ -1,4 +1,8 @@
 export const environment = {
-  backend: 'http://localhost:3000',
+  backend: '',
+  peerHost: '/',
+  peerKey: 'architect',
+  peerPath: '/peer',
+  peerPort: 443,
   production: true
 };

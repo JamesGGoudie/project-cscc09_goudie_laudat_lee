@@ -1,5 +1,8 @@
 export interface CreateWorkspaceRes {
   readonly data: {
-    readonly createWorkspace: boolean
+    readonly createWorkspace: {
+      readonly err: string;
+      readonly yourPeerId: string;
+    }
   }
 }

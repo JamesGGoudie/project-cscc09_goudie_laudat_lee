@@ -177,32 +177,7 @@ let Editor = function(){
         return JSON.stringify(exportedObjects);
     }
 
-    // Loads a scene from given JSON data.
-    function loadScene(data, keepSelected) {
-        // clear all existing objects
-        clearScene(keepSelected);
-        if (data){
-            let parsed;
-
-            if (typeof data === 'string') {
-                parsed = JSON.parse(data);
-            } else {
-                parsed = data;
-            }
-
-            for (const objData of parsed) {
-                if (keepSelected &&
-                        currentSelection &&
-                        currentSelection.uuid === objData.objectId) {
-                    continue;
-                }
-                addCustomObject(objData, false);
-            }
-            render();
-        }
-    }
-
-    function addCustomObject(objData, isNew) {
+    function addObjToScene(objData, isNew = false) {
         let geometry, material, mesh;
         switch(objData.geometryType){
             case 'BoxBufferGeometry':
@@ -226,13 +201,37 @@ let Editor = function(){
         scene.add( mesh );
         if (!isNew) mesh.uuid = String(objData.objectId);
         outlineObject(mesh, DEFAULT_OUTLINE);
-
+        render();
         return mesh;
+    }
+
+    function loadObj(objData) {
+        addObjToScene(objData);
+        render();
+    }
+
+    function loadScene(data) {
+        // clear all existing objects
+        clearScene();
+        if (data){
+            let parsed;
+
+            if (typeof data === 'string') {
+                parsed = JSON.parse(data);
+            } else {
+                parsed = data;
+            }
+
+            for (const objData of parsed) {
+                addObjToScene(objData);
+            }
+            render();
+        }
     }
 
     function selectObject(obj) {
         console.log('selected: ', obj);
-        deselectObject();
+        deselectCurrentObject();
 
         if (!(obj instanceof THREE.GridHelper)) {
             // outline object
@@ -248,7 +247,7 @@ let Editor = function(){
     }
 
     // deselects current object
-    function deselectObject() {
+    function deselectCurrentObject() {
         var selected = currentSelection;
         if (selected) {
             // remove outline from object
@@ -279,6 +278,16 @@ let Editor = function(){
         }
     }
 
+    function deleteObjectByUuid(uuid) {
+        deleteObject(getObjByUuid(uuid));
+    }
+
+    function getObjByUuid(uuid) {
+        return scene.children.find((obj) => {
+            return obj.uuid === uuid;
+        });
+    }
+
     function addNewObject(type) {
         let geometry, prop, name;
         let material = new THREE.MeshBasicMaterial( DEFAULT_MATERIAL ); // this one has no shading
@@ -307,7 +316,7 @@ let Editor = function(){
 
     function deleteObject(obj) {
         if (obj) {
-            if (obj==currentSelection) deselectObject();
+            if (obj==currentSelection) deselectCurrentObject();
             obj.geometry.dispose();
             obj.material.dispose();
             scene.remove(obj);
@@ -315,13 +324,10 @@ let Editor = function(){
         }
     };
 
-    function clearScene(keepSelected){
+    function clearScene(){
         // Get all mesh objects except for the one selected if indicated.
         let allObjects = scene.children.filter((obj) => {
-            return obj instanceof THREE.Mesh &&
-                    !(keepSelected &&
-                    currentSelection &&
-                    currentSelection.uuid === obj.uuid);
+            return obj instanceof THREE.Mesh;
         });
 
         allObjects.forEach(function(obj){
@@ -383,7 +389,7 @@ let Editor = function(){
     };
 
     this.exportScene = function(filetype) {
-        this.deselectObject();
+        deselectCurrentObject()
         switch(filetype) {
             case 'json':
                 return saveScene();
@@ -400,10 +406,12 @@ let Editor = function(){
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
-    this.deselectObject = deselectObject;
+    this.deselectCurrentObject = deselectCurrentObject;
     this.saveScene = saveScene;
     this.loadScene = loadScene;
-    this.addCustomObject = addCustomObject;
+    this.loadObj = loadObj;
+    this.deleteObjectByUuid = deleteObjectByUuid;
+    this.addObjToScene = addObjToScene;
 
     this.renderer = renderer;
     this.camera = camera;
