@@ -49,6 +49,10 @@ http {
     }
 
     location / {
+      error_page 404 = @static;
+    }
+
+    location @static {
       client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
       # Path to app
