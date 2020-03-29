@@ -4,7 +4,12 @@ import express from 'express';
 import graphqlHTTP from 'express-graphql';
 
 import { GQL_SCHEMA } from './constants';
-import { Database, GraphQlFactory } from './services';
+
+import {
+  DatabaseController,
+  GraphQlFactory,
+  PeerController
+} from './services';
 
 // const FRONT = 'http://localhost:4200';
 const FRONT = 'https://www.architect3d.com:443';
@@ -21,10 +26,12 @@ app.use((req, res, next) => {
   next();
 });
 
-const db: Database = new Database();
-const factory: GraphQlFactory = new GraphQlFactory(db);
+const db: DatabaseController = new DatabaseController();
 
 db.connectDatabase().then(() => {
+  const peerController: PeerController = new PeerController(db);
+  const factory: GraphQlFactory = new GraphQlFactory(db);
+
   const graphQlOptions: graphqlHTTP.Options = {
     graphiql: true,
     rootValue: factory.getRoot(),

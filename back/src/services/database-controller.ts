@@ -8,7 +8,7 @@ const USE_SSL: boolean = true;
 //     'postgres://postgres:qwerasdf@localhost:5432/architect';
 // const USE_SSL: boolean = false;
 
-export class Database {
+export class DatabaseController {
 
   private client = new Client({
     connectionString: DATABASE_URL,

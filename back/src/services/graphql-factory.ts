@@ -6,7 +6,7 @@ import {
   JoinWorkspaceRes
 } from '../interfaces';
 
-import { Database } from './database';
+import { DatabaseController } from './database-controller';
 
 export class GraphQlFactory {
 
@@ -86,7 +86,7 @@ export class GraphQlFactory {
     });
   }
 
-  public constructor(private readonly db: Database) {}
+  public constructor(private readonly db: DatabaseController) {}
 
   public getRoot(): GraphQlRoot {
     return {
