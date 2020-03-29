@@ -7,28 +7,26 @@ import { GQL_SCHEMA } from './constants';
 
 import {
   DatabaseController,
+  Environment,
   GraphQlFactory,
   PeerController
 } from './services';
 
-// const FRONT = 'http://localhost:4200';
-const FRONT = 'https://www.architect3d.com:443';
-
-const app = express();
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-
-app.use(cors({origin: FRONT}));
-
-app.use((req, res, next) => {
-  console.log('HTTP request', req.method, req.url, req.body);
-  next();
-});
-
 const db: DatabaseController = new DatabaseController();
 
 db.connectDatabase().then(() => {
+  const app: express.Express = express();
+
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false}));
+
+  app.use(cors({origin: Environment.getOrigin()}));
+
+  app.use((req, res, next) => {
+    console.log('HTTP request', req.method, req.url, req.body);
+    next();
+  });
+
   const peerController: PeerController = new PeerController(db);
   const factory: GraphQlFactory = new GraphQlFactory(db);
 
@@ -38,16 +36,15 @@ db.connectDatabase().then(() => {
     schema: GQL_SCHEMA
   }
 
-  app.use('/graphql', graphqlHTTP(graphQlOptions));
+  app.use(Environment.getGraphQlPath(), graphqlHTTP(graphQlOptions));
 
-  const PORT = 3000;
+  const port = Environment.getGraphQlPort();
 
-  app.listen(PORT, (err) => {
+  app.listen(port, (err) => {
     if (err) {
       console.log(err);
     } else {
-      console.log('HTTP server on http://localhost:%s', PORT);
-      console.log('Hello boys, I\'m baaaaaaaaaaaaaaaaaaaaack!!!!!!!!');
+      console.log(`HTTP server on http://localhost:${port}`);
     }
   });
 }).catch((err) => {

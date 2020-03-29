@@ -1,4 +1,5 @@
 import { DatabaseController } from './database-controller';
+import { Environment } from './environment';
 
 const { PeerServer } = require('peer');
 
@@ -8,10 +9,10 @@ export class PeerController {
 
   public constructor(private readonly db: DatabaseController) {
     this.ps = PeerServer({
-        port: 9000,
-        path: '/peer',
-        key: 'architect',
-        proxied: true});
+        port: Environment.getPeerPort(),
+        path: Environment.getPeerPath(),
+        key: Environment.getPeerKey(),
+        proxied: Environment.isPeerProxied()});
 
     this.ps.on('connection', (client: any): void => {
       console.log(`Connected to: ${client.id}`);

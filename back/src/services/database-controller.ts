@@ -2,17 +2,13 @@ import { Client, QueryConfig, QueryResult, QueryResultRow } from 'pg';
 
 import { randomPeerId } from '../utils';
 
-const DATABASE_URL: string = process.env.DATABASE_URL;
-const USE_SSL: boolean = true;
-// const DATABASE_URL: string =
-//     'postgres://postgres:qwerasdf@localhost:5432/architect';
-// const USE_SSL: boolean = false;
+import { Environment } from './environment';
 
 export class DatabaseController {
 
   private client = new Client({
-    connectionString: DATABASE_URL,
-    ssl: USE_SSL
+    connectionString: Environment.getDatabaseUrl(),
+    ssl: Environment.isDatabaseSecure()
   });
 
   public connectDatabase(): Promise<void> {
