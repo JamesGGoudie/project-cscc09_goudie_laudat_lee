@@ -45,7 +45,6 @@ export class EditorComponent {
   private oldObj: THREE.Mesh;
 
   private CLIENT_ID = '316564469406-tbr553n24lmf2rkap6ir7rcmv0fi6oro.apps.googleusercontent.com';
-  private CLIENT_SECRET = 'yjrHIOD_qBVgbnvdf3l90oQD';
   private API_KEY = 'AIzaSyDeapSoJmwymR3N0X0GgZKgrKnoLpxHVqo';
   private SCOPES = 'https://www.googleapis.com/auth/drive';
   private DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
@@ -349,7 +348,7 @@ export class EditorComponent {
               console.log(objData);
               const newObj = this.editor.addObjToScene(objData, true);
               console.log(newObj);
-              this.reportChanges(newObj);
+              this.rtc.sendCreateObjectMessage(newObj);
             }
           }
         }

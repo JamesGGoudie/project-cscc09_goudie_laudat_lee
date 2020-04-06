@@ -27,7 +27,6 @@ import { ColladaExporter } from 'three/examples/jsm/exporters/ColladaExporter.js
 let Editor = function(){
     const HIGHLIGHT_OUTLINE = {color:0xff9100, linewidth:3};
     const DEFAULT_OUTLINE = {color:0x555555};
-    const DEFAULT_MATERIAL = {color: 0x888888};
 
     let camera, scene, renderer, control, orbit;
     let currentSelection;
@@ -177,6 +176,20 @@ let Editor = function(){
         return JSON.stringify(exportedObjects);
     }
 
+    /**
+     * Add an object to the scene.
+     * @param objData {Object} data on the object to add
+     *          - name: string
+     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry", 
+     *          - materialColorHex: string
+     *          - position: array(3)
+     *          - scale: array(3)
+     *          - rotation: array(3)
+     *          - objectId: string (Not required if adding a new object)
+     * @param isNew {Boolean} true if the object to add is new to the scene, 
+     *          false if it is not new (i.e. when loading from database) 
+     * @returns mesh {THREE.Mesh} the object that was added
+     */
     function addObjToScene(objData, isNew = false) {
         let geometry, material, mesh;
         switch(objData.geometryType){
@@ -289,28 +302,23 @@ let Editor = function(){
     }
 
     function addNewObject(type) {
-        let geometry, prop, name;
-        let material = new THREE.MeshBasicMaterial( DEFAULT_MATERIAL ); // this one has no shading
-        // let material = new THREE.MeshStandardMaterial( DEFAULT_MATERIAL ); // this one has shading
+        let objData = {};
+        objData.materialColorHex = '888888';
+        objData.position = [0,100,0];
+        objData.scale = [1,1,1];
+        objData.rotation = [0,0,0];
+        objData.objectId = null;
 
         if (type == 'box') {
-          prop = {width:200, height:200, depth:200};
-          geometry = new THREE.BoxBufferGeometry( prop.width, prop.height, prop.depth );
-          name = 'Box';
+            objData.geometryType = 'BoxBufferGeometry';
+            objData.name = 'Box';
         } else if (type == 'cone') {
-          prop = {radius:100, height:200, radSeg:32};
-          geometry = new THREE.ConeBufferGeometry( prop.radius, prop.height, prop.radSeg ); // radius, height, radial segments
-          name = 'Cone';
+            objData.geometryType = 'ConeBufferGeometry';
+            objData.name = 'Cone';
         } else {
-          return;
+          return null;
         }
-        let mesh = new THREE.Mesh( geometry, material );
-        mesh.name = name;
-        scene.add( mesh );
-        mesh.position.set(0, 100, 0);
-        outlineObject(mesh, DEFAULT_OUTLINE);
-        render();
-
+        const mesh = addObjToScene(objData, true);
         return mesh;
     };
 
