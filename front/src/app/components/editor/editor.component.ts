@@ -412,6 +412,11 @@ export class EditorComponent {
     }
   }
 
+  public toggleHelpVisibility() {
+    const helpEl = document.getElementById('help-container');
+    helpEl.style.display = helpEl.style.display == 'none' ? 'block' : 'none';
+  }
+
   // Google Authentication Methods
   // Ref: https://developers.google.com/drive/api/v3/quickstart/js
   // https://developers.google.com/identity/sign-in/web/reference
