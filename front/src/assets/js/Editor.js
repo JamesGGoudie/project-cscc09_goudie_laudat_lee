@@ -162,7 +162,6 @@ let Editor = function(){
         let exportedObjects = [];
         allObjects.forEach(function(obj){
             let data = {
-                objectId: obj.uuid,
                 name: obj.name,
                 position: obj.position.toArray(),
                 scale: obj.scale.toArray(),
@@ -415,7 +414,6 @@ let Editor = function(){
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
     this.deselectCurrentObject = deselectCurrentObject;
-    this.saveScene = saveScene;
     this.loadScene = loadScene;
     this.loadObj = loadObj;
     this.deleteObjectByUuid = deleteObjectByUuid;
