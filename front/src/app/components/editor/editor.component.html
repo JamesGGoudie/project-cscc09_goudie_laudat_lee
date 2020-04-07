@@ -1,4 +1,4 @@
-<input id="file-upload" type="file" multiple="false" (change)="onFileInput($event.target.files);" (click)="$event.target.value = null">
+<input id="file-upload" type="file" accept="application/json" multiple="false" (change)="onFileInput($event.target.files);" (click)="$event.target.value = null">
 
 <div id="top-menu" class="panel">
   <button mat-flat-button color="primary" [matMenuTriggerFor]="import_menu">Import</button>
@@ -33,10 +33,10 @@
 </div>
 
 <div id="tool-menu" class="panel" >
-  <mat-button-toggle-group>
-    <mat-button-toggle (click)="changeTool('translate')">Move</mat-button-toggle>
-    <mat-button-toggle (click)="changeTool('scale')">Scale</mat-button-toggle>
-    <mat-button-toggle (click)="changeTool('rotate')">Rotate</mat-button-toggle>
+  <mat-button-toggle-group id="tool-menu-buttons" value="Translate">
+    <mat-button-toggle id="translate-btn" value="Translate" (click)="changeTool('translate')">Translate</mat-button-toggle>
+    <mat-button-toggle id="scale-btn" value="Scale" (click)="changeTool('scale')">Scale</mat-button-toggle>
+    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="changeTool('rotate')">Rotate</mat-button-toggle>
   </mat-button-toggle-group>  
 </div>
 
@@ -110,7 +110,7 @@
           <!-- MATERIAL (COLOR) -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>Material</mat-expansion-panel-header>
-            <color-sketch disableAlpha="true" presetColors="" color="#888" (onChange)="updateObjectMaterial($event)"></color-sketch>
+            <color-sketch disableAlpha="true" presetColors="" [color]="getCurrentObjectColor()" (onChangeComplete)="updateObjectMaterial($event)"></color-sketch>
           </mat-expansion-panel>
         </mat-accordion>
       </form>

@@ -210,6 +210,16 @@ export class EditorComponent {
     return this.editor.getCurrentSelection();
   }
 
+  public getCurrentObjectColor(): string {
+    const obj:THREE.Mesh = this.getCurrentObject();
+    if (obj) {
+      const mat:THREE.MeshBasicMaterial = obj.material as THREE.MeshBasicMaterial;
+      return '#' + mat.color.getHexString();
+    } else {
+      return '#888888';
+    }
+  }
+
   public getObjectList(): THREE.Mesh[] {
     return this.editor.getObjectList();
   }
@@ -247,6 +257,21 @@ export class EditorComponent {
           case 8:
             // Backspace
             this.deleteCurrentObject();
+            break;
+          case 71: // G
+            document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            break;
+          case 82: // R
+            document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            break;
+          case 83: // S
+            document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
             break;
           default:
             break;
