@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import * as THREE from 'three';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
@@ -13,6 +14,8 @@ import {
   RtcService,
   WorkspaceStateService
 } from 'src/app/services';
+
+declare const gapi: any;
 
 @Component({
   selector: 'app-editor',
@@ -35,16 +38,27 @@ export class EditorComponent {
     rotZ: new FormControl('', Validators.required),
   });
 
+  private readonly link: HTMLAnchorElement = document.createElement('a');
+
   private updateTimer: number = -1;
 
   private oldObj: THREE.Mesh;
 
+  private CLIENT_ID = '316564469406-tbr553n24lmf2rkap6ir7rcmv0fi6oro.apps.googleusercontent.com';
+  private API_KEY = 'AIzaSyDeapSoJmwymR3N0X0GgZKgrKnoLpxHVqo';
+  private SCOPES = 'https://www.googleapis.com/auth/drive';
+  private DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+  public auth2: any;
+
   public constructor(
+    public snackBar: MatSnackBar,
     private readonly rtc: RtcService,
     private readonly state: WorkspaceStateService
   ) {
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
+
+    this.handleClientLoad();
 
     this.setUpClickEvent();
     this.setUpKeydownEvent();
@@ -196,6 +210,16 @@ export class EditorComponent {
     return this.editor.getCurrentSelection();
   }
 
+  public getCurrentObjectColor(): string {
+    const obj:THREE.Mesh = this.getCurrentObject();
+    if (obj) {
+      const mat:THREE.MeshBasicMaterial = obj.material as THREE.MeshBasicMaterial;
+      return '#' + mat.color.getHexString();
+    } else {
+      return '#888888';
+    }
+  }
+
   public getObjectList(): THREE.Mesh[] {
     return this.editor.getObjectList();
   }
@@ -233,6 +257,21 @@ export class EditorComponent {
           case 8:
             // Backspace
             this.deleteCurrentObject();
+            break;
+          case 71: // G
+            document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            break;
+          case 82: // R
+            document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            break;
+          case 83: // S
+            document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
+            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
             break;
           default:
             break;
@@ -310,4 +349,170 @@ export class EditorComponent {
     }
   }
 
+  public onFileInput(files):void {
+    console.log('file input');
+    let file = files.item(0);
+    console.log(file);
+    if (file.type=='application/json') {
+      file.text().then(function(text){
+        console.log(text);
+        let parsed = [];
+        try{
+          parsed = JSON.parse(text);
+        } catch(err) {
+          console.log('Error in parsing JSON file. JSON badly formatted.');
+        } finally {
+          for (const objData of parsed) {
+            // check that given json has all the required properties
+            if (typeof objData.name == "string"  &&
+                typeof objData.geometryType == "string" &&
+                typeof objData.materialColorHex == "string" &&
+                !objData.position.some(isNaN) &&
+                !objData.scale.some(isNaN) &&
+                !objData.rotation.slice(0,3).some(isNaN)) {
+              console.log(objData);
+              const newObj = this.editor.addObjToScene(objData, true);
+              console.log(newObj);
+              this.rtc.sendCreateObjectMessage(newObj);
+            }
+          }
+        }
+      }.bind(this));
+    }
+  } 
+
+  public importScene() {
+    document.getElementById('file-upload').dispatchEvent(new MouseEvent('click'));
+  }
+  
+  public downloadScene(filetype:string):void {
+    let link = this.link;
+    let data = this.editor.exportScene(filetype);
+    if (data) {
+      let filename = 'architect3d_export.' + filetype;
+      saveString(data, filename);
+    }
+
+    function save(blob, filename) {
+      link.href = URL.createObjectURL(blob);
+      link.download = filename || 'data.json';
+      link.dispatchEvent(new MouseEvent('click'));
+    }
+
+    function saveString(text, filename) {
+      save(new Blob([text], {type:'text/plain'}), filename);
+    }
+  }
+
+  public uploadSceneToDrive(filetype:string) {
+    // check that user is signed into google
+    if (gapi.auth2.getAuthInstance().isSignedIn.get()) {
+      // https://developers.google.com/drive/api/v3/manage-uploads#multipart
+      let data = this.editor.exportScene(filetype)
+      if (data) {
+        let file = new Blob([data], {type:'plain/text'});
+        let metadata = {
+          'name':'architect3d_export.'+filetype,
+          'mimeType':'text/plain',
+        }
+        let accessToken = gapi.auth.getToken().access_token;
+        let form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], {type:'application/json'}));
+        form.append('file', file);
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('post', 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart');
+        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        xhr.responseType = 'json';
+        xhr.onload = () => {
+          if (xhr.status === 200) {
+            console.log('Successfully uploaded file to google drive!');
+            this.showNotification('Uploaded file to Google Drive!', 'Dismiss');
+          }
+        };
+        xhr.send(form);
+      } else {
+        console.log('invalid file type for export');
+      }
+    }
+  }
+
+  public toggleHelpVisibility() {
+    const helpEl = document.getElementById('help-container');
+    helpEl.style.display = helpEl.style.display == 'none' ? 'block' : 'none';
+  }
+
+  // Google Authentication Methods
+  // Ref: https://developers.google.com/drive/api/v3/quickstart/js
+  // https://developers.google.com/identity/sign-in/web/reference
+  /**
+   *  On load, called to load the auth2 library and API client library.
+   */
+  public handleClientLoad() {
+    gapi.load('client:auth2', this.initClient.bind(this));
+  }
+
+  /**
+   *  Initializes the API client library and sets up sign-in state
+   *  listeners.
+   */
+  public initClient() {
+    let authorizeButton = document.getElementById('googleSignInBtn');
+    let signoutButton = document.getElementById('googleSignOutBtn');
+    gapi.client.init({
+      apiKey: this.API_KEY,
+      clientId: this.CLIENT_ID,
+      discoveryDocs: this.DISCOVERY_DOCS,
+      scope: this.SCOPES
+    }).then(function () {
+      // Listen for sign-in state changes.
+      gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
+
+      // Handle the initial sign-in state.
+      this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
+      authorizeButton.onclick = this.handleAuthClick;
+      signoutButton.onclick = this.handleSignoutClick;
+    }.bind(this), function(error) {
+      console.log(JSON.stringify(error, null, 2));
+    });
+  }
+
+  /**
+   *  Called when the signed in status changes, to update the UI
+   *  appropriately. After a sign-in, the API is called.
+   */
+  public updateSigninStatus(isSignedIn) {
+    let authorizeButton = document.getElementById('googleSignInBtn');
+    let signoutButton = document.getElementById('googleSignOutBtn');
+    if (isSignedIn) {
+      authorizeButton.style.display = 'none';
+      signoutButton.style.display = 'inline-block';
+    } else {
+      authorizeButton.style.display = 'inline-block';
+      signoutButton.style.display = 'none';
+    }
+  }
+
+  /**
+   *  Sign in the user upon button click.
+   */
+  public handleAuthClick(event) {
+    gapi.auth2.getAuthInstance().signIn();
+  }
+
+  /**
+   *  Sign out the user upon button click.
+   */
+  public handleSignoutClick(event) {
+    gapi.auth2.getAuthInstance().signOut();
+  }
+
+  public isLoggedIntoGoogle():boolean{
+    if (gapi.auth2) return gapi.auth2.getAuthInstance().isSignedIn.get();
+    else return false;
+  }
+
+  public showNotification(message:string, action:string) {
+    this.snackBar.open(message, action, {duration:5000});
+  }
 }

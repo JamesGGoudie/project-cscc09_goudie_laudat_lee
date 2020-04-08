@@ -1,23 +1,43 @@
-<div style="position:absolute; top: 10px; left: 10px; color:white;">
-  <h3>Controls</h3>
-  <p>shift+ G                 = Translate (Grab)</p>
-  <p>shift+ S                 = Scale</p>
-  <p>shift+ R                 = Rotate</p>
-  <p>shift+ +                 = Increase size of control</p>
-  <p>shift+ -                 = Decrease size of control</p>
-  <p>hold Shift              = turn on snap to grid</p>
-  <p>Left-click and drag     = orbit</p>
-  <p>Right-click and drag    = pan</p>
-  <p>Scroll                  = zoom in/out</p>
-  <p>shift+D                 = deselect current object</p>
-  <p>shift+Backspace          = delete current object</p>
-  <p>shift+Z                  = reset camera</p>
+<input id="file-upload" type="file" accept="application/json" multiple="false" (change)="onFileInput($event.target.files);" (click)="$event.target.value = null">
+
+<div id="top-menu" class="panel">
+  <button mat-flat-button color="primary" [matMenuTriggerFor]="import_menu">Import</button>
+  <mat-menu #import_menu="matMenu">
+    <button mat-menu-item (click)="importScene()">JSON</button>
+  </mat-menu>
+
+  <button mat-flat-button color="primary" [matMenuTriggerFor]="export_menu">Export</button>
+  <mat-menu #export_menu="matMenu">
+    <button mat-menu-item [matMenuTriggerFor]="export_download_menu">Download</button>
+    <button mat-menu-item id="saveToDriveBtn" [disabled]="!isLoggedIntoGoogle()" [matMenuTriggerFor]="export_drive_menu">Save to Google Drive</button>
+  </mat-menu>
+
+  <mat-menu #export_download_menu="matMenu">
+    <button mat-menu-item (click)="downloadScene('json')">JSON</button>
+    <button mat-menu-item (click)="downloadScene('obj')">Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="downloadScene('stl')">STL (.STL)</button>
+    <button mat-menu-item (click)="downloadScene('dae')">Collada (.DAE)</button>
+  </mat-menu>
+
+  <mat-menu #export_drive_menu="matMenu">
+    <button mat-menu-item (click)="uploadSceneToDrive('json')">JSON</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('obj')">Wavefront (.OBJ)</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('stl')">STL (.STL)</button>
+    <button mat-menu-item (click)="uploadSceneToDrive('dae')">Collada (.DAE)</button>
+  </mat-menu>
+
+  <button mat-flat-button color="primary" id="googleSignInBtn" style="display:none">Link Google Account</button>
+  <button mat-flat-button color="primary" id="googleSignOutBtn" style="display:none">Unlink Google Account</button>
+
+  <button mat-flat-button color="basic" (click)="toggleHelpVisibility()">Toggle Help</button>
 </div>
 
-<div id="tool-menu" class="panel">
-  <button mat-flat-button (click)="changeTool('translate')">Move</button>
-  <button mat-flat-button (click)="changeTool('scale')">Scale</button>
-  <button mat-flat-button (click)="changeTool('rotate')">Rotate</button>
+<div id="tool-menu" class="panel" >
+  <mat-button-toggle-group id="tool-menu-buttons" value="Translate">
+    <mat-button-toggle id="translate-btn" value="Translate" (click)="changeTool('translate')">Translate</mat-button-toggle>
+    <mat-button-toggle id="scale-btn" value="Scale" (click)="changeTool('scale')">Scale</mat-button-toggle>
+    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="changeTool('rotate')">Rotate</mat-button-toggle>
+  </mat-button-toggle-group>  
 </div>
 
 <div id="side-menu" class="panel">
@@ -90,7 +110,7 @@
           <!-- MATERIAL (COLOR) -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>Material</mat-expansion-panel-header>
-            <color-sketch disableAlpha="true" presetColors="" color="#888" (onChange)="updateObjectMaterial($event)"></color-sketch>
+            <color-sketch disableAlpha="true" presetColors="" [color]="getCurrentObjectColor()" (onChangeComplete)="updateObjectMaterial($event)"></color-sketch>
           </mat-expansion-panel>
         </mat-accordion>
       </form>
@@ -104,4 +124,54 @@
       </ul>
     </mat-expansion-panel>
   </mat-accordion>
+</div>
+
+<div id="help-container">
+  <h2>Controls</h2>
+  <table id="controls-table">
+    <tr>
+      <td>Translate (Grab)</td>
+      <td>Shift-G</td>
+    </tr>
+    <tr>
+      <td>Scale</td>
+      <td>Shift-S</td>
+    </tr>
+    <tr>
+      <td>Rotate</td>
+      <td>Shift-R</td>
+    </tr>
+    <tr>
+      <td>Change size of Control</td>
+      <td>Shift-Plus(+) or Minus(-)</td>
+    </tr>
+    <tr>
+      <td>Turn on Snap to Grid</td>
+      <td>Hold down Shift</td>
+    </tr>
+    <tr>
+      <td>Orbit camera</td>
+      <td>Left-click and drag</td>
+    </tr>
+    <tr>
+      <td>Pan camera</td>
+      <td>Right-click and drag</td>
+    </tr>
+    <tr>
+      <td>Zoom In/Out</td>
+      <td>Scroll Up/Down</td>
+    </tr>
+    <tr>
+      <td>Deselect selected object</td>
+      <td>Shift-D</td>
+    </tr>
+    <tr>
+      <td>Delete selected object</td>
+      <td>Shift-Backspace</td>
+    </tr>
+    <tr>
+      <td>Reset Camera view</td>
+      <td>Shift-Z</td>
+    </tr>
+  </table>
 </div>

@@ -20,13 +20,13 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
-// import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
-import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { OBJExporter } from 'three/examples/jsm/exporters/OBJExporter.js';
+import { STLExporter } from 'three/examples/jsm/exporters/STLExporter.js';
+import { ColladaExporter } from 'three/examples/jsm/exporters/ColladaExporter.js';
 
 let Editor = function(){
     const HIGHLIGHT_OUTLINE = {color:0xff9100, linewidth:3};
     const DEFAULT_OUTLINE = {color:0x555555};
-    const DEFAULT_MATERIAL = {color: 0x888888};
 
     let camera, scene, renderer, control, orbit;
     let currentSelection;
@@ -140,14 +140,22 @@ let Editor = function(){
         render();
     }
 
-    function importScene(sceneJson){
-        // TODO
+    function exportSceneAsOBJ() {
+        let exporter = new OBJExporter();
+        return exporter.parse(scene);
     }
 
-    function exportScene() {
-        // TODO
+    function exportSceneAsSTL() {
+        let exporter = new STLExporter();
+        return exporter.parse(scene);
     }
 
+    function exportSceneAsCollada() {
+        let exporter = new ColladaExporter();
+        return exporter.parse(scene).data;
+    }
+
+    // Saves the current scene in JSON format
     function saveScene() {
         // save only the objects in the scene
         let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
@@ -164,10 +172,24 @@ let Editor = function(){
             exportedObjects.push(data);
         });
         console.log(exportedObjects);
-        console.log(JSON.stringify(exportedObjects));
+        return JSON.stringify(exportedObjects);
     }
 
-    function addObjToScene(objData) {
+    /**
+     * Add an object to the scene.
+     * @param objData {Object} data on the object to add
+     *          - name: string
+     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry", 
+     *          - materialColorHex: string
+     *          - position: array(3)
+     *          - scale: array(3)
+     *          - rotation: array(3)
+     *          - objectId: string (Not required if adding a new object)
+     * @param isNew {Boolean} true if the object to add is new to the scene, 
+     *          false if it is not new (i.e. when loading from database) 
+     * @returns mesh {THREE.Mesh} the object that was added
+     */
+    function addObjToScene(objData, isNew = false) {
         let geometry, material, mesh;
         switch(objData.geometryType){
             case 'BoxBufferGeometry':
@@ -189,8 +211,10 @@ let Editor = function(){
 
         // add to scene
         scene.add( mesh );
-        mesh.uuid = String(objData.objectId);
+        if (!isNew) mesh.uuid = String(objData.objectId);
         outlineObject(mesh, DEFAULT_OUTLINE);
+        render();
+        return mesh;
     }
 
     function loadObj(objData) {
@@ -277,28 +301,23 @@ let Editor = function(){
     }
 
     function addNewObject(type) {
-        let geometry, prop, name;
-        let material = new THREE.MeshBasicMaterial( DEFAULT_MATERIAL ); // this one has no shading
-        // let material = new THREE.MeshStandardMaterial( DEFAULT_MATERIAL ); // this one has shading
+        let objData = {};
+        objData.materialColorHex = '888888';
+        objData.position = [0,100,0];
+        objData.scale = [1,1,1];
+        objData.rotation = [0,0,0];
+        objData.objectId = null;
 
         if (type == 'box') {
-          prop = {width:200, height:200, depth:200};
-          geometry = new THREE.BoxBufferGeometry( prop.width, prop.height, prop.depth );
-          name = 'Box';
+            objData.geometryType = 'BoxBufferGeometry';
+            objData.name = 'Box';
         } else if (type == 'cone') {
-          prop = {radius:100, height:200, radSeg:32};
-          geometry = new THREE.ConeBufferGeometry( prop.radius, prop.height, prop.radSeg ); // radius, height, radial segments
-          name = 'Cone';
+            objData.geometryType = 'ConeBufferGeometry';
+            objData.name = 'Cone';
         } else {
-          return;
+          return null;
         }
-        let mesh = new THREE.Mesh( geometry, material );
-        mesh.name = name;
-        scene.add( mesh );
-        mesh.position.set(0, 100, 0);
-        outlineObject(mesh, DEFAULT_OUTLINE);
-        render();
-
+        const mesh = addObjToScene(objData, true);
         return mesh;
     };
 
@@ -376,14 +395,29 @@ let Editor = function(){
         }
     };
 
+    this.exportScene = function(filetype) {
+        deselectCurrentObject()
+        switch(filetype) {
+            case 'json':
+                return saveScene();
+            case 'obj':
+                return exportSceneAsOBJ();
+            case 'dae':
+                return exportSceneAsCollada();
+            case 'stl':
+                return exportSceneAsSTL();
+        }
+        return null;
+    };
+
     this.selectObject = selectObject;
     this.addNewObject = addNewObject;
     this.deleteObject = deleteObject;
     this.deselectCurrentObject = deselectCurrentObject;
-    this.saveScene = saveScene;
     this.loadScene = loadScene;
     this.loadObj = loadObj;
     this.deleteObjectByUuid = deleteObjectByUuid;
+    this.addObjToScene = addObjToScene;
 
     this.renderer = renderer;
     this.camera = camera;
