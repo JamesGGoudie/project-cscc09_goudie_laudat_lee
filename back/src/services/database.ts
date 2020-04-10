@@ -1,9 +1,13 @@
-import { ObjectInfo, PinnedInfo, Workspace } from '../interfaces';
+import { ObjectInfo, PinnedInfo, Workspace, User } from '../interfaces';
 
 export class Database {
 
   private readonly fakeDatabase: {
     [workspaceId: string]: Workspace
+  } = {};
+
+  private readonly userDatabase: {
+    [username: string]: User
   } = {};
 
   public workspaceExists(id: string): boolean {
@@ -23,6 +27,29 @@ export class Database {
     };
 
     return true;
+  }
+
+  public getUser(username: string): User {
+    return this.userDatabase[username];
+  }
+
+  public createUser(emailAddress: string, username: string, password: string): boolean {
+    this.userDatabase[username] = {
+      emailAddress: emailAddress,
+      username: username,
+      password: password,
+      status: 0
+    };
+
+    return true;
+  }
+
+  public usernameExists(username: string): boolean{
+    if(this.userDatabase.hasOwnProperty(username)){
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public userExists(workspaceId: string, userId: string): boolean {

@@ -16,6 +16,15 @@ import {
 import { SignUpForm } from 'src/app/interfaces/forms/sign-up-form';
 import { SignUpRes } from 'src/app/interfaces/responses/sign-up-response';
 import { SignUpVars } from 'src/app/interfaces/request-variables/sign-up-vars';
+import { SignInForm } from 'src/app/interfaces/forms/sign-in-form';
+import { SignInRes } from 'src/app/interfaces/responses/sign-in-response';
+import { SignInVars } from 'src/app/interfaces/request-variables/sign-in-vars';
+import { SignOutRes } from 'src/app/interfaces/responses/sign-out-response';
+import { SignOutVars } from 'src/app/interfaces/request-variables/sign-out-vars';
+import { SignOutForm } from 'src/app/interfaces/forms/sign-out-form';
+import { GetContactForm } from 'src/app/interfaces/forms/get-contact-form';
+import { GetContactRes } from 'src/app/interfaces/responses/get-contact-response';
+import { GetContactVars } from 'src/app/interfaces/request-variables/get-contact-vars';
 
 @Injectable({
   providedIn: 'root'
@@ -92,19 +101,16 @@ export class WorkspaceControlService {
     const query = `mutation Create(
         $emailAddress: String!,
         $username: String!,
-        $password: String!,
-        $workspaceId: String!) {
+        $password: String!) {
       signUp(
           emailAddress: $emailAddress,
           username: $username,
-          password: $password,
-          workspaceId: $workspaceId)
+          password: $password)
     }`;
     const variables: SignUpVars = {
       emailAddress: form.emailAddress,
       username: form.username,
       password: form.password,
-      workspaceId: form.workspaceId
     }
 
     const httpOptions: {headers: HttpHeaders} = {
@@ -115,6 +121,87 @@ export class WorkspaceControlService {
     };
 
     return this.http.post<SignUpRes>(
+        BACK_ROUTES.API,
+        JSON.stringify({query, variables}),
+        httpOptions);
+  }
+
+  public signIn(
+    form: SignInForm
+  ): Observable<SignInRes> {
+    const query = `mutation Create(
+        $username: String!,
+        $password: String!) {
+      signIn(
+          username: $username,
+          password: $password)
+    }`;
+    const variables: SignInVars = {
+      username: form.username,
+      password: form.password,
+    }
+
+    const httpOptions: {headers: HttpHeaders} = {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.http.post<SignInRes>(
+        BACK_ROUTES.API,
+        JSON.stringify({query, variables}),
+        httpOptions);
+  }
+
+  public signOut(
+    form: SignOutForm
+  ): Observable<SignOutRes> {
+    const query = `mutation Create(
+        $username: String!,
+        $password: String!) {
+      signOut(
+          username: $username,
+          password: $password)
+    }`;
+    const variables: SignOutVars = {
+      username: form.username,
+      password: form.password,
+    }
+
+    const httpOptions: {headers: HttpHeaders} = {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.http.post<SignOutRes>(
+        BACK_ROUTES.API,
+        JSON.stringify({query, variables}),
+        httpOptions);
+  }
+
+  public getContact(
+    form: GetContactForm
+  ): Observable<GetContactRes> {
+    const query = `mutation Create(
+        $username: String!) {
+      getContact(
+          username: $username)
+    }`;
+    const variables: GetContactVars = {
+      username: form.username
+    }
+
+    const httpOptions: {headers: HttpHeaders} = {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.http.post<GetContactRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);

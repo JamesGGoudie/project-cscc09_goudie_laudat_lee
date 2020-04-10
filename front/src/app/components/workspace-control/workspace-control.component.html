@@ -73,10 +73,6 @@
         <mat-label>Password</mat-label>
         <input matInput formControlName="password">
       </mat-form-field>
-      <mat-form-field>
-        <mat-label>Enter first workspace ID</mat-label>
-        <input matInput formControlName="workspaceId">
-      </mat-form-field>
 
       <button mat-button type="submit">Sign up</button>
     </form>
@@ -89,7 +85,7 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
+    <form [formGroup]="signIn" (ngSubmit)="onSignInSubmit(signIn.value)">
       <mat-form-field>
         <mat-label>Username</mat-label>
         <input matInput formControlName="username">
@@ -97,10 +93,6 @@
       <mat-form-field>
         <mat-label>Password</mat-label>
         <input matInput formControlName="password">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Enter a workspace ID</mat-label>
-        <input matInput formControlName="workspaceId">
       </mat-form-field>
 
       <button mat-button type="submit">Sign in</button>
@@ -110,29 +102,39 @@
   <mat-expansion-panel>
     <mat-expansion-panel-header>
       <mat-panel-title>
-        Make team
+        If you would like to collaborate on a design with other members of our application, get their contact info here. 
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
+    <form [formGroup]="getContact" (ngSubmit)="getContactSubmit(getContact.value)">
       <mat-form-field>
-        <mat-label>Member 1 username</mat-label>
-        <input matInput formControlName="member1">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Member 2 username</mat-label>
-        <input matInput formControlName="member2">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Member 3 username</mat-label>
-        <input matInput formControlName="member3">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Member 4 username</mat-label>
-        <input matInput formControlName="member4">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username">
       </mat-form-field>
 
-      <button mat-button type="submit">Invite members</button>
+      <button mat-button type="submit">Get email address</button>
+    </form>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel>
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Sign-out
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <form [formGroup]="signOut" (ngSubmit)="onSignOutSubmit(signOut.value)">
+      <mat-form-field>
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username">
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input matInput formControlName="password">
+      </mat-form-field>
+
+      <button mat-button type="submit">Sign out</button>
     </form>
   </mat-expansion-panel>
 </mat-accordion>
+

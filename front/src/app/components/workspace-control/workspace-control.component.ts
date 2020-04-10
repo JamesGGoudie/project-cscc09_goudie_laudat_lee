@@ -18,6 +18,12 @@ import {
 
 import { SignUpForm } from 'src/app/interfaces/forms/sign-up-form';
 import { SignUpRes } from 'src/app/interfaces/responses/sign-up-response';
+import { SignInForm } from 'src/app/interfaces/forms/sign-in-form';
+import { SignInRes } from 'src/app/interfaces/responses/sign-in-response';
+import { SignOutRes } from 'src/app/interfaces/responses/sign-out-response';
+import { SignOutForm } from 'src/app/interfaces/forms/sign-out-form';
+import { GetContactForm } from 'src/app/interfaces/forms/get-contact-form';
+import { GetContactRes } from 'src/app/interfaces/responses/get-contact-response';
 
 @Component({
   selector: 'app-workspace-control',
@@ -46,8 +52,16 @@ export class WorkspaceControlComponent {
 
   public readonly signIn: FormGroup = new FormGroup({
     username: new FormControl(),
-    password: new FormControl(),
-    workspaceId: new FormControl()
+    password: new FormControl() 
+  });
+
+  public readonly signOut: FormGroup = new FormGroup({
+    username: new FormControl(),
+    password: new FormControl()
+  });
+
+  public readonly getContact: FormGroup = new FormGroup({
+    username: new FormControl()
   });
 
   public constructor(
@@ -86,20 +100,36 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.signUp(form).subscribe(
         (res: SignUpRes): void => {
       if (res.data.signUp) {
-        this.workspaceStateService.setUsername(form.username);
-        alert("You are now signed up! Have fun in your first workspace!");
-        this.setupWorkspace(form.workspaceId, form.username);
+        alert("You are now signed up! Don't forget to sign in!");
       }
     });
   }
 
-  public onSignInSubmit(form: JoinWorkspaceForm): void {
-    //this.workspaceControlService.joinWorkspace(form).subscribe(
-        //(res: JoinWorkspaceRes): void => {
-      //if (res.data.joinWorkspace) {
-        //this.setupWorkspace(form.workspaceId, form.userId);
-      //}
-    //});
+  public onSignInSubmit(form: SignInForm): void {
+    this.workspaceControlService.signIn(form).subscribe(
+      (res: SignInRes): void => {
+    if (res.data.signIn) {
+      alert("You are now signed in! Go ahead and create/join a workspace!");
+    }
+  });
+  }
+
+  public onSignOutSubmit(form: SignOutForm): void {
+    this.workspaceControlService.signOut(form).subscribe(
+      (res: SignOutRes): void => {
+    if (res.data.signOut) {
+      alert("You are now signed out! Have a great day or night.");
+    }
+  });
+  }
+
+  public getContactSubmit(form: GetContactForm): void {
+    this.workspaceControlService.getContact(form).subscribe(
+      (res: GetContactRes): void => {
+    if (res.data.contactInfo != '') {
+      alert(res.data.contactInfo);
+    }
+  });
   }
 
 }

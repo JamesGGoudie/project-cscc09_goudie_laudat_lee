@@ -17,9 +17,12 @@ import {
 } from './interfaces';
 
 import { SignUpReq } from './interfaces/requests/sign-up-req';
+import { SignInReq } from './interfaces/requests/sign-in-req';
 
 
 import { Database } from './services';
+import { SignOutReq } from './interfaces/requests/sign-out-req';
+import { GetContactReq } from './interfaces/requests/get-contact-req';
 
 const app = express();
 
@@ -54,19 +57,84 @@ const root = {
       return false;
     }
 
+    if (!db.usernameExists(req.userId)) {
+      // Username does not exist
+      return false;
+    }
+    const user = db.getUser(req.userId);
+
+    if(user.status != 1){
+      //User must be signed in to create a workspace
+      return false;
+    }
+
     return db.createWorkspace(
         req.workspaceId, req.workspacePassword, req.userId);
   },
   signUp: (req: SignUpReq): boolean => {
     console.log(req);
 
-    if (db.workspaceExists(req.workspaceId)) {
-      // Workspace already exists in the database.
+    if (db.usernameExists(req.username)) {
+      // Username already exists in the database.
       return false;
     }
 
-    return db.createWorkspace(
-        req.workspaceId, req.password, req.username);
+    return db.createUser(req.emailAddress, req.username, req.password);
+  },
+  signIn: (req: SignInReq): boolean => {
+    console.log(req);
+    
+    if (!db.usernameExists(req.username)) {
+      // Username does not exist
+      return false;
+    }
+
+    const user = db.getUser(req.username);
+
+    if (!db.passwordMatches(user.password, req.password)) {
+      // Wrong password.
+      return false;
+    }
+
+    //change status to online
+    user.status = 1;
+    return true;
+
+  },
+  signOut: (req: SignOutReq): boolean => {
+    console.log(req);
+    
+    if (!db.usernameExists(req.username)) {
+      // Username does not exist
+      return false;
+    }
+
+    const user = db.getUser(req.username);
+
+    if (!db.passwordMatches(user.password, req.password)) {
+      // Wrong password.
+      return false;
+    }
+
+    //change status to offline
+    user.status = 0;
+    return true;
+
+  },
+  getContact: (req: GetContactReq): String => {
+    console.log(req);
+    const user = db.getUser(req.username);
+    console.log(user.emailAddress);
+    return user.emailAddress;
+
+    //if (!db.usernameExists(req.username)) {
+      // Username does not exist
+      //return '';
+    //} else {
+      //const user = db.getUser(req.username);
+      //return user.emailAddress;
+    //}
+
   },
   joinWorkspace: (req: JoinWorkspaceReq): boolean => {
     console.log(req);
@@ -85,6 +153,17 @@ const root = {
 
     if (!db.passwordMatches(workspace.password, req.workspacePassword)) {
       // Wrong password.
+      return false;
+    }
+
+    if (!db.usernameExists(req.userId)) {
+      // Username does not exist
+      return false;
+    }
+    const user = db.getUser(req.userId);
+
+    if(user.status != 1){
+      //User must be signed in to create a workspace
       return false;
     }
 
