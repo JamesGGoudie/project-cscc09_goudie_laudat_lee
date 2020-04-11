@@ -8,6 +8,7 @@ export interface RtcCopyWsRes extends RtcMessage {
 
   type: RtcMessageType.CopyWorkspaceRes;
 
+  pins: string[];
   workspaceObjects: ObjectInfo[];
 
 }

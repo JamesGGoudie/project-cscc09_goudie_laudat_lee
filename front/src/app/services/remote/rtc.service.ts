@@ -34,8 +34,8 @@ export class RtcService {
   private readonly onModifyObject: Subject<ObjectInfo> =
       new Subject<ObjectInfo>();
   private readonly onCopyWorkspaceReq: Subject<string> = new Subject<string>();
-  private readonly onCopyWorkspaceRes: Subject<ObjectInfo[]> =
-      new Subject<ObjectInfo[]>();
+  private readonly onCopyWorkspaceRes: Subject<RtcCopyWsRes> =
+      new Subject<RtcCopyWsRes>();
 
   private peer: Peer;
   private readonly peers: string[] = [];
@@ -153,10 +153,17 @@ export class RtcService {
     this.sendToArbiter(data);
   }
 
-  public sendCopyWorkspaceRes(obj: THREE.Mesh[], peer: string): void {
+  public sendCopyWorkspaceRes(
+    objs: THREE.Mesh[],
+    pinnedObjects: string[],
+    peer: string
+  ): void {
     const data: RtcCopyWsRes = {
       type: RtcMessageType.CopyWorkspaceRes,
-      workspaceObjects: obj.map(obj => this.convertMeshToObjInfo(obj))
+      pins: pinnedObjects,
+      workspaceObjects: objs.map((obj: THREE.Mesh): ObjectInfo => {
+          return this.convertMeshToObjInfo(obj);
+        })
     };
 
     this.sendToPeer(data, peer);
@@ -186,7 +193,7 @@ export class RtcService {
     return this.onCopyWorkspaceReq;
   }
 
-  public copyWorkspaceRes(): Observable<ObjectInfo[]> {
+  public copyWorkspaceRes(): Observable<RtcCopyWsRes> {
     return this.onCopyWorkspaceRes;
   }
 
@@ -308,7 +315,7 @@ export class RtcService {
   }
 
   private processCopyWorkspaceRes(data: RtcCopyWsRes) {
-    this.onCopyWorkspaceRes.next(data.workspaceObjects);
+    this.onCopyWorkspaceRes.next(data);
   }
 
 }

@@ -7,7 +7,7 @@ import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
 import {
-  ObjectInfo
+  ObjectInfo, RtcCopyWsRes
 } from 'src/app/interfaces';
 
 import {
@@ -85,16 +85,24 @@ export class EditorComponent {
     });
 
     this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
+      const pins: string[] = this.state.getOtherUsersPins();
+      pins.push(this.state.getCurrentUsersPin());
+
       this.rtc.sendCopyWorkspaceRes(
           this.editor.scene.children.filter(
             (obj: THREE.Object3D): boolean => {
               return obj instanceof THREE.Mesh;
             }),
+          pins,
           peer);
     });
 
-    this.rtc.copyWorkspaceRes().subscribe((objs: ObjectInfo[]): void => {
-      this.editor.loadScene(objs);
+    this.rtc.copyWorkspaceRes().subscribe((res: RtcCopyWsRes): void => {
+      this.editor.loadScene(res.workspaceObjects);
+
+      for (const pin of res.pins) {
+        this.state.addOtherUsersPin(pin);
+      }
     });
 
     if (this.state.getJoinedWorkspace()) {
@@ -379,12 +387,12 @@ export class EditorComponent {
         }
       }.bind(this));
     }
-  } 
+  }
 
   public importScene() {
     document.getElementById('file-upload').dispatchEvent(new MouseEvent('click'));
   }
-  
+
   public downloadScene(filetype:string):void {
     let link = this.link;
     let data = this.editor.exportScene(filetype);
