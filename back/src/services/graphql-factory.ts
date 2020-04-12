@@ -84,9 +84,17 @@ export class GraphQlFactory {
     });
   }
 
+  /**
+   * Fascade for all of the GraphQL logic.
+   *
+   * @param db A reference to the database controller.
+   */
   public constructor(private readonly db: DatabaseController) {}
 
-  public getRoot(): GraphQlRoot {
+  /**
+   * Gets the root of the GraphQL interface.
+   */
+  public buildRoot(): GraphQlRoot {
     return {
       createWorkspace: this.createWorkspace,
       joinWorkspace: this.joinWorkspace

@@ -41,15 +41,21 @@ http {
   # Must read the body in 5 seconds.
   client_body_timeout <%= ENV['NGINX_CLIENT_BODY_TIMEOUT'] || 5 %>;
 
+  # Defines the location of the GraphQL server.
   upstream app_server {
     server localhost:3000;
   }
 
+  # Depending on the value of http_upgrade, determine the value of
+  # connection_upgrade.
+  # ex: http_upgrade = default => connection_upgrade = upgrade
+  # Needed for the Websocket connection requests.
   map $http_upgrade $connection_upgrade {
     default upgrade;
     '' close;
   }
 
+  # Defines the location of the PeerJS server.
   upstream websocket {
     server localhost:9000;
   }
@@ -59,20 +65,26 @@ http {
     server_name _;
     keepalive_timeout 5;
 
+    # If the client is not connecting through HTTPS...
     if ($http_x_forwarded_proto != 'https') {
+      # ... then redirect them to connect through HTTPS.
       return 301 https://$host$request_uri;
     }
 
     location / {
       client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
-      # Path to app
+      # Path to the static Angular files.
       root /app/dist/front;
 
+      # Specifies the index of the Angular project.
       index index.html;
+      # Ensures that all remaining routes are forwarded to the Angular.
+      # As a consequence, the Angular will handle 404s.
       try_files $uri $uri/ /index.html;
     }
 
+    # Act as a proxy for the GraphQL server.
     location /graphql {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header Host $http_host;
@@ -80,6 +92,7 @@ http {
       proxy_pass http://app_server;
     }
 
+    # Act as a proxy for the
     location /peer {
       proxy_pass http://websocket;
       proxy_http_version 1.1;

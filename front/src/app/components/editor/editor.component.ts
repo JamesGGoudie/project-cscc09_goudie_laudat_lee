@@ -64,27 +64,33 @@ export class EditorComponent {
     this.setUpKeydownEvent();
 
     this.rtc.createObject().subscribe((objInfo: ObjectInfo): void => {
+      // When we receive a create object message...
       this.editor.loadObj(objInfo, false);
     });
 
     this.rtc.modifyObject().subscribe((objInfo: ObjectInfo): void => {
+      // When we receive a modfiy object message...
       this.editor.deleteObjectByUuid(objInfo.objectId);
       this.editor.loadObj(objInfo, true);
     });
 
     this.rtc.pinObject().subscribe((objId: string): void => {
+      // When we receive a pin object message...
       this.state.addOtherUsersPin(objId);
     });
 
     this.rtc.unpinObject().subscribe((objId: string): void => {
+      // When we receive an unpin object message...
       this.state.removeOtherUsersPin(objId);
     });
 
     this.rtc.deleteObject().subscribe((objId: string): void => {
+      // When we receive a delete object message...
       this.editor.deleteObjectByUuid(objId);
     });
 
     this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
+      // When we receive a request to copy the workspace...
       const pins: string[] = this.state.getOtherUsersPins();
       pins.push(this.state.getCurrentUsersPin());
 
@@ -98,6 +104,7 @@ export class EditorComponent {
     });
 
     this.rtc.copyWorkspaceRes().subscribe((res: RtcCopyWsRes): void => {
+      // When we receive a response containing info to replicat a workspace...
       this.editor.loadScene(res.workspaceObjects);
 
       for (const pin of res.pins) {

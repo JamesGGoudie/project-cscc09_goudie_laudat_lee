@@ -10,6 +10,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+/**
+ * A module for any common elements that are commonly used across components.
+ */
 @NgModule({
  imports: [
    CommonModule

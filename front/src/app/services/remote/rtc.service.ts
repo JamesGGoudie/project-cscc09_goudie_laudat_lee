@@ -21,6 +21,9 @@ import {
 
 import { environment } from 'src/environments/environment';
 
+/**
+ * Facade for all web-socket (RTC) interactions.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -37,11 +40,30 @@ export class RtcService {
   private readonly onCopyWorkspaceRes: Subject<RtcCopyWsRes> =
       new Subject<RtcCopyWsRes>();
 
+  /**
+   * The peer of the client.
+   */
   private peer: Peer;
+  /**
+   * All other peers in the workspace.
+   */
   private readonly peers: string[] = [];
+  /**
+   * A map between peer IDs and connections.
+   *
+   * This is supposedly stored in the client peer as well, but the
+   * documentation indicates that a separate object is recommended.
+   */
   private readonly connections: Map<string, Peer.DataConnection> =
       new Map<string, Peer.DataConnection>();
 
+  /**
+   * Creates the Peer used for RTC using the given ID.
+   *
+   * Returns an observable that emits once the peer is opened.
+   *
+   * @param id
+   */
   public createPeer(id: string): Observable<void> {
     this.peer = new Peer(id, {
       host: environment.peerHost,
@@ -52,26 +74,39 @@ export class RtcService {
 
     const s: Subject<void> = new Subject();
 
-    this.peer.on('open', () => {
+    this.peer.on('open', (): void => {
       s.next();
     });
 
-    this.peer.on('connection', (conn) => {
+    // When the peer connects to another peer...
+    this.peer.on('connection', (conn: Peer.DataConnection): void => {
+      // ...perform the initial set-up.
       this.setUpConnection(conn);
-
-      conn.on('error', (err): void => {
-        console.error(err);
-      });
     });
 
     return s;
   }
 
+  /**
+   * Connect the current user to every peer in the given list.
+   *
+   * Returns an observable that emits once the user has attempted to attempt to
+   * every peer.
+   * It is not required to connect successfully to every peer for the
+   * observable to emit.
+   *
+   * @param ids
+   */
   public connectToPeers(ids: string[]): Observable<void> {
     let i = 0;
     const s: Subject<void> = new Subject();
 
-    const countConn: () => void = () => {
+    /**
+     * Count the poke to the peer.
+     *
+     * Triggers the observable once every peer has been poked.
+     */
+    const countConn: () => void = (): void => {
       ++i;
 
       if (i === ids.length) {
@@ -82,24 +117,29 @@ export class RtcService {
     for (const id of ids) {
       const conn = this.peer.connect(id);
 
-      this.peer.on('error', (err) => {
+      this.peer.on('error', (err): void => {
+        // The peer failed to connect.
         console.error(err);
         countConn();
       });
 
-      conn.on('open', () => {
+      conn.on('open', (): void => {
+        // Perform the initial set-up.
         this.setUpConnection(conn);
         countConn();
-      });
-
-      conn.on('error', (err): void => {
-        console.error(err);
       });
     }
 
     return s;
   }
 
+  /**
+   * Indicate to all other peers that you have pinned this object.
+   *
+   * Other peers should not be able to select it.
+   *
+   * @param id
+   */
   public sendPinObjectMessage(id: string): void {
     const data: RtcPinObjMsg = {
       type: RtcMessageType.PinObject,
@@ -109,6 +149,13 @@ export class RtcService {
     this.sendToAll(data);
   }
 
+  /**
+   * Indicate to all other peers that you have unpinned this object.
+   *
+   * Other users can not select it.
+   *
+   * @param id
+   */
   public sendUnpinObjectMessage(id: string): void {
     const data: RtcUnpinObjMsg = {
       type: RtcMessageType.UnpinObject,
@@ -118,6 +165,12 @@ export class RtcService {
     this.sendToAll(data);
   }
 
+  /**
+   * Indicate to all other peers that this object has been deleted from the
+   * workspace.
+   *
+   * @param id
+   */
   public sendDeleteObjectMessage(id: string): void {
     const data: RtcDeleteObjMsg = {
       type: RtcMessageType.DeleteObject,
@@ -127,6 +180,12 @@ export class RtcService {
     this.sendToAll(data);
   }
 
+  /**
+   * Indicate to all other peers that this object has just been created and did
+   * not previously exist.
+   *
+   * @param obj
+   */
   public sendCreateObjectMessage(obj: THREE.Mesh): void {
     const data: RtcCreateObjMsg = {
       type: RtcMessageType.CreateObject,
@@ -136,6 +195,11 @@ export class RtcService {
     this.sendToAll(data);
   }
 
+  /**
+   * Indicate to all other peers that this object has been modified.
+   *
+   * @param obj
+   */
   public sendModifyObjectMessage(obj: THREE.Mesh): void {
     const data: RtcModifyObjMsg = {
       type: RtcMessageType.ModifyObject,
@@ -145,6 +209,11 @@ export class RtcService {
     this.sendToAll(data);
   }
 
+  /**
+   * Request to the arbiter the current configuration of the workspace.
+   *
+   * This includes current objects and pins.
+   */
   public sendCopyWorkspaceReq(): void {
     const data: RtcCopyWsReq = {
       type: RtcMessageType.CopyWorkspaceReq
@@ -153,6 +222,14 @@ export class RtcService {
     this.sendToArbiter(data);
   }
 
+  /**
+   * Inform the peer that these are the current objects and pins in the\
+   * workspace.
+   *
+   * @param objs
+   * @param pinnedObjects
+   * @param peer
+   */
   public sendCopyWorkspaceRes(
     objs: THREE.Mesh[],
     pinnedObjects: string[],
@@ -224,32 +301,50 @@ export class RtcService {
     };
   }
 
+  /**
+   * Send a message to the arbiter.
+   *
+   * The arbiter is the user that is considered the head of the project.
+   *
+   * Currently not implemented.
+   * Instead sends a message to the first peer in the list of peers.
+   *
+   * @param data
+   */
   private sendToArbiter(data: RtcMessage): void {
-    console.log(data);
-
     this.send(data, this.connections.get(this.peers[0]));
   }
 
+  /**
+   * Sends a message to a specific peer.
+   *
+   * @param data
+   * @param peer
+   */
   private sendToPeer(data: RtcMessage, peer: string): void {
-    console.log(data);
-    console.log(peer);
-
     this.send(data, this.connections.get(peer));
   }
 
+  /**
+   * Sends a message to all peers.
+   *
+   * @param data
+   */
   private sendToAll(data: RtcMessage): void {
-    console.log(data);
-
     this.connections.forEach((conn: Peer.DataConnection): void => {
       this.send(data, conn);
     });
   }
 
   private send(data: RtcMessage, conn: Peer.DataConnection): void {
+    // If the connection is open...
     if (conn.open) {
+      // ...then send the message.
       conn.send(data);
     } else {
-      conn.on('open', () => {
+      // Otherwise, wait for the connection to open...
+      conn.on('open', (): void => {
+        // ...then send the message.
         conn.send(data);
       });
     }
@@ -259,9 +354,7 @@ export class RtcService {
     this.peers.push(conn.peer);
     this.connections.set(conn.peer, conn);
 
-    conn.on('data', (data: RtcMessage) => {
-      console.log(data);
-      console.log(conn.peer);
+    conn.on('data', (data: RtcMessage): void => {
       switch (data.type) {
         case RtcMessageType.CopyWorkspaceReq:
           this.processCopyWorkspaceReq(data as RtcCopyWsReq, conn.peer);
@@ -287,6 +380,10 @@ export class RtcService {
         default:
           break;
       }
+    });
+
+    conn.on('error', (err: any): void => {
+      console.error(err);
     });
   }
 

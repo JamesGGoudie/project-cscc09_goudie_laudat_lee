@@ -1,19 +1,37 @@
 import { Injectable } from '@angular/core';
 
+/**
+ * Contains information about the current state of the site.
+ *
+ * Effectively global variables.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class WorkspaceStateService {
 
+  /**
+   * True iff the user is in a workspace.
+   */
   private joinedWorkspace: boolean = false;
-
+  /**
+   * The ID of the workspace.
+   */
   private workspaceId: string;
+  /**
+   * The ID of the user.
+   *
+   * This is not the same as the Peer JS ID.
+   */
   private userId: string;
+  /**
+   * The ID of the object pinned by the user.
+   */
   private pinnedObj: string;
-
+  /**
+   * The IDs of objects pinned by other users.
+   */
   private pinnedByOthers: string[] = [];
-
-  private versionHistory: {[objId: string]: number} = {};
 
   public setJoinedWorkspace(value: boolean): void {
     this.joinedWorkspace = value;
@@ -21,16 +39,6 @@ export class WorkspaceStateService {
 
   public getJoinedWorkspace(): boolean {
     return this.joinedWorkspace;
-  }
-
-  public saveVersionHistory(objId: string, version: number): void {
-    this.versionHistory[objId] = version;
-  }
-
-  public getVersionHistory(objId: string): number {
-    const version = this.versionHistory[objId];
-
-    return version != undefined ? version : -1;
   }
 
   public getCurrentUsersPin(): string {

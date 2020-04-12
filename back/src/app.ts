@@ -20,19 +20,33 @@ db.connectDatabase().then((): void => {
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({extended: false}));
 
+  // Enable CORS.
   app.use(cors({origin: Environment.getOrigin()}));
 
-  app.use((req, res, next) => {
-    console.log('HTTP request', req.method, req.url, req.body);
-    next();
-  });
+  if (Environment.isDebuggingEnabled()) {
+    app.use((req, res, next) => {
+      console.log('HTTP request', req.method, req.url, req.body);
+      next();
+    });
+  } else {
+    app.use((req, res, next) => {
+      console.log('HTTP request', req.method, req.url);
+      next();
+    });
+  }
 
+  /**
+   * A reference to the controller for the Peer JS server.
+   *
+   * The value is never read, but I don't know how JS garbage collection works
+   * and so will leave it as it is, IDE warnings be damned.
+   */
   const peerController: PeerController = new PeerController(db);
   const factory: GraphQlFactory = new GraphQlFactory(db);
 
   const graphQlOptions: graphqlHTTP.Options = {
     graphiql: Environment.isGraphIQlEnabled(),
-    rootValue: factory.getRoot(),
+    rootValue: factory.buildRoot(),
     schema: GQL_SCHEMA
   }
 
@@ -42,9 +56,9 @@ db.connectDatabase().then((): void => {
 
   app.listen(port, (err: any): void => {
     if (err) {
-      console.log(err);
+      console.error(err);
     } else {
-      console.log(`HTTP server on http://localhost:${port}`);
+      console.log(`GraphQL server on http://localhost:${port}`);
     }
   });
 }).catch((err: any): void => {

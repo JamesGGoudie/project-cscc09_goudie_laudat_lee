@@ -71,6 +71,7 @@ export class WorkspaceControlComponent {
             (): void => {
           this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
               .subscribe((): void => {
+            // Zone is needed due to complicated nesting.
             this.zone.run((): void => {
               this.setupWorkspace(form.workspaceId, form.userId, true);
             });
@@ -80,6 +81,13 @@ export class WorkspaceControlComponent {
     });
   }
 
+  /**
+   * Saves all the information about the session and routes to the editor.
+   *
+   * @param workspaceId
+   * @param userId
+   * @param joined
+   */
   private setupWorkspace(
     workspaceId: string,
     userId: string,
