@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 
+import { ErrorDialogModule } from 'src/app/components/dialogs';
+
 import { SharedModule } from 'src/app/components/shared.module';
 
 import { WorkspaceControlComponent } from './workspace-control.component';
@@ -12,7 +14,9 @@ import { WorkspaceControlComponent } from './workspace-control.component';
     WorkspaceControlComponent
   ],
   imports: [
-    SharedModule
+    SharedModule,
+
+    ErrorDialogModule
   ]
 })
-export class WorkspaceControlModule { }
+export class WorkspaceControlModule {}

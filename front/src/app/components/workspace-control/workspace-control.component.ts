@@ -1,12 +1,16 @@
 import { Component, NgZone } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
+import { ErrorDialogComponent } from 'src/app/components/dialogs';
 import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   CreateWorkspaceForm,
   CreateWorkspaceRes,
+  ErrorDialogData,
+  GraphQlError,
   JoinWorkspaceForm,
   JoinWorkspaceRes
 } from 'src/app/interfaces';
@@ -37,6 +41,7 @@ export class WorkspaceControlComponent {
 
   public constructor(
     private readonly zone: NgZone,
+    private readonly dialog: MatDialog,
     private readonly router: Router,
     private readonly rtc: RtcService,
     private readonly workspaceControlService: WorkspaceControlService,
@@ -47,9 +52,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceRes): void => {
       if (res.errors) {
-        for (const err of res.errors) {
-          console.error(err.message);
-        }
+        this.displayErrors(res.errors);
       } else {
         this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
             (): void => {
@@ -63,9 +66,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceRes): void => {
       if (res.errors) {
-        for (const err of res.errors) {
-          console.error(err.message);
-        }
+        this.displayErrors(res.errors);
       } else {
         this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
             (): void => {
@@ -98,6 +99,15 @@ export class WorkspaceControlComponent {
     this.state.setUserId(userId);
 
     this.router.navigate([FRONT_ROUTES.EDITOR]);
+  }
+
+  private displayErrors(errors: GraphQlError[]): void {
+    const data: ErrorDialogData = {
+      errors: errors.map((err: GraphQlError): string => {
+          return err.message;
+        })
+    }
+    this.dialog.open(ErrorDialogComponent, {data});
   }
 
 }

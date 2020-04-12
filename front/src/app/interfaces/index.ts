@@ -1,3 +1,4 @@
+export * from './dialog-data';
 export * from './forms';
 export * from './graphql';
 export * from './models';

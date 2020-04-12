@@ -2,17 +2,20 @@ import { NgModule } from '@angular/core';
 
 import { SharedModule } from 'src/app/components/shared.module';
 
-import { PageNotFoundComponent } from './page-not-found.component';
+import { ErrorDialogComponent } from './error-dialog.component';
 
 @NgModule({
   declarations: [
-    PageNotFoundComponent
+    ErrorDialogComponent
+  ],
+  entryComponents: [
+    ErrorDialogComponent
   ],
   exports: [
-    PageNotFoundComponent
+    ErrorDialogComponent
   ],
   imports: [
     SharedModule
   ]
 })
-export class PageNotFoundModule {}
+export class ErrorDialogModule {}
