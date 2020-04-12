@@ -6,9 +6,7 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <form
-        [formGroup]="createForm"
-        (ngSubmit)="onCreateSubmit(createForm.value)">
+    <form [formGroup]="createForm">
       <mat-form-field>
         <mat-label>Workspace ID</mat-label>
         <input matInput formControlName="workspaceId">
@@ -22,7 +20,12 @@
         <input matInput formControlName="userId">
       </mat-form-field>
 
-      <button mat-button type="submit">Create Workspace</button>
+      <button
+          mat-button
+          type="submit"
+          (click)="onCreateSubmit(createForm.value)">
+        Create Workspace
+      </button>
     </form>
   </mat-expansion-panel>
 
@@ -33,7 +36,7 @@
       </mat-panel-title>
     </mat-expansion-panel-header>
 
-    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
+    <form [formGroup]="joinForm">
       <mat-form-field>
         <mat-label>Workspace ID</mat-label>
         <input matInput formControlName="workspaceId">
@@ -47,7 +50,12 @@
         <input matInput formControlName="userId">
       </mat-form-field>
 
-      <button mat-button type="submit">Join Workspace</button>
+      <button
+          mat-button
+          type="submit"
+          (click)="onJoinSubmit(joinForm.value)">
+        Join Workspace
+      </button>
     </form>
   </mat-expansion-panel>
 </mat-accordion>

@@ -52,7 +52,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.createWorkspace(form).subscribe(
         (res: CreateWorkspaceRes): void => {
       if (res.errors) {
-        this.displayErrors(res.errors);
+        this.displayGraphQlErrors(res.errors);
       } else {
         this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
             (): void => {
@@ -66,7 +66,7 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.joinWorkspace(form).subscribe(
         (res: JoinWorkspaceRes): void => {
       if (res.errors) {
-        this.displayErrors(res.errors);
+        this.displayGraphQlErrors(res.errors);
       } else {
         this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
             (): void => {
@@ -101,12 +101,14 @@ export class WorkspaceControlComponent {
     this.router.navigate([FRONT_ROUTES.EDITOR]);
   }
 
-  private displayErrors(errors: GraphQlError[]): void {
-    const data: ErrorDialogData = {
-      errors: errors.map((err: GraphQlError): string => {
-          return err.message;
-        })
-    }
+  private displayGraphQlErrors(errors: GraphQlError[]): void {
+    this.displayErrors(errors.map((err: GraphQlError): string => {
+      return err.message;
+    }));
+  }
+
+  private displayErrors(errors: string[]): void {
+    const data: ErrorDialogData = {errors}
     this.dialog.open(ErrorDialogComponent, {data});
   }
 
