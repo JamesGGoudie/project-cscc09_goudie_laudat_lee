@@ -1,6 +1,6 @@
 export abstract class Environment {
 
-  private static readonly isProd: boolean = false;
+  private static readonly isProd: boolean = true;
 
   public static getDatabaseUrl(): string {
     return this.isProd ?
