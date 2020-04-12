@@ -1,5 +1,14 @@
-import { CreateWorkspaceReq, JoinWorkspaceReq } from '../requests';
-import { CreateWorkspaceRes, JoinWorkspaceRes } from '../responses';
+import {
+  CreateWorkspaceReq,
+  JoinWorkspaceReq,
+  VerifyPeerReq
+} from '../requests';
+
+import {
+  CreateWorkspaceRes,
+  JoinWorkspaceRes,
+  VerifyPeerRes
+} from '../responses';
 
 export interface GraphQlRoot {
 
@@ -25,5 +34,9 @@ export interface GraphQlRoot {
    * in the workspace so that these connections can be established.
    */
   joinWorkspace: (req: JoinWorkspaceReq) => Promise<JoinWorkspaceRes>;
+  /**
+   * Returns true iff the given peer ID is part of the given workspace.
+   */
+  verifyPeer: (req: VerifyPeerReq) => Promise<VerifyPeerRes>;
 
 }

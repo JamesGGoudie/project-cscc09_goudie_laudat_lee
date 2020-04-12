@@ -207,9 +207,20 @@ export class DatabaseController {
     }
   }
 
+  public async peerIsInWorkspace(wid: string, peer: string): Promise<boolean> {
+    const query: QueryConfig = {
+      text: 'SELECT COUNT(*) FROM workspace_user WHERE wid = $1 AND peer = $2',
+      values: [wid, peer]
+    };
+
+    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    return Number.parseInt(res.rows[0].count, 10) >= 0;
+  }
+
   private async peerIdIsAvailable(peerId: string): Promise<boolean> {
     const query: QueryConfig = {
-      text: 'SELECT count(*) FROM workspace_user WHERE peer = $1',
+      text: 'SELECT COUNT(*) FROM workspace_user WHERE peer = $1',
       values: [peerId]
     };
 

@@ -3,7 +3,9 @@ import {
   CreateWorkspaceRes,
   GraphQlRoot,
   JoinWorkspaceReq,
-  JoinWorkspaceRes
+  JoinWorkspaceRes,
+  VerifyPeerReq,
+  VerifyPeerRes
 } from '../interfaces';
 
 import { DatabaseController } from './database-controller';
@@ -84,6 +86,17 @@ export class GraphQlFactory {
     });
   }
 
+  private readonly verifyPeer:
+      (req: VerifyPeerReq)=> Promise<VerifyPeerRes> =
+      async (req: VerifyPeerReq): Promise<VerifyPeerRes> => {
+    return await this.db.peerIsInWorkspace(req.workspaceId, req.peerId).then(
+        (exists: boolean): VerifyPeerRes => {
+      return {
+        valid: exists
+      };
+    });
+  }
+
   /**
    * Fascade for all of the GraphQL logic.
    *
@@ -97,7 +110,8 @@ export class GraphQlFactory {
   public buildRoot(): GraphQlRoot {
     return {
       createWorkspace: this.createWorkspace,
-      joinWorkspace: this.joinWorkspace
+      joinWorkspace: this.joinWorkspace,
+      verifyPeer: this.verifyPeer
     };
   }
 

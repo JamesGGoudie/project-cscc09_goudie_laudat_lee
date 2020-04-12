@@ -9,6 +9,7 @@ import { RtcMessageType } from 'src/app/enums';
 
 import {
   ObjectInfo,
+  RtcConnVerifiedMsg,
   RtcCopyWsReq,
   RtcCopyWsRes,
   RtcCreateObjMsg,
@@ -16,10 +17,15 @@ import {
   RtcMessage,
   RtcModifyObjMsg,
   RtcPinObjMsg,
-  RtcUnpinObjMsg
+  RtcUnpinObjMsg,
+  VerifyPeerRes
 } from 'src/app/interfaces';
 
 import { environment } from 'src/environments/environment';
+
+import { WorkspaceStateService } from '../local';
+
+import { WorkspaceControlService } from './workspace-control.service';
 
 /**
  * Facade for all web-socket (RTC) interactions.
@@ -28,6 +34,9 @@ import { environment } from 'src/environments/environment';
   providedIn: 'root'
 })
 export class RtcService {
+
+  private readonly onConnectionVerified: Subject<string> =
+      new Subject<string>();
 
   private readonly onPinObject: Subject<string> = new Subject<string>();
   private readonly onUnpinObject: Subject<string> = new Subject<string>();
@@ -56,6 +65,17 @@ export class RtcService {
    */
   private readonly connections: Map<string, Peer.DataConnection> =
       new Map<string, Peer.DataConnection>();
+  private readonly verifiedConnections: Map<string, boolean> =
+      new Map<string, boolean>();
+
+  public constructor(
+    private readonly wsControlService: WorkspaceControlService,
+    private readonly state: WorkspaceStateService,
+  ) {
+    this.onConnectionVerified.subscribe((peerId: string): void => {
+      this.verifiedConnections.set(peerId, true);
+    })
+  }
 
   /**
    * Creates the Peer used for RTC using the given ID.
@@ -80,8 +100,24 @@ export class RtcService {
 
     // When the peer connects to another peer...
     this.peer.on('connection', (conn: Peer.DataConnection): void => {
-      // ...perform the initial set-up.
-      this.setUpConnection(conn);
+      this.prepareConnection(conn);
+
+      // Check that the peer belongs to the workspace.
+      // Any messages received before they are verified will be ignored.
+      this.wsControlService.verifyPeer(conn.peer, this.state.getWorkspaceId()
+          ).subscribe((res: VerifyPeerRes) => {
+        // If so...
+        if (res.data.verifyPeer.valid) {
+          // ...perform the initial set-up.
+          this.setUpConnectionEvents(conn);
+          this.onConnectionVerified.next(conn.peer);
+          this.sendVerifiedConnectionMessage(conn.peer);
+        } else {
+          // Otherwise, close the connection.
+          conn.close();
+          this.removeConnectionTraces(conn.peer);
+        }
+      });
     });
 
     return s;
@@ -114,18 +150,19 @@ export class RtcService {
       }
     };
 
+    this.peer.on('error', (err): void => {
+      // The peer failed to connect.
+      console.error(err);
+      countConn();
+    });
+
     for (const id of ids) {
       const conn = this.peer.connect(id);
 
-      this.peer.on('error', (err): void => {
-        // The peer failed to connect.
-        console.error(err);
-        countConn();
-      });
-
       conn.on('open', (): void => {
         // Perform the initial set-up.
-        this.setUpConnection(conn);
+        this.prepareConnection(conn);
+        this.setUpConnectionEvents(conn);
         countConn();
       });
     }
@@ -274,6 +311,22 @@ export class RtcService {
     return this.onCopyWorkspaceRes;
   }
 
+  /**
+   * Sends a message to the peer indicating that they have been verified to be
+   * in the workspace.
+   *
+   * The client will now exchange messages with the client.
+   *
+   * @param peerId
+   */
+  private sendVerifiedConnectionMessage(peerId: string): void {
+    const data: RtcConnVerifiedMsg = {
+      type: RtcMessageType.ConnectionVerified
+    }
+
+    this.sendToPeer(data, peerId);
+  }
+
   private convertMeshToObjInfo(mesh: THREE.Mesh): ObjectInfo {
     const mat: MeshBasicMaterial = mesh.material as MeshBasicMaterial;
 
@@ -337,27 +390,92 @@ export class RtcService {
   }
 
   private send(data: RtcMessage, conn: Peer.DataConnection): void {
-    // If the connection is open...
-    if (conn.open) {
+    // If the connection is open and establisehd...
+    if (conn.open && this.verifiedConnections.get(conn.peer)) {
       // ...then send the message.
       conn.send(data);
-    } else {
-      // Otherwise, wait for the connection to open...
-      conn.on('open', (): void => {
-        // ...then send the message.
-        conn.send(data);
-      });
+    } else if (!conn.open) {
+      // If the connection is not open, then wait for it to open.
+      this.sendOnConnOpen(data, conn);
+    } else if (!this.verifiedConnections.get(conn.peer)) {
+      // If the connection is not established, then wait for it to be
+      // established.
+      this.sendOnConnVerified(data, conn);
     }
   }
 
-  private setUpConnection(conn: Peer.DataConnection) {
+  /**
+   * Trys to send the message once the connection has been openend.
+   *
+   * If the connection is not verified, then it will will wait until the
+   * connection is verified before sending the message.
+   *
+   * @param data
+   * @param conn
+   */
+  private sendOnConnOpen(data: RtcMessage, conn: Peer.DataConnection): void {
+    conn.on('open', (): void => {
+      // ...then try to send the message.
+
+      if (this.verifiedConnections.get(conn.peer)) {
+        conn.send(data);
+      } else {
+        this.sendOnConnVerified(data, conn);
+      }
+    });
+  }
+
+  /**
+   * Trys to send the message once the connection has been verified.
+   *
+   * If the connection is not open, then it will wait until the connection is
+   * open before sending the message.
+   *
+   * @param data
+   * @param conn
+   */
+  private sendOnConnVerified(
+    data: RtcMessage, conn: Peer.DataConnection
+  ): void {
+    this.onConnectionVerified.subscribe((peerId: string): void => {
+      if (peerId === conn.peer) {
+        if (conn.open) {
+          conn.send(data);
+        } else {
+          this.sendOnConnOpen(data, conn);
+        }
+      }
+    });
+  }
+
+  private prepareConnection(conn: Peer.DataConnection): void {
     this.peers.push(conn.peer);
     this.connections.set(conn.peer, conn);
+    this.verifiedConnections.set(conn.peer, false);
+  }
 
+  private removeConnectionTraces(peerId: string): void {
+    const i = this.peers.findIndex((p: string): boolean => {
+      return peerId === p;
+    });
+
+    if (i > -1) {
+      this.peers.splice(i, 1);
+    }
+
+    this.connections.delete(peerId);
+    this.verifiedConnections.delete(peerId);
+  }
+
+  private setUpConnectionEvents(conn: Peer.DataConnection): void {
     conn.on('data', (data: RtcMessage): void => {
       switch (data.type) {
+        case RtcMessageType.ConnectionVerified: {
+          this.processConnectionVerified(conn.peer);
+          break;
+        }
         case RtcMessageType.CopyWorkspaceReq:
-          this.processCopyWorkspaceReq(data as RtcCopyWsReq, conn.peer);
+          this.processCopyWorkspaceReq(conn.peer);
           break;
         case RtcMessageType.CopyWorkspaceRes:
           this.processCopyWorkspaceRes(data as RtcCopyWsRes);
@@ -385,33 +503,41 @@ export class RtcService {
     conn.on('error', (err: any): void => {
       console.error(err);
     });
+
+    conn.on('close', (): void => {
+      this.removeConnectionTraces(conn.peer);
+    });
   }
 
-  private processPinObject(data: RtcPinObjMsg) {
+  private processConnectionVerified(peerId: string): void {
+    this.onConnectionVerified.next(peerId);
+  }
+
+  private processPinObject(data: RtcPinObjMsg): void {
     this.onPinObject.next(data.objectId);
   }
 
-  private processUnpinObject(data: RtcUnpinObjMsg) {
+  private processUnpinObject(data: RtcUnpinObjMsg): void {
     this.onUnpinObject.next(data.objectId);
   }
 
-  private processDeleteObject(data: RtcDeleteObjMsg) {
+  private processDeleteObject(data: RtcDeleteObjMsg): void {
     this.onDeleteObject.next(data.objectId);
   }
 
-  private processCreateObject(data: RtcCreateObjMsg) {
+  private processCreateObject(data: RtcCreateObjMsg): void {
     this.onCreateObject.next(data.objectInfo);
   }
 
-  private processModifyObject(data: RtcModifyObjMsg) {
+  private processModifyObject(data: RtcModifyObjMsg): void {
     this.onModifyObject.next(data.objectInfo);
   }
 
-  private processCopyWorkspaceReq(data: RtcCopyWsReq, peer: string) {
-    this.onCopyWorkspaceReq.next(peer);
+  private processCopyWorkspaceReq(peerId: string): void {
+    this.onCopyWorkspaceReq.next(peerId);
   }
 
-  private processCopyWorkspaceRes(data: RtcCopyWsRes) {
+  private processCopyWorkspaceRes(data: RtcCopyWsRes): void {
     this.onCopyWorkspaceRes.next(data);
   }
 

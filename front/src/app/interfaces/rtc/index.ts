@@ -1,3 +1,4 @@
+export * from './rtc-conn-verified-msg';
 export * from './rtc-copy-ws-req';
 export * from './rtc-copy-ws-res';
 export * from './rtc-create-obj-msg';

@@ -6,6 +6,7 @@ export enum RtcMessageType {
   CreateObject,
   ModifyObject,
   CopyWorkspaceReq,
-  CopyWorkspaceRes
+  CopyWorkspaceRes,
+  ConnectionVerified
 
 }
