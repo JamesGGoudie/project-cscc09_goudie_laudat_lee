@@ -229,7 +229,8 @@ export class EditorComponent {
     const currObj = this.getCurrentObject();
     if (currObj) {
       const data = this.editor.exportObject(currObj);
-      this.editor.addObjToScene(data, true);
+      const copy = this.editor.addObjToScene(data, true);
+      this.rtc.sendCreateObjectMessage(copy);
     }
   }
 
@@ -371,12 +372,9 @@ export class EditorComponent {
   }
 
   public onFileInput(files):void {
-    console.log('file input');
     let file = files.item(0);
-    console.log(file);
     if (file.type=='application/json') {
       file.text().then(function(text){
-        console.log(text);
         let parsed = [];
         try{
           parsed = JSON.parse(text);
@@ -391,9 +389,7 @@ export class EditorComponent {
                 !objData.position.some(isNaN) &&
                 !objData.scale.some(isNaN) &&
                 !objData.rotation.slice(0,3).some(isNaN)) {
-              console.log(objData);
               const newObj = this.editor.addObjToScene(objData, true);
-              console.log(newObj);
               this.rtc.sendCreateObjectMessage(newObj);
             }
           }
@@ -453,7 +449,7 @@ export class EditorComponent {
         };
         xhr.send(form);
       } else {
-        console.log('invalid file type for export');
+        console.log('Invalid file type for export');
       }
     }
   }

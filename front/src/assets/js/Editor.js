@@ -178,7 +178,6 @@ let Editor = function(){
             const data = exportObject(obj);
             exportedObjects.push(data);
         });
-        console.log(exportedObjects);
         return JSON.stringify(exportedObjects);
     }
 
@@ -265,7 +264,7 @@ let Editor = function(){
     }
 
     function selectObject(obj) {
-        console.log('selected: ', obj);
+        // console.log('selected: ', obj);
         deselectCurrentObject();
 
         if (!(obj instanceof THREE.GridHelper)) {
