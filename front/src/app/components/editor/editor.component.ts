@@ -7,7 +7,7 @@ import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
 import {
-  ObjectInfo, RtcCopyWsRes
+  ObjectInfo, PinInfo, RtcCopyWsRes
 } from 'src/app/interfaces';
 
 import {
@@ -74,9 +74,9 @@ export class EditorComponent {
       this.editor.loadObj(objInfo, true);
     });
 
-    this.rtc.pinObject().subscribe((objId: string): void => {
+    this.rtc.pinObject().subscribe((pin: PinInfo): void => {
       // When we receive a pin object message...
-      this.state.addOtherUsersPin(objId);
+      this.state.addOtherUsersPin(pin);
     });
 
     this.rtc.unpinObject().subscribe((objId: string): void => {
@@ -91,8 +91,11 @@ export class EditorComponent {
 
     this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
       // When we receive a request to copy the workspace...
-      const pins: string[] = this.state.getOtherUsersPins();
-      pins.push(this.state.getCurrentUsersPin());
+      const pins: PinInfo[] = this.state.getObjectsPinnedByOthers();
+      pins.push({
+        oId: this.state.getCurrentUsersPin(),
+        pId: this.rtc.getPeerId()
+      });
 
       this.rtc.sendCopyWorkspaceRes(
           this.editor.scene.children.filter(

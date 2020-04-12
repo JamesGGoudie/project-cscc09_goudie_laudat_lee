@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 
+import { PinInfo } from 'src/app/interfaces';
+
 /**
  * Contains information about the current state of the site.
  *
@@ -29,9 +31,9 @@ export class WorkspaceStateService {
    */
   private pinnedObj: string;
   /**
-   * The IDs of objects pinned by other users.
+   * The IDs of objects and the peer ID of the user who has the object pinned.
    */
-  private pinnedByOthers: string[] = [];
+  private pinnedByOthers: PinInfo[] = [];
 
   public setJoinedWorkspace(value: boolean): void {
     this.joinedWorkspace = value;
@@ -65,26 +67,44 @@ export class WorkspaceStateService {
     this.workspaceId = id;
   }
 
-  public addOtherUsersPin(id: string): void {
-    if (!this.isPinnedByOther(id)) {
-      this.pinnedByOthers.push(id);
+  public addOtherUsersPin(pin: PinInfo): void {
+    if (!this.isPinnedByOther(pin.oId)) {
+      this.pinnedByOthers.push({oId: pin.oId, pId: pin.pId});
     }
   }
 
   public isPinnedByOther(objectId: string): boolean {
-    return this.pinnedByOthers.findIndex((id: string): boolean => {
-      return id === objectId;
-    }) > -1;
+    return this.findObjectIndex(objectId) > -1;
   }
 
-  public removeOtherUsersPin(id: string): void {
-    this.pinnedByOthers.splice(this.pinnedByOthers.findIndex((objId) => {
-      return objId === id;
-    }), 1);
+  public removeOtherUsersPin(objectId: string): void {
+    this.removePinInfo(this.findObjectIndex(objectId));
   }
 
-  public getOtherUsersPins(): string[] {
+  public getObjectsPinnedByOthers(): PinInfo[] {
     return this.pinnedByOthers;
+  }
+
+  public removeUserTraces(peerId: string): void {
+    this.removePinInfo(this.findPeerIndex(peerId));
+  }
+
+  private findObjectIndex(objectId: string): number {
+    return this.pinnedByOthers.findIndex((info: PinInfo): boolean => {
+      return info.oId === objectId;
+    });
+  }
+
+  private findPeerIndex(peerId: string): number {
+    return this.pinnedByOthers.findIndex((info: PinInfo): boolean => {
+      return info.pId === peerId;
+    });
+  }
+
+  private removePinInfo(i: number): void {
+    if (i > -1) {
+      this.pinnedByOthers.splice(i, 1);
+    }
   }
 
 }

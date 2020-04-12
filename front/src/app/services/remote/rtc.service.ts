@@ -9,6 +9,7 @@ import { RtcMessageType } from 'src/app/enums';
 
 import {
   ObjectInfo,
+  PinInfo,
   RtcConnVerifiedMsg,
   RtcCopyWsReq,
   RtcCopyWsRes,
@@ -38,7 +39,7 @@ export class RtcService {
   private readonly onConnectionVerified: Subject<string> =
       new Subject<string>();
 
-  private readonly onPinObject: Subject<string> = new Subject<string>();
+  private readonly onPinObject: Subject<PinInfo> = new Subject<PinInfo>();
   private readonly onUnpinObject: Subject<string> = new Subject<string>();
   private readonly onDeleteObject: Subject<string> = new Subject<string>();
   private readonly onCreateObject: Subject<ObjectInfo> =
@@ -75,6 +76,10 @@ export class RtcService {
     this.onConnectionVerified.subscribe((peerId: string): void => {
       this.verifiedConnections.set(peerId, true);
     })
+  }
+
+  public getPeerId(): string {
+    return this.peer.id;
   }
 
   /**
@@ -269,7 +274,7 @@ export class RtcService {
    */
   public sendCopyWorkspaceRes(
     objs: THREE.Mesh[],
-    pinnedObjects: string[],
+    pinnedObjects: PinInfo[],
     peer: string
   ): void {
     const data: RtcCopyWsRes = {
@@ -283,7 +288,7 @@ export class RtcService {
     this.sendToPeer(data, peer);
   }
 
-  public pinObject(): Observable<string> {
+  public pinObject(): Observable<PinInfo> {
     return this.onPinObject;
   }
 
@@ -490,7 +495,7 @@ export class RtcService {
           this.processModifyObject(data as RtcModifyObjMsg);
           break;
         case RtcMessageType.PinObject:
-          this.processPinObject(data as RtcPinObjMsg);
+          this.processPinObject(data as RtcPinObjMsg, conn.peer);
           break;
         case RtcMessageType.UnpinObject:
           this.processUnpinObject(data as RtcUnpinObjMsg);
@@ -506,6 +511,7 @@ export class RtcService {
 
     conn.on('close', (): void => {
       this.removeConnectionTraces(conn.peer);
+      this.state.removeUserTraces(conn.peer);
     });
   }
 
@@ -513,8 +519,8 @@ export class RtcService {
     this.onConnectionVerified.next(peerId);
   }
 
-  private processPinObject(data: RtcPinObjMsg): void {
-    this.onPinObject.next(data.objectId);
+  private processPinObject(data: RtcPinObjMsg, peerId: string): void {
+    this.onPinObject.next({oId: data.objectId, pId: peerId});
   }
 
   private processUnpinObject(data: RtcUnpinObjMsg): void {
