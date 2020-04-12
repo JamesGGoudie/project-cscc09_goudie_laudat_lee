@@ -34,18 +34,22 @@
 
 <div id="tool-menu" class="panel" >
   <mat-button-toggle-group id="tool-menu-buttons" value="Translate">
-    <mat-button-toggle id="translate-btn" value="Translate" (click)="changeTool('translate')">Translate</mat-button-toggle>
-    <mat-button-toggle id="scale-btn" value="Scale" (click)="changeTool('scale')">Scale</mat-button-toggle>
-    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="changeTool('rotate')">Rotate</mat-button-toggle>
+    <mat-button-toggle id="translate-btn" value="Translate" (click)="onToolChange('translate')">Translate</mat-button-toggle>
+    <mat-button-toggle id="scale-btn" value="Scale" (click)="onToolChange('scale')">Scale</mat-button-toggle>
+    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="onToolChange('rotate')">Rotate</mat-button-toggle>
   </mat-button-toggle-group>  
 </div>
 
 <div id="side-menu" class="panel">
   <mat-accordion multi="true" displayMode="flat">
-    <mat-expansion-panel>
+    <mat-expansion-panel id="object-palette">
       <mat-expansion-panel-header>Add Object</mat-expansion-panel-header>
       <button mat-flat-button color="primary" (click)="addNewObject('box')">Box</button>
       <button mat-flat-button color="primary" (click)="addNewObject('cone')">Cone</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('pyramid')">Pyramid</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('cylinder')">Cylinder</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('sphere')">Sphere</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('plane')">Plane</button>
     </mat-expansion-panel>
 
     <mat-expansion-panel *ngIf="getCurrentObject()">
@@ -114,6 +118,7 @@
           </mat-expansion-panel>
         </mat-accordion>
       </form>
+      <button mat-flat-button color="accent" class="clone-button" (click)="cloneObject()">Duplicate object</button>
       <button mat-flat-button color="warn" class="delete-button" (click)="deleteCurrentObject()">DELETE OBJECT</button>
     </mat-expansion-panel>
 

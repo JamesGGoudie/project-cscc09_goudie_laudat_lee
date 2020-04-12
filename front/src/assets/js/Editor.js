@@ -124,12 +124,6 @@ let Editor = function(){
         render();
     }
 
-    // function onObjectChange(e) {
-    //     // console.log('object changed');
-    //     // console.log(e); // TODO
-    //     if (objectChangeFunc) objectChangeFunc();
-    // }
-
     function render() {
         renderer.render( scene, camera );
     }
@@ -155,23 +149,35 @@ let Editor = function(){
         return exporter.parse(scene).data;
     }
 
+    // returns JSON data of given mesh (obj)
+    function exportObject(obj) {
+        if (obj) {
+            let data = {
+                name: obj.name,
+                position: obj.position.toArray(),
+                scale: obj.scale.toArray(),
+                rotation: obj.rotation.toArray().slice(0,3),
+                geometryType: obj.geometry.type,
+                materialColorHex: obj.material.color.getHexString()
+            };
+            // manually set geometry type for Pyramids
+            if (data.geometryType == 'ConeBufferGeometry' && obj.geometry.parameters.radialSegments == 4) {
+                data.geometryType = 'ConeBufferGeometry-Pyramid';
+            }
+            return data;
+        }
+        return null;
+    }
+
     // Saves the current scene in JSON format
     function saveScene() {
         // save only the objects in the scene
         let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
         let exportedObjects = [];
         allObjects.forEach(function(obj){
-            let data = {
-                name: obj.name,
-                position: obj.position.toArray(),
-                scale: obj.scale.toArray(),
-                rotation: obj.rotation.toArray(),
-                geometryType: obj.geometry.type,
-                materialColorHex: obj.material.color.getHexString()
-            };
+            const data = exportObject(obj);
             exportedObjects.push(data);
         });
-        console.log(exportedObjects);
         return JSON.stringify(exportedObjects);
     }
 
@@ -179,7 +185,9 @@ let Editor = function(){
      * Add an object to the scene.
      * @param objData {Object} data on the object to add
      *          - name: string
-     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry", 
+     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry" | 
+     *                          "ConeBufferGeometry-Pyramid" | "CylinderBufferGeometry" | 
+     *                          "SphereBufferGeometry" | "PlaneBufferGeometry"
      *          - materialColorHex: string
      *          - position: array(3)
      *          - scale: array(3)
@@ -190,7 +198,8 @@ let Editor = function(){
      * @returns mesh {THREE.Mesh} the object that was added
      */
     function addObjToScene(objData, isNew = false) {
-        let geometry, material, mesh;
+        let geometry, material, mesh, matData;
+        matData = {color:'#'+objData.materialColorHex};
         switch(objData.geometryType){
             case 'BoxBufferGeometry':
                 geometry = new THREE.BoxBufferGeometry( 200, 200, 200 );
@@ -198,9 +207,22 @@ let Editor = function(){
             case 'ConeBufferGeometry':
                 geometry = new THREE.ConeBufferGeometry( 100, 200, 32 );
                 break;
+            case 'ConeBufferGeometry-Pyramid':
+                geometry = new THREE.ConeBufferGeometry( 142, 200, 4, 1, false, Math.PI/4 );
+                break;
+            case 'CylinderBufferGeometry':
+                geometry = new THREE.CylinderBufferGeometry( 100, 100, 200, 32 );
+                break;
+            case 'SphereBufferGeometry':
+                geometry = new THREE.SphereBufferGeometry( 100, 32, 32 );
+                break;
+            case 'PlaneBufferGeometry':
+                geometry = new THREE.PlaneBufferGeometry( 200, 200, 32 );
+                matData.side = THREE.DoubleSide;
+                break;
         }
         // set name and material
-        material = new THREE.MeshBasicMaterial({color:'#'+objData.materialColorHex});
+        material = new THREE.MeshBasicMaterial(matData);
         mesh = new THREE.Mesh(geometry, material);
         mesh.name = objData.name;
 
@@ -242,7 +264,7 @@ let Editor = function(){
     }
 
     function selectObject(obj) {
-        console.log('selected: ', obj);
+        // console.log('selected: ', obj);
         deselectCurrentObject();
 
         if (!(obj instanceof THREE.GridHelper)) {
@@ -314,6 +336,18 @@ let Editor = function(){
         } else if (type == 'cone') {
             objData.geometryType = 'ConeBufferGeometry';
             objData.name = 'Cone';
+        } else if(type == 'pyramid') {
+            objData.geometryType = 'ConeBufferGeometry-Pyramid';
+            objData.name = 'Pyramid';
+        } else if(type == 'cylinder') {
+            objData.geometryType = 'CylinderBufferGeometry';
+            objData.name = 'Cylinder';
+        } else if(type == 'sphere') {
+            objData.geometryType = 'SphereBufferGeometry';
+            objData.name = 'Sphere';
+        } else if(type == 'plane') {
+            objData.geometryType = 'PlaneBufferGeometry';
+            objData.name = 'Plane';
         } else {
           return null;
         }
@@ -418,6 +452,7 @@ let Editor = function(){
     this.loadObj = loadObj;
     this.deleteObjectByUuid = deleteObjectByUuid;
     this.addObjToScene = addObjToScene;
+    this.exportObject = exportObject;
 
     this.renderer = renderer;
     this.camera = camera;
