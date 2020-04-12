@@ -6,7 +6,7 @@ CREATE TABLE workspace(
     password VARCHAR NOT NULL);
 
 CREATE TABLE workspace_user(
-    wid VARCHAR REFERENCES workspace(wid) ON DELETE RESTRICT,
+    wid VARCHAR REFERENCES workspace(wid) ON DELETE CASCADE,
     uid VARCHAR NOT NULL,
     peer VARCHAR NOT NULL,
     PRIMARY KEY (wid, uid));

@@ -1,6 +1,6 @@
 export abstract class Environment {
 
-  private static readonly isProd: boolean = true;
+  private static readonly isProd: boolean = false;
 
   public static getDatabaseUrl(): string {
     return this.isProd ?
@@ -40,6 +40,10 @@ export abstract class Environment {
 
   public static isPeerProxied(): boolean {
     return this.isProd;
+  }
+
+  public static isGraphIQlEnabled(): boolean {
+    return !this.isProd;
   }
 
 }

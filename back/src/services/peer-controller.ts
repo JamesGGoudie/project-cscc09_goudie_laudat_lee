@@ -1,3 +1,5 @@
+import { WorkspaceAndPeerCount } from '../interfaces';
+
 import { DatabaseController } from './database-controller';
 import { Environment } from './environment';
 
@@ -20,9 +22,46 @@ export class PeerController {
 
     this.ps.on('disconnect', (client: any): void => {
       console.log(`Disconnected from: ${client.id}`);
+      this.removePeerFromDb(client.id);
     });
 
     console.log('Started Peer Server');
+  }
+
+  private removePeerFromDb(peerId: string): void {
+    let count: number;
+    let workspaceId: string;
+
+    this.db.findWorkspaceAndCountPeers(peerId).then(
+        (data: WorkspaceAndPeerCount): Promise<boolean> => {
+      count = data.count;
+      workspaceId = data.wid;
+
+      return this.db.removePeerId(peerId);
+    }).then((success: boolean): Promise<boolean> => {
+      if (!success) {
+        throw 'Could not remove Peer from DB.';
+      }
+
+      if (count <= 1) {
+        // The disconnected user was the last user in the workspace.
+        // Delete the workspace from the DB.
+        return this.db.removeWorkspace(workspaceId);
+      }
+
+      return new Promise((
+        res: (value?: boolean | PromiseLike<boolean>) => void,
+        rej: (reason?: any) => void
+      ): void => {
+        res(true);
+      });
+    }).then((success: boolean): void => {
+      if (!success) {
+        throw 'Could not remove workspace from DB.';
+      }
+    }).catch((err: string): void => {
+      console.error(err);
+    });
   }
 
 }

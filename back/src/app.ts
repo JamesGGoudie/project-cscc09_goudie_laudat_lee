@@ -14,7 +14,7 @@ import {
 
 const db: DatabaseController = new DatabaseController();
 
-db.connectDatabase().then(() => {
+db.connectDatabase().then((): void => {
   const app: express.Express = express();
 
   app.use(bodyParser.json());
@@ -31,7 +31,7 @@ db.connectDatabase().then(() => {
   const factory: GraphQlFactory = new GraphQlFactory(db);
 
   const graphQlOptions: graphqlHTTP.Options = {
-    graphiql: true,
+    graphiql: Environment.isGraphIQlEnabled(),
     rootValue: factory.getRoot(),
     schema: GQL_SCHEMA
   }
@@ -40,13 +40,13 @@ db.connectDatabase().then(() => {
 
   const port = Environment.getGraphQlPort();
 
-  app.listen(port, (err) => {
+  app.listen(port, (err: any): void => {
     if (err) {
       console.log(err);
     } else {
       console.log(`HTTP server on http://localhost:${port}`);
     }
   });
-}).catch((err) => {
+}).catch((err: any): void => {
   console.error(err);
 });

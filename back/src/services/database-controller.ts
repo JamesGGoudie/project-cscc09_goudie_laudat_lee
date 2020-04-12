@@ -1,5 +1,6 @@
 import { Client, QueryConfig, QueryResult, QueryResultRow } from 'pg';
 
+import { WorkspaceAndPeerCount } from '../interfaces';
 import { randomPeerId } from '../utils';
 
 import { Environment } from './environment';
@@ -105,6 +106,53 @@ export class DatabaseController {
     return res.rows[0].password === suppliedPass;
   }
 
+  public async findWorkspaceAndCountPeers(
+    peerId: string
+  ): Promise<WorkspaceAndPeerCount> {
+    const query: QueryConfig = {
+      text: 'SELECT wid, COUNT(*) ' +
+          'FROM workspace_user ' +
+          'GROUP BY wid ' +
+          'HAVING wid = (SELECT wid FROM workspace_user WHERE peer = $1)',
+      values: [peerId]
+    };
+
+    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    if (res.rows.length === 0) {
+      throw 'Could not find workspace of peer ID';
+    }
+
+    const data: WorkspaceAndPeerCount = {
+      count: res.rows[0].count,
+      wid: res.rows[0].wid
+    };
+
+    return data;
+  }
+
+  public async removePeerId(peerId: string): Promise<boolean> {
+    const query: QueryConfig = {
+      text: 'DELETE FROM workspace_user WHERE peer = $1',
+      values: [peerId]
+    };
+
+    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    return res.rowCount > 0;
+  }
+
+  public async removeWorkspace(wid: string): Promise<boolean> {
+    const query: QueryConfig = {
+      text: 'DELETE FROM workspace WHERE wid = $1',
+      values: [wid]
+    };
+
+    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    return res.rowCount > 0;
+  }
+
   private async peerIdIsAvailable(peerId: string): Promise<boolean> {
     const query: QueryConfig = {
       text: 'SELECT count(*) FROM workspace_user WHERE peer = $1',
@@ -112,6 +160,10 @@ export class DatabaseController {
     };
 
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    if (res.rows.length === 0) {
+      throw 'Could not determine if peer is available';
+    }
 
     return Number.parseInt(res.rows[0].count, 10) === 0;
   }
