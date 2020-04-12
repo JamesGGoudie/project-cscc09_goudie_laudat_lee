@@ -1,8 +1,9 @@
 import { NgModule } from '@angular/core';
-
+import {MatDialogModule} from '@angular/material/dialog'
 import { SharedModule } from 'src/app/components/shared.module';
 
 import { WorkspaceControlComponent } from './workspace-control.component';
+import { ContactDialogComponent } from '../contact-dialog/contact-dialog.component';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,12 @@ import { WorkspaceControlComponent } from './workspace-control.component';
     WorkspaceControlComponent
   ],
   imports: [
-    SharedModule
+    SharedModule,
+    MatDialogModule
+  ],
+  entryComponents: [
+    ContactDialogComponent
   ]
+
 })
 export class WorkspaceControlModule { }

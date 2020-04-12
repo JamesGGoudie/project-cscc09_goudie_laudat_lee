@@ -6,4 +6,6 @@ export * from './pin-object-req';
 export * from './report-changes-req';
 export * from './unpin-object-req';
 export * from './sign-up-req';
+export * from './get-contact-req';
+
 

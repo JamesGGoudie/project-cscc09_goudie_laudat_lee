@@ -78,8 +78,10 @@ const root = {
       // Username already exists in the database.
       return false;
     }
-
-    return db.createUser(req.emailAddress, req.username, req.password);
+    db.createUser(req.emailAddress, req.username, req.password);
+    const user = db.getUser(req.username);
+    user.status = 1;
+    return true;
   },
   signIn: (req: SignInReq): boolean => {
     console.log(req);
@@ -121,19 +123,16 @@ const root = {
     return true;
 
   },
-  getContact: (req: GetContactReq): String => {
+  getContact: (req: GetContactReq): string => {
     console.log(req);
-    const user = db.getUser(req.username);
-    console.log(user.emailAddress);
-    return user.emailAddress;
 
-    //if (!db.usernameExists(req.username)) {
-      // Username does not exist
-      //return '';
-    //} else {
-      //const user = db.getUser(req.username);
-      //return user.emailAddress;
-    //}
+    if (!db.usernameExists(req.username)) {
+      //Username does not exist
+      return '';
+    } else {
+      const user = db.getUser(req.username);
+      return user.emailAddress;
+    }
 
   },
   joinWorkspace: (req: JoinWorkspaceReq): boolean => {

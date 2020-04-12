@@ -113,6 +113,8 @@
       </mat-form-field>
 
       <button mat-button type="submit">Get email address</button>
+      <button mat-button (click)="openDialog()">Display member contact information. Assure yourself that your screen is not being observed.</button>
+
     </form>
   </mat-expansion-panel>
 
@@ -137,4 +139,27 @@
     </form>
   </mat-expansion-panel>
 </mat-accordion>
+
+<html>
+  <body>
+    <h1>How to use this application:</h1>
+
+    <h2>For new users:</h2>
+    <p>
+    Step 1: Create an account using the "Sign-up" feature found above.
+    Step 2: You are now signed in and ready to start creating in a workspace. Go ahead and do so using the "Create a Workspace" feature.
+    Step 3: When you are finished creating, download/export a saved copy of your workspace that you can import back into the application later on. 
+    Once you have done that, make sure to sign out of your account. 
+    </p>
+    
+    <h2>For existing users:</h2>
+    <p>
+    Step 1: Use the "Sign-in" feature on this page to log back in with your account credentials.
+    Step 2: Create a new workspace or join an existing one and import your workspace.
+    Step 3: Follow the same procedure for downloading a copy of your workspace and signing out of your account, just as you did when using the application
+    for the very first time. 
+    </p>
+  </body>
+</html>
+
 

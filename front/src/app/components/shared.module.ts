@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { ContactDialogComponent } from './contact-dialog/contact-dialog.component';
 
 @NgModule({
  imports: [
@@ -20,6 +21,7 @@ import { MatInputModule } from '@angular/material/input';
    MatExpansionModule,
    MatFormFieldModule,
    MatInputModule
-  ]
+  ],
+ declarations: [ContactDialogComponent]
 })
 export class SharedModule { }

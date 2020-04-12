@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-
 import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
@@ -24,6 +23,9 @@ import { SignOutRes } from 'src/app/interfaces/responses/sign-out-response';
 import { SignOutForm } from 'src/app/interfaces/forms/sign-out-form';
 import { GetContactForm } from 'src/app/interfaces/forms/get-contact-form';
 import { GetContactRes } from 'src/app/interfaces/responses/get-contact-response';
+import { MatDialog} from '@angular/material/dialog';
+import { ContactDialogComponent } from '../contact-dialog/contact-dialog.component';
+
 
 @Component({
   selector: 'app-workspace-control',
@@ -31,6 +33,24 @@ import { GetContactRes } from 'src/app/interfaces/responses/get-contact-response
   styleUrls: ['./workspace-control.component.scss']
 })
 export class WorkspaceControlComponent {
+  emailAddress = '';
+
+  public constructor(
+    private readonly router: Router,
+    private readonly workspaceControlService: WorkspaceControlService,
+    private readonly workspaceStateService: WorkspaceStateService,
+    public dialog: MatDialog,
+  ){}
+
+  openDialog(): void {
+    const dialogRef = this.dialog.open(ContactDialogComponent, {
+      data: {email: this.emailAddress}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+    });
+  }
 
   public readonly createForm: FormGroup = new FormGroup({
     workspaceId: new FormControl(),
@@ -64,11 +84,7 @@ export class WorkspaceControlComponent {
     username: new FormControl()
   });
 
-  public constructor(
-    private readonly router: Router,
-    private readonly workspaceControlService: WorkspaceControlService,
-    private readonly workspaceStateService: WorkspaceStateService
-  ) {}
+
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     this.workspaceControlService.createWorkspace(form).subscribe(
@@ -100,7 +116,6 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.signUp(form).subscribe(
         (res: SignUpRes): void => {
       if (res.data.signUp) {
-        alert("You are now signed up! Don't forget to sign in!");
       }
     });
   }
@@ -109,7 +124,6 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.signIn(form).subscribe(
       (res: SignInRes): void => {
     if (res.data.signIn) {
-      alert("You are now signed in! Go ahead and create/join a workspace!");
     }
   });
   }
@@ -118,7 +132,6 @@ export class WorkspaceControlComponent {
     this.workspaceControlService.signOut(form).subscribe(
       (res: SignOutRes): void => {
     if (res.data.signOut) {
-      alert("You are now signed out! Have a great day or night.");
     }
   });
   }
@@ -126,8 +139,9 @@ export class WorkspaceControlComponent {
   public getContactSubmit(form: GetContactForm): void {
     this.workspaceControlService.getContact(form).subscribe(
       (res: GetContactRes): void => {
-    if (res.data.contactInfo != '') {
-      alert(res.data.contactInfo);
+    if (res.data.getContact != '') {
+      this.emailAddress = res.data.getContact;
+      //alert(res.data.getContact);
     }
   });
   }

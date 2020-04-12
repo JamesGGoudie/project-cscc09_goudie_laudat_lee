@@ -44,7 +44,7 @@ export const GQL_SCHEMA = buildSchema(`
     ): Boolean
     getContact(
       username: String!
-    ): Boolean
+    ): String
     pinObject(
       objectId: String!,
       userId: String!,
