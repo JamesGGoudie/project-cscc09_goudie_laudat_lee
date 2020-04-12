@@ -259,19 +259,13 @@ export class EditorComponent {
             this.deleteCurrentObject();
             break;
           case 71: // G
-            document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('translate');
             break;
           case 82: // R
-            document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('rotate');
             break;
           case 83: // S
-            document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('scale');
             break;
           default:
             break;
@@ -332,6 +326,24 @@ export class EditorComponent {
         this.reportChanges(obj);
       }, 100);
     }
+  }
+
+  public onToolChange(tool:string):void {
+    document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+    document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+    document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+    switch(tool) {
+      case 'translate':
+        document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
+        break;
+      case 'scale':
+        document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
+        break;
+      case 'rotate':
+        document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
+        break;
+    }
+    this.changeTool(tool);
   }
 
   /**

@@ -34,9 +34,9 @@
 
 <div id="tool-menu" class="panel" >
   <mat-button-toggle-group id="tool-menu-buttons" value="Translate">
-    <mat-button-toggle id="translate-btn" value="Translate" (click)="changeTool('translate')">Translate</mat-button-toggle>
-    <mat-button-toggle id="scale-btn" value="Scale" (click)="changeTool('scale')">Scale</mat-button-toggle>
-    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="changeTool('rotate')">Rotate</mat-button-toggle>
+    <mat-button-toggle id="translate-btn" value="Translate" (click)="onToolChange('translate')">Translate</mat-button-toggle>
+    <mat-button-toggle id="scale-btn" value="Scale" (click)="onToolChange('scale')">Scale</mat-button-toggle>
+    <mat-button-toggle id="rotate-btn" value="Rotate" (click)="onToolChange('rotate')">Rotate</mat-button-toggle>
   </mat-button-toggle-group>  
 </div>
 
