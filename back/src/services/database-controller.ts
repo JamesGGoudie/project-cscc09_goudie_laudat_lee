@@ -41,7 +41,15 @@ export class DatabaseController {
     workspaceId: string,
     userId: string
   ): Promise<string> {
-    const peerId: string = randomPeerId();
+    let peerId: string;
+
+    while (true) {
+      peerId = randomPeerId();
+
+      if (await this.peerIdIsAvailable(peerId)) {
+        break;
+      }
+    }
 
     const query: QueryConfig = {
       text: 'INSERT INTO workspace_user VALUES($1, $2, $3)',
@@ -95,6 +103,17 @@ export class DatabaseController {
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
     return res.rows[0].password === suppliedPass;
+  }
+
+  private async peerIdIsAvailable(peerId: string): Promise<boolean> {
+    const query: QueryConfig = {
+      text: 'SELECT count(*) FROM workspace_user WHERE peer = $1',
+      values: [peerId]
+    };
+
+    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+
+    return Number.parseInt(res.rows[0].count, 10) === 0;
   }
 
 }
