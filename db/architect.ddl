@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS workspace_user CASCADE;
 
 CREATE TABLE workspace(
     wid VARCHAR PRIMARY KEY,
-    password VARCHAR NOT NULL);
+    salt VARCHAR NOT NULL,
+    salted_hash VARCHAR NOT NULL);
 
 CREATE TABLE workspace_user(
     wid VARCHAR REFERENCES workspace(wid) ON DELETE CASCADE,

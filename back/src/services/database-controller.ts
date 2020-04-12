@@ -1,12 +1,15 @@
+import crypto from 'crypto';
 import { Client, QueryConfig, QueryResult, QueryResultRow } from 'pg';
 
-import { WorkspaceAndPeerCount } from '../interfaces';
+import { WorkspaceAndPeerCount, WorkspaceSaltAndHash } from '../interfaces';
 import { randomPeerId } from '../utils';
 
 import { Environment } from './environment';
 
 /**
  * Controls all interaction with the database.
+ *
+ * Sanitization is handled by postgres-node by using the QueryConfig object.
  */
 export class DatabaseController {
 
@@ -36,9 +39,14 @@ export class DatabaseController {
   }
 
   public async createWorkspace(id: string, pass: string): Promise<boolean> {
+    const salt: string = crypto.randomBytes(16).toString('base64');
+    const hash: crypto.Hmac = crypto.createHmac('sha512', salt);
+    hash.update(pass);
+    const saltedHash: string = hash.digest('base64');
+
     const query: QueryConfig = {
-      text: 'INSERT INTO workspace VALUES($1, $2)',
-      values: [id, pass]
+      text: 'INSERT INTO workspace VALUES($1, $2, $3)',
+      values: [id, salt, saltedHash]
     };
 
     try {
@@ -122,13 +130,26 @@ export class DatabaseController {
     suppliedPass: string
   ): Promise<boolean> {
     const query: QueryConfig = {
-      text: 'SELECT password FROM workspace WHERE wid = $1',
+      text: 'SELECT salt, salted_hash FROM workspace WHERE wid = $1',
       values: [workspaceId]
     };
 
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
-    return res.rows[0].password === suppliedPass;
+    if (res.rows.length === 0) {
+      throw new Error('Could not find workspace.');
+    }
+
+    const data: WorkspaceSaltAndHash = {
+      salt: res.rows[0].salt,
+      saltedHash: res.rows[0].salted_hash
+    };
+
+    const hash: crypto.Hmac = crypto.createHmac('sha512', data.salt);
+    hash.update(suppliedPass);
+    const saltedHash: string = hash.digest('base64');
+
+    return data.saltedHash === saltedHash;
   }
 
   /**
