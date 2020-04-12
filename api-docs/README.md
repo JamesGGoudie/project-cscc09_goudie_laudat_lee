@@ -12,14 +12,128 @@ Due to the nature of GraphQL, some errors are returned as 200s.
 ### Create Workspace
 
 - Description: Creates a new workspace
+- Request: `POST https://www.architect3d.me/graphql`
+  - accept: `application/json`
+  - content-type: `application/json`
+  - body: object
+    - query: (string)
+      ```
+      mutation Create(
+        $workspaceId: String!,
+        $workspacePassword: String!,
+        $userId: String!
+      ) {
+        createWorkspace(
+          workspaceId: $workspaceId,
+          workspacePassword: $workspacePassword,
+          userId: $userId
+        ) {
+          yourPeerId
+        }
+      }
+      ```
+    - variables: object
+      - workspaceId: (string) The ID of the workspace
+      - workspacePassword: (string) The password of the workspace
+      - userId: (string) The ID of the user
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - data: object
+      - createWorkspace: object
+        - yourPeerId: (string) The Peer ID assigned to the user
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - errors: \[object\]
+      - \[0\]: object
+        - message: `Workspace already exists`
 
 ### Join Workspace
 
 - Description: Join an existing workspace
+- Request: `POST https://www.architect3d.me/graphql`
+  - accept: `application/json`
+  - content-type: `application/json`
+  - body: object
+    - query: (string)
+      ```
+      mutation Join(
+          $workspaceId: String!,
+          $workspacePassword: String!,
+          $userId: String!
+      ) {
+        joinWorkspace(
+          workspaceId: $workspaceId,
+          workspacePassword: $workspacePassword,
+          userId: $userId
+        ) {
+          yourPeerId,
+          otherPeerIds
+        }
+      }
+      ```
+    - variables: object
+      - workspaceId: (string) The ID of the workspace
+      - workspacePassword: (string) The password of the workspace
+      - userId: (string) The ID of the user
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - data: object
+      - joinWorkspace: object
+        - yourPeerId: (string) The Peer ID assigned to the user
+        - otherPeerIds: (\[string\]) The Peer IDs of all other users in the
+              workspace
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - errors: \[object\]
+      - \[0\]: object
+        - message: `Workspace does not exist`
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - errors: \[object\]
+      - \[0\]: object
+        - message: `Username is taken`
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - errors: \[object\]
+      - \[0\]: object
+        - message: `Wrong password`
 
 ### Verify Peer
 
 - Description: Check if the peer is in the same workspace as you
+- Request: `POST https://www.architect3d.me/graphql`
+  - accept: `application/json`
+  - content-type: `application/json`
+  - body: object
+    - query: (string)
+      ```
+      query Verify(
+          $peerId: String!,
+          $workspaceId: String!
+      ) {
+        verifyPeer(
+          peerId: $peerId,
+          workspaceId: $workspaceId
+        ) {
+          valid
+        }
+      }
+      ```
+    - variables: object
+      - peerId: (string) The peer ID of the client to verify
+      - workspaceId: (string) The ID of the workspace
+- Response: 200
+  - content-type: `application/json`
+  - body: object
+    - data: object
+      - verifyPeer: object
+        - valid: (boolean) True iff the peer belongs to the workspace
 
 ## PeerJS RTC (Websockets)
 
