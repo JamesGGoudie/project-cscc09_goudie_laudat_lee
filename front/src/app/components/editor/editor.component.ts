@@ -224,6 +224,15 @@ export class EditorComponent {
     return this.editor.getObjectList();
   }
 
+  // duplicates current selected object
+  public cloneObject(): void {
+    const currObj = this.getCurrentObject();
+    if (currObj) {
+      const data = this.editor.exportObject(currObj);
+      this.editor.addObjToScene(data, true);
+    }
+  }
+
   private setUpClickEvent(): void {
     // when selecting an object by clicking on it
     document.addEventListener('click', (e :MouseEvent): void => {

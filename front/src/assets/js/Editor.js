@@ -149,12 +149,9 @@ let Editor = function(){
         return exporter.parse(scene).data;
     }
 
-    // Saves the current scene in JSON format
-    function saveScene() {
-        // save only the objects in the scene
-        let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
-        let exportedObjects = [];
-        allObjects.forEach(function(obj){
+    // returns JSON data of given mesh (obj)
+    function exportObject(obj) {
+        if (obj) {
             let data = {
                 name: obj.name,
                 position: obj.position.toArray(),
@@ -167,6 +164,18 @@ let Editor = function(){
             if (data.geometryType == 'ConeBufferGeometry' && obj.geometry.parameters.radialSegments == 4) {
                 data.geometryType += '-Pyramid';
             }
+            return data;
+        }
+        return null;
+    }
+
+    // Saves the current scene in JSON format
+    function saveScene() {
+        // save only the objects in the scene
+        let allObjects = scene.children.filter(obj => obj instanceof THREE.Mesh);
+        let exportedObjects = [];
+        allObjects.forEach(function(obj){
+            const data = exportObject(obj);
             exportedObjects.push(data);
         });
         console.log(exportedObjects);
@@ -444,6 +453,7 @@ let Editor = function(){
     this.loadObj = loadObj;
     this.deleteObjectByUuid = deleteObjectByUuid;
     this.addObjToScene = addObjToScene;
+    this.exportObject = exportObject;
 
     this.renderer = renderer;
     this.camera = camera;
