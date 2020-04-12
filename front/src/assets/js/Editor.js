@@ -179,14 +179,14 @@ let Editor = function(){
      * Add an object to the scene.
      * @param objData {Object} data on the object to add
      *          - name: string
-     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry", 
+     *          - geometryType: "BoxBufferGeometry" | "ConeBufferGeometry",
      *          - materialColorHex: string
      *          - position: array(3)
      *          - scale: array(3)
      *          - rotation: array(3)
      *          - objectId: string (Not required if adding a new object)
-     * @param isNew {Boolean} true if the object to add is new to the scene, 
-     *          false if it is not new (i.e. when loading from database) 
+     * @param isNew {Boolean} true if the object to add is new to the scene,
+     *          false if it is not new (i.e. when loading from database)
      * @returns mesh {THREE.Mesh} the object that was added
      */
     function addObjToScene(objData, isNew = false) {
@@ -319,7 +319,7 @@ let Editor = function(){
         }
         const mesh = addObjToScene(objData, true);
         return mesh;
-    };
+    }
 
     function deleteObject(obj) {
         if (obj) {
@@ -329,7 +329,7 @@ let Editor = function(){
             scene.remove(obj);
             render();
         }
-    };
+    }
 
     function clearScene(){
         // Get all mesh objects except for the one selected if indicated.
@@ -342,12 +342,16 @@ let Editor = function(){
         });
     }
 
+    function removeCanvas() {
+        renderer.domElement.remove();
+    }
+
     this.setObjectChangeCallback = function(callback) {
         if (callback) {
             objectChangeCallback = callback;
             control.addEventListener('objectChange', callback);
         }
-    }
+    };
 
     this.getCurrentSelection = function() {
         return currentSelection;
@@ -365,7 +369,7 @@ let Editor = function(){
                 control.setMode( tool );
                 break;
         }
-    }
+    };
 
     this.updateObjectPosition = function(obj, x, y, z){
         if (obj && x!=null && y!=null && z!=null) {
@@ -396,7 +400,7 @@ let Editor = function(){
     };
 
     this.exportScene = function(filetype) {
-        deselectCurrentObject()
+        deselectCurrentObject();
         switch(filetype) {
             case 'json':
                 return saveScene();
@@ -423,6 +427,7 @@ let Editor = function(){
     this.camera = camera;
     this.scene = scene;
 
+    this.removeCanvas = removeCanvas;
 };
 
-export { Editor }
+export { Editor };

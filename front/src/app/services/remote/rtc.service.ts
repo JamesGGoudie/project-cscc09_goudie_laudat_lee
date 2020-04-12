@@ -175,6 +175,10 @@ export class RtcService {
     return s;
   }
 
+  public destroyPeer(): void {
+    this.peer.destroy();
+  }
+
   /**
    * Indicate to all other peers that you have pinned this object.
    *

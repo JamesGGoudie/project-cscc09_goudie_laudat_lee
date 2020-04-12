@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import * as THREE from 'three';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,7 +21,7 @@ declare const gapi: any;
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent {
+export class EditorComponent implements OnDestroy {
   private readonly editor: Editor;
 
   public readonly objForm: FormGroup = new FormGroup({ // Generic attributes of an object
@@ -118,6 +117,11 @@ export class EditorComponent {
     if (this.state.getJoinedWorkspace()) {
       this.rtc.sendCopyWorkspaceReq();
     }
+  }
+
+  public ngOnDestroy(): void {
+    this.editor.removeCanvas();
+    this.rtc.destroyPeer();
   }
 
   // Form specific functions
