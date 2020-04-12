@@ -1,6 +1,5 @@
 export interface CreateWorkspaceRes {
 
-  err?: string;
-  yourPeerId?: string;
+  yourPeerId: string;
 
 }

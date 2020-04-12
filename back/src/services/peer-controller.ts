@@ -40,7 +40,7 @@ export class PeerController {
       return this.db.removePeerId(peerId);
     }).then((success: boolean): Promise<boolean> => {
       if (!success) {
-        throw 'Could not remove Peer from DB.';
+        throw new Error('Could not remove Peer from DB.');
       }
 
       if (count <= 1) {
@@ -57,9 +57,9 @@ export class PeerController {
       });
     }).then((success: boolean): void => {
       if (!success) {
-        throw 'Could not remove workspace from DB.';
+        throw new Error('Could not remove workspace from DB.');
       }
-    }).catch((err: string): void => {
+    }).catch((err: Error): void => {
       console.error(err);
     });
   }

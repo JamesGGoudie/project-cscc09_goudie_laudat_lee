@@ -33,9 +33,13 @@ export class DatabaseController {
       values: [id, pass]
     };
 
-    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+    try {
+      const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
-    return res.rowCount > 0;
+      return res.rowCount > 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   public async addUserToWorkspace(
@@ -59,7 +63,7 @@ export class DatabaseController {
 
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
-    return res.rowCount > 0 ? peerId : '';
+    return res.rowCount > 0 ? peerId : null;
   }
 
   public async getOtherUsersPeerIds(
@@ -120,7 +124,7 @@ export class DatabaseController {
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
     if (res.rows.length === 0) {
-      throw 'Could not find workspace of peer ID';
+      throw new Error('Could not find workspace of peer ID');
     }
 
     const data: WorkspaceAndPeerCount = {
@@ -137,9 +141,13 @@ export class DatabaseController {
       values: [peerId]
     };
 
-    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+    try {
+      const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
-    return res.rowCount > 0;
+      return res.rowCount > 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   public async removeWorkspace(wid: string): Promise<boolean> {
@@ -148,9 +156,13 @@ export class DatabaseController {
       values: [wid]
     };
 
-    const res: QueryResult<QueryResultRow> = await this.client.query(query);
+    try {
+      const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
-    return res.rowCount > 0;
+      return res.rowCount > 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   private async peerIdIsAvailable(peerId: string): Promise<boolean> {
@@ -162,7 +174,7 @@ export class DatabaseController {
     const res: QueryResult<QueryResultRow> = await this.client.query(query);
 
     if (res.rows.length === 0) {
-      throw 'Could not determine if peer is available';
+      throw new Error('Could not determine if peer is available');
     }
 
     return Number.parseInt(res.rows[0].count, 10) === 0;

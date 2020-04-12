@@ -50,8 +50,6 @@ export class WorkspaceControlComponent {
         for (const err of res.errors) {
           console.error(err.message);
         }
-      } else if (res.data.createWorkspace.err) {
-        console.error(res.data.createWorkspace.err);
       } else {
         this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
             (): void => {
@@ -68,8 +66,6 @@ export class WorkspaceControlComponent {
         for (const err of res.errors) {
           console.error(err.message);
         }
-      } else if (res.data.joinWorkspace.err) {
-        console.error(res.data.joinWorkspace.err);
       } else {
         this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
             (): void => {
