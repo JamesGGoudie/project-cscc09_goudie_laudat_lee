@@ -42,10 +42,14 @@
 
 <div id="side-menu" class="panel">
   <mat-accordion multi="true" displayMode="flat">
-    <mat-expansion-panel>
+    <mat-expansion-panel id="object-palette">
       <mat-expansion-panel-header>Add Object</mat-expansion-panel-header>
       <button mat-flat-button color="primary" (click)="addNewObject('box')">Box</button>
       <button mat-flat-button color="primary" (click)="addNewObject('cone')">Cone</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('pyramid')">Pyramid</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('cylinder')">Cylinder</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('sphere')">Sphere</button>
+      <button mat-flat-button color="primary" (click)="addNewObject('plane')">Plane</button>
     </mat-expansion-panel>
 
     <mat-expansion-panel *ngIf="getCurrentObject()">

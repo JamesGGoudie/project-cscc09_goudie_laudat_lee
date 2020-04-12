@@ -78,6 +78,12 @@ canvas {
   mat-form-field {
     width:100%
   }
+
+  #object-palette {
+    button {
+      margin: 5px;
+    }
+  }
 }
 
 .delete-button {
