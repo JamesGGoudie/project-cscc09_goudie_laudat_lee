@@ -156,13 +156,13 @@ let Editor = function(){
                 name: obj.name,
                 position: obj.position.toArray(),
                 scale: obj.scale.toArray(),
-                rotation: obj.rotation.toArray(),
+                rotation: obj.rotation.toArray().slice(0,3),
                 geometryType: obj.geometry.type,
                 materialColorHex: obj.material.color.getHexString()
             };
             // manually set geometry type for Pyramids
             if (data.geometryType == 'ConeBufferGeometry' && obj.geometry.parameters.radialSegments == 4) {
-                data.geometryType += '-Pyramid';
+                data.geometryType = 'ConeBufferGeometry-Pyramid';
             }
             return data;
         }
