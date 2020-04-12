@@ -1,9 +1,12 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
+
+import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   ObjectInfo, PinInfo, RtcCopyWsRes
@@ -50,10 +53,17 @@ export class EditorComponent implements OnDestroy {
   public auth2: any;
 
   public constructor(
+    private readonly router: Router,
     public snackBar: MatSnackBar,
     private readonly rtc: RtcService,
     private readonly state: WorkspaceStateService
   ) {
+    // If the user isn't currently in a workspace...
+    if (!this.state.getInWorkspace()) {
+      // ...navigate them to the workspace control page.
+      this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
+    }
+
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
 
@@ -498,22 +508,25 @@ export class EditorComponent implements OnDestroy {
   public initClient() {
     let authorizeButton = document.getElementById('googleSignInBtn');
     let signoutButton = document.getElementById('googleSignOutBtn');
-    gapi.client.init({
-      apiKey: this.API_KEY,
-      clientId: this.CLIENT_ID,
-      discoveryDocs: this.DISCOVERY_DOCS,
-      scope: this.SCOPES
-    }).then(function () {
-      // Listen for sign-in state changes.
-      gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
 
-      // Handle the initial sign-in state.
-      this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
-      authorizeButton.onclick = this.handleAuthClick;
-      signoutButton.onclick = this.handleSignoutClick;
-    }.bind(this), function(error) {
-      console.log(JSON.stringify(error, null, 2));
-    });
+    if (authorizeButton && signoutButton) {
+      gapi.client.init({
+        apiKey: this.API_KEY,
+        clientId: this.CLIENT_ID,
+        discoveryDocs: this.DISCOVERY_DOCS,
+        scope: this.SCOPES
+      }).then(function () {
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
+
+        // Handle the initial sign-in state.
+        this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
+        authorizeButton.onclick = this.handleAuthClick;
+        signoutButton.onclick = this.handleSignoutClick;
+      }.bind(this), function(error) {
+        console.log(JSON.stringify(error, null, 2));
+      });
+    }
   }
 
   /**

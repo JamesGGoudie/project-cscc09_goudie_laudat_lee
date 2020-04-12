@@ -176,7 +176,9 @@ export class RtcService {
   }
 
   public destroyPeer(): void {
-    this.peer.destroy();
+    if (this.peer) {
+      this.peer.destroy();
+    }
   }
 
   /**

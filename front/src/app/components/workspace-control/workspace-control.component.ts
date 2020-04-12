@@ -97,6 +97,7 @@ export class WorkspaceControlComponent {
     this.state.setJoinedWorkspace(joined);
     this.state.setWorkspaceId(workspaceId);
     this.state.setUserId(userId);
+    this.state.setInWorkspace(true);
 
     this.router.navigate([FRONT_ROUTES.EDITOR]);
   }

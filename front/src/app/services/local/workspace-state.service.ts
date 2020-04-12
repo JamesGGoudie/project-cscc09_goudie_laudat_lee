@@ -13,9 +13,15 @@ import { PinInfo } from 'src/app/interfaces';
 export class WorkspaceStateService {
 
   /**
-   * True iff the user is in a workspace.
+   * True iff the user joined a pre-existing workspace.
    */
   private joinedWorkspace: boolean = false;
+  /**
+   * True iff the user is currently in a workspace.
+   *
+   * They must be in a workspace to have access to the editor.
+   */
+  private inWorkspace: boolean = false;
   /**
    * The ID of the workspace.
    */
@@ -35,12 +41,20 @@ export class WorkspaceStateService {
    */
   private pinnedByOthers: PinInfo[] = [];
 
+  public getJoinedWorkspace(): boolean {
+    return this.joinedWorkspace;
+  }
+
   public setJoinedWorkspace(value: boolean): void {
     this.joinedWorkspace = value;
   }
 
-  public getJoinedWorkspace(): boolean {
-    return this.joinedWorkspace;
+  public getInWorkspace(): boolean {
+    return this.inWorkspace;
+  }
+
+  public setInWorkspace(value: boolean): void {
+    this.inWorkspace = value;
   }
 
   public getCurrentUsersPin(): string {
