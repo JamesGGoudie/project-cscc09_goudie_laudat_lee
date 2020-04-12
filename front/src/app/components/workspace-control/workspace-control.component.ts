@@ -48,6 +48,10 @@ export class WorkspaceControlComponent {
     private readonly state: WorkspaceStateService
   ) {}
 
+  public navigateToCredits(): void {
+    this.router.navigate([FRONT_ROUTES.CREDITS]);
+  }
+
   public onCreateSubmit(form: CreateWorkspaceForm): void {
     if (!(form.userId && form.workspaceId && form.workspacePassword)) {
       this.displayErrors(['Form is Incomplete']);
