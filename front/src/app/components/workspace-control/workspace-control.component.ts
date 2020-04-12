@@ -49,37 +49,45 @@ export class WorkspaceControlComponent {
   ) {}
 
   public onCreateSubmit(form: CreateWorkspaceForm): void {
-    this.workspaceControlService.createWorkspace(form).subscribe(
-        (res: CreateWorkspaceRes): void => {
-      if (res.errors) {
-        this.displayGraphQlErrors(res.errors);
-      } else {
-        this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
-            (): void => {
-          this.setupWorkspace(form.workspaceId, form.userId, false);
-        });
-      }
-    });
+    if (!(form.userId && form.workspaceId && form.workspacePassword)) {
+      this.displayErrors(['Form is Incomplete']);
+    } else {
+      this.workspaceControlService.createWorkspace(form).subscribe(
+          (res: CreateWorkspaceRes): void => {
+        if (res.errors) {
+          this.displayGraphQlErrors(res.errors);
+        } else {
+          this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
+              (): void => {
+            this.setupWorkspace(form.workspaceId, form.userId, false);
+          });
+        }
+      });
+    }
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
-    this.workspaceControlService.joinWorkspace(form).subscribe(
-        (res: JoinWorkspaceRes): void => {
-      if (res.errors) {
-        this.displayGraphQlErrors(res.errors);
-      } else {
-        this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
-            (): void => {
-          this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
-              .subscribe((): void => {
-            // Zone is needed due to complicated nesting.
-            this.zone.run((): void => {
-              this.setupWorkspace(form.workspaceId, form.userId, true);
+    if (!(form.userId && form.workspaceId && form.workspacePassword)) {
+      this.displayErrors(['Form is Incomplete']);
+    } else {
+      this.workspaceControlService.joinWorkspace(form).subscribe(
+          (res: JoinWorkspaceRes): void => {
+        if (res.errors) {
+          this.displayGraphQlErrors(res.errors);
+        } else {
+          this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
+              (): void => {
+            this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
+                .subscribe((): void => {
+              // Zone is needed due to complicated nesting.
+              this.zone.run((): void => {
+                this.setupWorkspace(form.workspaceId, form.userId, true);
+              });
             });
           });
-        });
-      }
-    });
+        }
+      });
+    }
   }
 
   /**
