@@ -78,10 +78,16 @@ canvas {
   mat-form-field {
     width:100%
   }
+
+  #object-palette {
+    button {
+      margin: 5px;
+    }
+  }
 }
 
-.delete-button {
-  margin-top: 20px;
+.clone-button, .delete-button {
+  margin-top: 15px;
 }
 
 button {

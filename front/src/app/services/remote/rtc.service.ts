@@ -339,7 +339,7 @@ export class RtcService {
   private convertMeshToObjInfo(mesh: THREE.Mesh): ObjectInfo {
     const mat: MeshBasicMaterial = mesh.material as MeshBasicMaterial;
 
-    return {
+    let info = {
       objectId: mesh.uuid,
       version: 0,
       name: mesh.name,
@@ -361,6 +361,11 @@ export class RtcService {
       ],
       materialColorHex: mat.color.getHexString()
     };
+    // manually set geometry type for Pyramids
+    if (mesh.geometry instanceof THREE.ConeBufferGeometry && mesh.geometry.parameters.radialSegments == 4) {
+      info.geometryType = 'ConeBufferGeometry-Pyramid';
+    }
+    return info;
   }
 
   /**

@@ -246,6 +246,16 @@ export class EditorComponent implements OnDestroy {
     return this.editor.getObjectList();
   }
 
+  // duplicates current selected object
+  public cloneObject(): void {
+    const currObj = this.getCurrentObject();
+    if (currObj) {
+      const data = this.editor.exportObject(currObj);
+      const copy = this.editor.addObjToScene(data, true);
+      this.rtc.sendCreateObjectMessage(copy);
+    }
+  }
+
   private setUpClickEvent(): void {
     // when selecting an object by clicking on it
     document.addEventListener('click', (e :MouseEvent): void => {
@@ -281,19 +291,13 @@ export class EditorComponent implements OnDestroy {
             this.deleteCurrentObject();
             break;
           case 71: // G
-            document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('translate');
             break;
           case 82: // R
-            document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('rotate');
             break;
           case 83: // S
-            document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
-            document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
-            document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+            this.onToolChange('scale');
             break;
           default:
             break;
@@ -356,6 +360,24 @@ export class EditorComponent implements OnDestroy {
     }
   }
 
+  public onToolChange(tool:string):void {
+    document.getElementById('translate-btn').classList.remove("mat-button-toggle-checked");
+    document.getElementById('scale-btn').classList.remove("mat-button-toggle-checked");
+    document.getElementById('rotate-btn').classList.remove("mat-button-toggle-checked");
+    switch(tool) {
+      case 'translate':
+        document.getElementById('translate-btn').classList.add("mat-button-toggle-checked");
+        break;
+      case 'scale':
+        document.getElementById('scale-btn').classList.add("mat-button-toggle-checked");
+        break;
+      case 'rotate':
+        document.getElementById('rotate-btn').classList.add("mat-button-toggle-checked");
+        break;
+    }
+    this.changeTool(tool);
+  }
+
   /**
    * Send the object to the server.
    *
@@ -372,12 +394,9 @@ export class EditorComponent implements OnDestroy {
   }
 
   public onFileInput(files):void {
-    console.log('file input');
     let file = files.item(0);
-    console.log(file);
     if (file.type=='application/json') {
       file.text().then(function(text){
-        console.log(text);
         let parsed = [];
         try{
           parsed = JSON.parse(text);
@@ -392,9 +411,7 @@ export class EditorComponent implements OnDestroy {
                 !objData.position.some(isNaN) &&
                 !objData.scale.some(isNaN) &&
                 !objData.rotation.slice(0,3).some(isNaN)) {
-              console.log(objData);
               const newObj = this.editor.addObjToScene(objData, true);
-              console.log(newObj);
               this.rtc.sendCreateObjectMessage(newObj);
             }
           }
@@ -454,7 +471,7 @@ export class EditorComponent implements OnDestroy {
         };
         xhr.send(form);
       } else {
-        console.log('invalid file type for export');
+        console.log('Invalid file type for export');
       }
     }
   }
