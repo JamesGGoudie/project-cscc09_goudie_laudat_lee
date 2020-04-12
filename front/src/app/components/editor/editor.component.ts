@@ -104,7 +104,7 @@ export class EditorComponent {
     });
 
     this.rtc.copyWorkspaceRes().subscribe((res: RtcCopyWsRes): void => {
-      // When we receive a response containing info to replicat a workspace...
+      // When we receive a response containing info to replicate a workspace...
       this.editor.loadScene(res.workspaceObjects);
 
       for (const pin of res.pins) {
