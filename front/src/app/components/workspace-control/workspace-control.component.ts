@@ -1,12 +1,16 @@
 import { Component, NgZone } from '@angular/core';
 import { FormGroup, FormControl } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 
+import { ErrorDialogComponent } from 'src/app/components/dialogs';
 import { FRONT_ROUTES } from 'src/app/constants';
 
 import {
   CreateWorkspaceForm,
   CreateWorkspaceRes,
+  ErrorDialogData,
+  GraphQlError,
   JoinWorkspaceForm,
   JoinWorkspaceRes
 } from 'src/app/interfaces';
@@ -37,45 +41,66 @@ export class WorkspaceControlComponent {
 
   public constructor(
     private readonly zone: NgZone,
+    private readonly dialog: MatDialog,
     private readonly router: Router,
     private readonly rtc: RtcService,
     private readonly workspaceControlService: WorkspaceControlService,
     private readonly state: WorkspaceStateService
   ) {}
 
+  public navigateToCredits(): void {
+    this.router.navigate([FRONT_ROUTES.CREDITS]);
+  }
+
   public onCreateSubmit(form: CreateWorkspaceForm): void {
-    this.workspaceControlService.createWorkspace(form).subscribe(
-        (res: CreateWorkspaceRes): void => {
-      if (res.data.createWorkspace.err) {
-        console.error(res.data.createWorkspace.err);
-      } else {
-        this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
-            (): void => {
-          this.setupWorkspace(form.workspaceId, form.userId, false);
-        });
-      }
-    });
+    if (!(form.userId && form.workspaceId && form.workspacePassword)) {
+      this.displayErrors(['Form is Incomplete']);
+    } else {
+      this.workspaceControlService.createWorkspace(form).subscribe(
+          (res: CreateWorkspaceRes): void => {
+        if (res.errors) {
+          this.displayGraphQlErrors(res.errors);
+        } else {
+          this.rtc.createPeer(res.data.createWorkspace.yourPeerId).subscribe(
+              (): void => {
+            this.setupWorkspace(form.workspaceId, form.userId, false);
+          });
+        }
+      });
+    }
   }
 
   public onJoinSubmit(form: JoinWorkspaceForm): void {
-    this.workspaceControlService.joinWorkspace(form).subscribe(
-        (res: JoinWorkspaceRes): void => {
-      if (res.data.joinWorkspace.err) {
-        console.error(res.data.joinWorkspace.err);
-      } else {
-        this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
-            (): void => {
-          this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
-              .subscribe((): void => {
-            this.zone.run((): void => {
-              this.setupWorkspace(form.workspaceId, form.userId, true);
+    if (!(form.userId && form.workspaceId && form.workspacePassword)) {
+      this.displayErrors(['Form is Incomplete']);
+    } else {
+      this.workspaceControlService.joinWorkspace(form).subscribe(
+          (res: JoinWorkspaceRes): void => {
+        if (res.errors) {
+          this.displayGraphQlErrors(res.errors);
+        } else {
+          this.rtc.createPeer(res.data.joinWorkspace.yourPeerId).subscribe(
+              (): void => {
+            this.rtc.connectToPeers(res.data.joinWorkspace.otherPeerIds)
+                .subscribe((): void => {
+              // Zone is needed due to complicated nesting.
+              this.zone.run((): void => {
+                this.setupWorkspace(form.workspaceId, form.userId, true);
+              });
             });
           });
-        });
-      }
-    });
+        }
+      });
+    }
   }
 
+  /**
+   * Saves all the information about the session and routes to the editor.
+   *
+   * @param workspaceId
+   * @param userId
+   * @param joined
+   */
   private setupWorkspace(
     workspaceId: string,
     userId: string,
@@ -84,8 +109,20 @@ export class WorkspaceControlComponent {
     this.state.setJoinedWorkspace(joined);
     this.state.setWorkspaceId(workspaceId);
     this.state.setUserId(userId);
+    this.state.setInWorkspace(true);
 
     this.router.navigate([FRONT_ROUTES.EDITOR]);
+  }
+
+  private displayGraphQlErrors(errors: GraphQlError[]): void {
+    this.displayErrors(errors.map((err: GraphQlError): string => {
+      return err.message;
+    }));
+  }
+
+  private displayErrors(errors: string[]): void {
+    const data: ErrorDialogData = {errors}
+    this.dialog.open(ErrorDialogComponent, {data});
   }
 
 }

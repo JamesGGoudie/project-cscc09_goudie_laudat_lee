@@ -1,13 +1,15 @@
-import { Component } from '@angular/core';
-
+import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ColorEvent } from 'ngx-color';
 import { Editor } from '../../../assets/js/Editor';
 
+import { FRONT_ROUTES } from 'src/app/constants';
+
 import {
-  ObjectInfo
+  ObjectInfo, PinInfo, RtcCopyWsRes
 } from 'src/app/interfaces';
 
 import {
@@ -22,7 +24,7 @@ declare const gapi: any;
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss']
 })
-export class EditorComponent {
+export class EditorComponent implements OnDestroy {
   private readonly editor: Editor;
 
   public readonly objForm: FormGroup = new FormGroup({ // Generic attributes of an object
@@ -51,10 +53,17 @@ export class EditorComponent {
   public auth2: any;
 
   public constructor(
+    private readonly router: Router,
     public snackBar: MatSnackBar,
     private readonly rtc: RtcService,
     private readonly state: WorkspaceStateService
   ) {
+    // If the user isn't currently in a workspace...
+    if (!this.state.getInWorkspace()) {
+      // ...navigate them to the workspace control page.
+      this.router.navigate([FRONT_ROUTES.WORKSPACE_CONTROL]);
+    }
+
     this.editor = new Editor();
     this.editor.setObjectChangeCallback(this.updateEditControls.bind(this));
 
@@ -64,42 +73,65 @@ export class EditorComponent {
     this.setUpKeydownEvent();
 
     this.rtc.createObject().subscribe((objInfo: ObjectInfo): void => {
+      // When we receive a create object message...
       this.editor.loadObj(objInfo, false);
     });
 
     this.rtc.modifyObject().subscribe((objInfo: ObjectInfo): void => {
+      // When we receive a modfiy object message...
       this.editor.deleteObjectByUuid(objInfo.objectId);
       this.editor.loadObj(objInfo, true);
     });
 
-    this.rtc.pinObject().subscribe((objId: string): void => {
-      this.state.addOtherUsersPin(objId);
+    this.rtc.pinObject().subscribe((pin: PinInfo): void => {
+      // When we receive a pin object message...
+      this.state.addOtherUsersPin(pin);
     });
 
     this.rtc.unpinObject().subscribe((objId: string): void => {
+      // When we receive an unpin object message...
       this.state.removeOtherUsersPin(objId);
     });
 
     this.rtc.deleteObject().subscribe((objId: string): void => {
+      // When we receive a delete object message...
       this.editor.deleteObjectByUuid(objId);
     });
 
     this.rtc.copyWorkspaceReq().subscribe((peer: string): void => {
+      // When we receive a request to copy the workspace...
+      const pins: PinInfo[] = this.state.getObjectsPinnedByOthers();
+      pins.push({
+        oId: this.state.getCurrentUsersPin(),
+        pId: this.rtc.getPeerId()
+      });
+
       this.rtc.sendCopyWorkspaceRes(
           this.editor.scene.children.filter(
             (obj: THREE.Object3D): boolean => {
               return obj instanceof THREE.Mesh;
             }),
+          pins,
           peer);
     });
 
-    this.rtc.copyWorkspaceRes().subscribe((objs: ObjectInfo[]): void => {
-      this.editor.loadScene(objs);
+    this.rtc.copyWorkspaceRes().subscribe((res: RtcCopyWsRes): void => {
+      // When we receive a response containing info to replicate a workspace...
+      this.editor.loadScene(res.workspaceObjects);
+
+      for (const pin of res.pins) {
+        this.state.addOtherUsersPin(pin);
+      }
     });
 
     if (this.state.getJoinedWorkspace()) {
       this.rtc.sendCopyWorkspaceReq();
     }
+  }
+
+  public ngOnDestroy(): void {
+    this.editor.removeCanvas();
+    this.rtc.destroyPeer();
   }
 
   // Form specific functions
@@ -396,12 +428,12 @@ export class EditorComponent {
         }
       }.bind(this));
     }
-  } 
+  }
 
   public importScene() {
     document.getElementById('file-upload').dispatchEvent(new MouseEvent('click'));
   }
-  
+
   public downloadScene(filetype:string):void {
     let link = this.link;
     let data = this.editor.exportScene(filetype);
@@ -476,22 +508,25 @@ export class EditorComponent {
   public initClient() {
     let authorizeButton = document.getElementById('googleSignInBtn');
     let signoutButton = document.getElementById('googleSignOutBtn');
-    gapi.client.init({
-      apiKey: this.API_KEY,
-      clientId: this.CLIENT_ID,
-      discoveryDocs: this.DISCOVERY_DOCS,
-      scope: this.SCOPES
-    }).then(function () {
-      // Listen for sign-in state changes.
-      gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
 
-      // Handle the initial sign-in state.
-      this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
-      authorizeButton.onclick = this.handleAuthClick;
-      signoutButton.onclick = this.handleSignoutClick;
-    }.bind(this), function(error) {
-      console.log(JSON.stringify(error, null, 2));
-    });
+    if (authorizeButton && signoutButton) {
+      gapi.client.init({
+        apiKey: this.API_KEY,
+        clientId: this.CLIENT_ID,
+        discoveryDocs: this.DISCOVERY_DOCS,
+        scope: this.SCOPES
+      }).then(function () {
+        // Listen for sign-in state changes.
+        gapi.auth2.getAuthInstance().isSignedIn.listen(this.updateSigninStatus);
+
+        // Handle the initial sign-in state.
+        this.updateSigninStatus.bind(this)(gapi.auth2.getAuthInstance().isSignedIn.get());
+        authorizeButton.onclick = this.handleAuthClick;
+        signoutButton.onclick = this.handleSignoutClick;
+      }.bind(this), function(error) {
+        console.log(JSON.stringify(error, null, 2));
+      });
+    }
   }
 
   /**
