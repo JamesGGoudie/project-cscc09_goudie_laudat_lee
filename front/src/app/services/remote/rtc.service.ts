@@ -479,6 +479,8 @@ export class RtcService {
 
     this.connections.delete(peerId);
     this.verifiedConnections.delete(peerId);
+
+    this.state.removeUserTraces(peerId);
   }
 
   private setUpConnectionEvents(conn: Peer.DataConnection): void {
@@ -516,11 +518,11 @@ export class RtcService {
 
     conn.on('error', (err: any): void => {
       console.error(err);
+      this.removeConnectionTraces(conn.peer);
     });
 
     conn.on('close', (): void => {
       this.removeConnectionTraces(conn.peer);
-      this.state.removeUserTraces(conn.peer);
     });
   }
 
