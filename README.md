@@ -1,10 +1,16 @@
-# Architect
+# Architect 3D
 
 ## Authors
 
 - James Gabriel Goudie
 - Patricia Lee
 - Radu Laudat
+
+## Important Links
+
+- Deployed URL: https://www.architect3d.me
+- Video URL: https://youtu.be/eRZLqoqGybc
+- API URL: https://github.com/UTSCC09/project-cscc09_goudie_laudat_lee/tree/docs/api-docs
 
 ## Summary
 
