@@ -140,40 +140,118 @@ Due to the nature of GraphQL, some errors are returned as 200s.
 Messages sent between clients through a PeerJS connection, thereby enabling
 a real-time connection.
 
+All RTC communications between two clients are on the same channel.
+
+Note that messages don't typically have responses.
+Anything that would be a response is documented as another message.
+
 ### Connection Verified Message
 
 - Description: Inform the client that you have verified that they belong in the
     workspace
+- Message: object
+  - type: (7) The ID of the type of message
 
 ### Copy Workspace Request
 
 - Description: Ask the client for the current layout of the workspace
+- Message: object
+  - type: (5) The ID of the type of message
 
 ### Copy Workspace Response
 
 - Description: Send the client the current layout of the workspace
+- Message: object
+  - type: (6) The ID of the type of message
+  - pins: \[object\]
+    - oId: (string) The ID of the object
+    - pId: (string) The peer ID of the user who has pinned the object
+  - workspaceObjects: \[object\]
+    - objectId: (string) The unique ID of the object
+    - name: (string) The name of the object
+    - geometryType: (string) The type of shape of the object
+    - position: (\[number\])
+      - \[0\]: (number) The X position of the object
+      - \[1\]: (number) The Y position of the object
+      - \[2\]: (number) The Z position of the object
+    - rotation: (\[number\])
+      - \[0\]: (number) The X rotation of the object
+      - \[1\]: (number) The Y rotation of the object
+      - \[2\]: (number) The Z rotation of the object
+    - scale: (\[number\])
+      - \[0\]: (number) The X scale of the object
+      - \[1\]: (number) The Y scale of the object
+      - \[2\]: (number) The Z scale of the object
+    - materialColorHex: (string) The colour of the object
 
 ### Pin Object Message
 
 - Description: Tell the client that you have pinned this object so that no one
     else can touch it
+- Message: object
+  - type: (0) The ID of the type of message
+  - objectId: (string) The unique ID of the object
 
 ### Unpin Object Message
 
 - Description: Tell the client that you have unpinned the object so others can
     edit it
+- Message: object
+  - type: (1) The ID of the type of message
+  - objectId: (string) The unique ID of the object
 
 ### Create Object Message
 
 - Description: Inform the client of the state of a new object and tell them to
     update their workspace
+- Message: object
+  - type: (3) The ID of the type of message
+  - objectInfo: object
+    - objectId: (string) The unique ID of the object
+    - name: (string) The name of the object
+    - geometryType: (string) The type of shape of the object
+    - position: (\[number\])
+      - \[0\]: (number) The X position of the object
+      - \[1\]: (number) The Y position of the object
+      - \[2\]: (number) The Z position of the object
+    - rotation: (\[number\])
+      - \[0\]: (number) The X rotation of the object
+      - \[1\]: (number) The Y rotation of the object
+      - \[2\]: (number) The Z rotation of the object
+    - scale: (\[number\])
+      - \[0\]: (number) The X scale of the object
+      - \[1\]: (number) The Y scale of the object
+      - \[2\]: (number) The Z scale of the object
+    - materialColorHex: (string) The colour of the object
 
 ### Modify Object Message
 
 - Description: Inform the client of the state of a pre-existing object and tell
     them to update their workspace
+- Message: object
+  - type: (4) The ID of the type of message
+  - objectInfo: object
+    - objectId: (string) The unique ID of the object
+    - name: (string) The name of the object
+    - geometryType: (string) The type of shape of the object
+    - position: (\[number\])
+      - \[0\]: (number) The X position of the object
+      - \[1\]: (number) The Y position of the object
+      - \[2\]: (number) The Z position of the object
+    - rotation: (\[number\])
+      - \[0\]: (number) The X rotation of the object
+      - \[1\]: (number) The Y rotation of the object
+      - \[2\]: (number) The Z rotation of the object
+    - scale: (\[number\])
+      - \[0\]: (number) The X scale of the object
+      - \[1\]: (number) The Y scale of the object
+      - \[2\]: (number) The Z scale of the object
+    - materialColorHex: (string) The colour of the object
 
 ### Delete Object Message
 
 - Description: Inform that client that the object has been removed and tell
     them to update their workspace
+- Message: object
+  - type: (2) The ID of the type of message
+  - objectId: (string) The unique ID of the object
