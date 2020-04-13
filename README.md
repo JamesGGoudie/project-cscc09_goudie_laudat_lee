@@ -10,7 +10,7 @@
 
 - Deployed URL: https://www.architect3d.me
 - Video URL: https://youtu.be/eRZLqoqGybc
-- API URL: https://github.com/UTSCC09/project-cscc09_goudie_laudat_lee/tree/docs/api-docs
+- API URL: https://github.com/UTSCC09/project-cscc09_goudie_laudat_lee/tree/master/api-docs
 
 ## Summary
 
