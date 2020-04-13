@@ -343,7 +343,6 @@ export class RtcService {
 
     let info = {
       objectId: mesh.uuid,
-      version: 0,
       name: mesh.name,
       geometryType: mesh.geometry.type,
       position: [

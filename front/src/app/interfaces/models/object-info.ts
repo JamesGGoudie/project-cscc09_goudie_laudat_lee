@@ -5,8 +5,6 @@ export interface ObjectInfo {
 
   readonly objectId: string;
 
-  readonly version: number;
-
   readonly name: string;
   readonly geometryType: string;
 

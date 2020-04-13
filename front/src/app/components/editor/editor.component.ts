@@ -213,7 +213,7 @@ export class EditorComponent implements OnDestroy {
 
   public deleteCurrentObject(): void {
     const obj = this.getCurrentObject();
-    // Since we are deleting the object, we don't need to tell the server
+    // Since we are deleting the object, we don't need to tell the peers
     // about recent changes.
     this.resetChangesTimer();
 
@@ -319,8 +319,8 @@ export class EditorComponent implements OnDestroy {
   /**
    * Deselect the current object.
    *
-   * First, update the server with the current information about the object.
-   * Second, unpin the object on the server.
+   * First, update the peers with the current information about the object.
+   * Second, unpin the object on the peers.
    */
   private deselectCurrentObject(): void {
     const obj = this.getCurrentObject();
@@ -340,16 +340,16 @@ export class EditorComponent implements OnDestroy {
   }
 
   /**
-   * Ready an object to be sent to the server.
+   * Ready an object to be sent to the peers.
    *
    * This method stores a reference to the object and will send it with its
-   * latest changes to the server after one second since the object was first
-   * given to this method.
+   * latest changes to the peers after 100ms since the object was first given
+   * to this method.
    *
    * This delay prevents several requests being sent back-to-back.
    *
    * If the object given is different than the one stored, then the stored one
-   * will be immediately sent to the server.
+   * will be immediately sent to the peers.
    *
    * @param obj
    */
@@ -360,7 +360,7 @@ export class EditorComponent implements OnDestroy {
       this.reportChanges(this.oldObj);
     }
 
-    // Every second, update the server of changes to the object.
+    // Every tenth of a second, update the peers of changes to the object.
     if (this.updateTimer < 0) {
       this.oldObj = obj;
       this.updateTimer = window.setTimeout((): void => {
@@ -389,9 +389,7 @@ export class EditorComponent implements OnDestroy {
   }
 
   /**
-   * Send the object to the server.
-   *
-   * The server will update its version of the scene using what was given.
+   * Send the object to the other peers.
    *
    * @param obj
    */
