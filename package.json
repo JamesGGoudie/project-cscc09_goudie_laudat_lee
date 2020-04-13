@@ -1,9 +1,9 @@
 {
-  "name": "graphql-test",
+  "name": "architect",
   "version": "0.0.1",
-  "description": "A testing environment to get familiar with GraphQl",
-  "main": "dist/app.js",
-  "author": "James Gabriel Goudie",
+  "description": "A 3D editing environment that allows collaboration",
+  "main": "dist/back/app.js",
+  "author": "James Gabriel Goudie & Patricia Lee",
   "license": "ISC",
   "engines": {
     "node": "13.6.0",

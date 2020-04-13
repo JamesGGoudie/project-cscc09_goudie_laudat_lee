@@ -15,4 +15,4 @@ import { PageNotFoundComponent } from './page-not-found.component';
     SharedModule
   ]
 })
-export class PageNotFoundModule { }
+export class PageNotFoundModule {}

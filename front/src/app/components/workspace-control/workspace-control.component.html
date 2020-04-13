@@ -1,53 +1,74 @@
-<mat-accordion>
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Create a Workspace
-      </mat-panel-title>
-    </mat-expansion-panel-header>
+<div class="workspace-control-wrapper">
+  <header>
+    <h1>Architect 3D</h1>
+    <h2>by James Gabriel Goudie & Patricia Lee and Radu Laudat</h2>
+  </header>
 
-    <form
-        [formGroup]="createForm"
-        (ngSubmit)="onCreateSubmit(createForm.value)">
-      <mat-form-field>
-        <mat-label>Workspace ID</mat-label>
-        <input matInput formControlName="workspaceId">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Workspace Password</mat-label>
-        <input matInput formControlName="workspacePassword">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Username</mat-label>
-        <input matInput formControlName="userId">
-      </mat-form-field>
+  <div class="forms-wrapper">
+    <mat-accordion>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Create a Workspace
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-      <button mat-button type="submit">Create Workspace</button>
-    </form>
-  </mat-expansion-panel>
+        <form [formGroup]="createForm">
+          <mat-form-field>
+            <mat-label>Workspace ID</mat-label>
+            <input matInput formControlName="workspaceId">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Workspace Password</mat-label>
+            <input matInput formControlName="workspacePassword">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="userId">
+          </mat-form-field>
 
-  <mat-expansion-panel>
-    <mat-expansion-panel-header>
-      <mat-panel-title>
-        Join a Workspace
-      </mat-panel-title>
-    </mat-expansion-panel-header>
+          <button
+              mat-button
+              type="submit"
+              (click)="onCreateSubmit(createForm.value)">
+            Create Workspace
+          </button>
+        </form>
+      </mat-expansion-panel>
 
-    <form [formGroup]="joinForm" (ngSubmit)="onJoinSubmit(joinForm.value)">
-      <mat-form-field>
-        <mat-label>Workspace ID</mat-label>
-        <input matInput formControlName="workspaceId">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Workspace Password</mat-label>
-        <input matInput formControlName="workspacePassword">
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Username</mat-label>
-        <input matInput formControlName="userId">
-      </mat-form-field>
+      <mat-expansion-panel>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Join a Workspace
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-      <button mat-button type="submit">Join Workspace</button>
-    </form>
-  </mat-expansion-panel>
-</mat-accordion>
+        <form [formGroup]="joinForm">
+          <mat-form-field>
+            <mat-label>Workspace ID</mat-label>
+            <input matInput formControlName="workspaceId">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Workspace Password</mat-label>
+            <input matInput formControlName="workspacePassword">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="userId">
+          </mat-form-field>
+
+          <button
+              mat-button
+              type="submit"
+              (click)="onJoinSubmit(joinForm.value)">
+            Join Workspace
+          </button>
+        </form>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+
+  <footer>
+    <button mat-button (click)="navigateToCredits()">Credits</button>
+  </footer>
+</div>

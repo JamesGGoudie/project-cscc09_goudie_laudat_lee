@@ -1,18 +1,26 @@
 import { buildSchema, GraphQLSchema } from 'graphql';
 
+/**
+ * All of the types, queries, and mutations required to define the GraphQL
+ * schema.
+ */
 export const GQL_SCHEMA: GraphQLSchema = buildSchema(`
   type CreateWsRes {
-    err: String,
-    yourPeerId: String
+    yourPeerId: String!
   }
   type JoinWsRes {
-    err: String,
-    otherPeerIds: [String!],
-    yourPeerId: String
+    otherPeerIds: [String!]!,
+    yourPeerId: String!
+  }
+  type VerifyPeerRes {
+    valid: Boolean!
   }
 
   type Query {
-    dummy: Boolean
+    verifyPeer(
+      peerId: String!,
+      workspaceId: String!
+    ): VerifyPeerRes
   }
 
   type Mutation {

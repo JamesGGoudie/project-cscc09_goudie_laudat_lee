@@ -1,86 +1,124 @@
 import { Injectable } from '@angular/core';
 
-import { LS_KEYS } from 'src/app/constants';
+import { PinInfo } from 'src/app/interfaces';
 
+/**
+ * Contains information about the current state of the site.
+ *
+ * Effectively global variables.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class WorkspaceStateService {
 
+  /**
+   * True iff the user joined a pre-existing workspace.
+   */
   private joinedWorkspace: boolean = false;
-
+  /**
+   * True iff the user is currently in a workspace.
+   *
+   * They must be in a workspace to have access to the editor.
+   */
+  private inWorkspace: boolean = false;
+  /**
+   * The ID of the workspace.
+   */
   private workspaceId: string;
+  /**
+   * The ID of the user.
+   *
+   * This is not the same as the Peer JS ID.
+   */
   private userId: string;
+  /**
+   * The ID of the object pinned by the user.
+   */
   private pinnedObj: string;
-
-  private pinnedByOthers: string[] = [];
-
-  private versionHistory: {[objId: string]: number} = {};
-
-  public setJoinedWorkspace(value: boolean): void {
-    this.joinedWorkspace = value;
-  }
+  /**
+   * The IDs of objects and the peer ID of the user who has the object pinned.
+   */
+  private pinnedByOthers: PinInfo[] = [];
 
   public getJoinedWorkspace(): boolean {
     return this.joinedWorkspace;
   }
 
-  public saveVersionHistory(objId: string, version: number): void {
-    this.versionHistory[objId] = version;
+  public setJoinedWorkspace(value: boolean): void {
+    this.joinedWorkspace = value;
   }
 
-  public getVersionHistory(objId: string): number {
-    const version = this.versionHistory[objId];
+  public getInWorkspace(): boolean {
+    return this.inWorkspace;
+  }
 
-    return version != undefined ? version : -1;
+  public setInWorkspace(value: boolean): void {
+    this.inWorkspace = value;
   }
 
   public getCurrentUsersPin(): string {
-    // return localStorage.getItem(LS_KEYS.PINNED_OBJ);
     return this.pinnedObj;
   }
 
   public setCurrentUsersPin(id: string): void {
-    // localStorage.setItem(LS_KEYS.PINNED_OBJ, id);
     this.pinnedObj = id;
   }
 
   public getUserId(): string {
-    // return localStorage.getItem(LS_KEYS.USER_ID);
     return this.userId;
   }
 
   public setUserId(id: string): void {
-    // localStorage.setItem(LS_KEYS.USER_ID, id);
     this.userId = id;
   }
 
   public getWorkspaceId(): string {
-    // return localStorage.getItem(LS_KEYS.WORKSPACE_ID);
     return this.workspaceId;
   }
 
   public setWorkspaceId(id: string): void {
-    // localStorage.setItem(LS_KEYS.WORKSPACE_ID, id);
     this.workspaceId = id;
   }
 
-  public addOtherUsersPin(id: string): void {
-    if (!this.isPinnedByOther(id)) {
-      this.pinnedByOthers.push(id);
+  public addOtherUsersPin(pin: PinInfo): void {
+    if (!this.isPinnedByOther(pin.oId)) {
+      this.pinnedByOthers.push({oId: pin.oId, pId: pin.pId});
     }
   }
 
   public isPinnedByOther(objectId: string): boolean {
-    return this.pinnedByOthers.findIndex((id: string): boolean => {
-      return id === objectId;
-    }) > -1;
+    return this.findObjectIndex(objectId) > -1;
   }
 
-  public removeOtherUsersPin(id: string): void {
-    this.pinnedByOthers.splice(this.pinnedByOthers.findIndex((objId) => {
-      return objId === id;
-    }), 1);
+  public removeOtherUsersPin(objectId: string): void {
+    this.removePinInfo(this.findObjectIndex(objectId));
+  }
+
+  public getObjectsPinnedByOthers(): PinInfo[] {
+    return this.pinnedByOthers;
+  }
+
+  public removeUserTraces(peerId: string): void {
+    this.removePinInfo(this.findPeerIndex(peerId));
+  }
+
+  private findObjectIndex(objectId: string): number {
+    return this.pinnedByOthers.findIndex((info: PinInfo): boolean => {
+      return info.oId === objectId;
+    });
+  }
+
+  private findPeerIndex(peerId: string): number {
+    return this.pinnedByOthers.findIndex((info: PinInfo): boolean => {
+      return info.pId === peerId;
+    });
+  }
+
+  private removePinInfo(i: number): void {
+    if (i > -1) {
+      this.pinnedByOthers.splice(i, 1);
+    }
   }
 
 }

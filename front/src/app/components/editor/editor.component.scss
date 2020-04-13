@@ -21,7 +21,6 @@ canvas {
       margin: 4px;
       
       li {
-
         button {
           text-align: left;
           width:100%;
@@ -33,6 +32,36 @@ canvas {
       }
     }
   }
+}
+
+#help-container {
+  position:absolute; 
+  top: 70px; 
+  left: 0; 
+  padding: 10px; 
+  color:white; 
+  background: rgba(0,0,0,0.2);
+  overflow: scroll;
+  max-height: 420px;
+  pointer-events: none;
+}
+
+#controls-table {
+  border: none;
+  width: 100%;
+  td {
+    padding-right: 12px;
+  }
+}
+
+#file-upload {
+  display: none;
+}
+
+#top-menu {
+  top: 0;
+  left:0;
+  // padding: 0;
 }
 
 #tool-menu {
@@ -49,10 +78,16 @@ canvas {
   mat-form-field {
     width:100%
   }
+
+  #object-palette {
+    button {
+      margin: 5px;
+    }
+  }
 }
 
-.delete-button {
-  margin-top: 20px;
+.clone-button, .delete-button {
+  margin-top: 15px;
 }
 
 button {

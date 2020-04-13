@@ -18,4 +18,4 @@ import { ColorSketchModule } from 'ngx-color/sketch';
     ColorSketchModule
   ]
 })
-export class EditorModule { }
+export class EditorModule {}

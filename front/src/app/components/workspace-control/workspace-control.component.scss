@@ -1,0 +1,50 @@
+header {
+  grid-area: header;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 4px solid black;
+
+  padding-top: 10px;
+
+  * {
+    padding: 0 10px;
+  }
+}
+
+footer {
+  grid-area: footer;
+
+  padding: 10px;
+
+  border-top: 4px solid black;
+
+  text-align: center;
+}
+
+mat-form-field {
+  padding: 0 8px;
+}
+
+.forms-wrapper {
+  grid-area: forms;
+
+  padding: 20px 0;
+
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+.workspace-control-wrapper {
+  height: 100%;
+
+  display: grid;
+
+  grid-template-areas:
+      "header"
+      "forms"
+      "footer";
+
+  grid-template-rows: max-content auto max-content;
+}

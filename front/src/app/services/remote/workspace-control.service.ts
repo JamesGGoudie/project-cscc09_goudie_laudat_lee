@@ -10,7 +10,9 @@ import {
   CreateWorkspaceVars,
   JoinWorkspaceForm,
   JoinWorkspaceRes,
-  JoinWorkspaceVars
+  JoinWorkspaceVars,
+  VerifyPeerRes,
+  VerifyPeerVars
 } from 'src/app/interfaces';
 
 @Injectable({
@@ -35,7 +37,6 @@ export class WorkspaceControlService {
         workspacePassword: $workspacePassword,
         userId: $userId
       ) {
-        err,
         yourPeerId
       }
     }`;
@@ -71,7 +72,6 @@ export class WorkspaceControlService {
         workspacePassword: $workspacePassword,
         userId: $userId
       ) {
-        err,
         yourPeerId,
         otherPeerIds
       }
@@ -90,6 +90,38 @@ export class WorkspaceControlService {
     };
 
     return this.http.post<JoinWorkspaceRes>(
+        BACK_ROUTES.API,
+        JSON.stringify({query, variables}),
+        httpOptions);
+  }
+
+  public verifyPeer(
+    peerId: string, workspaceId: string
+  ): Observable<VerifyPeerRes> {
+    const query = `query Verify(
+        $peerId: String!,
+        $workspaceId: String!
+    ) {
+      verifyPeer(
+        peerId: $peerId,
+        workspaceId: $workspaceId
+      ) {
+        valid
+      }
+    }`;
+    const variables: VerifyPeerVars = {
+      peerId,
+      workspaceId
+    }
+
+    const httpOptions: {headers: HttpHeaders} = {
+      headers: new HttpHeaders({
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      })
+    };
+
+    return this.http.post<VerifyPeerRes>(
         BACK_ROUTES.API,
         JSON.stringify({query, variables}),
         httpOptions);
